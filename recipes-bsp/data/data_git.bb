@@ -21,6 +21,8 @@ EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
 		QMI_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/qmi \
 		DSUTILS_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/dsutils \
 		GLIB_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/glib-2.0 \
+		XMLLIB_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/xmllib \
+		DIAG_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/diag \
 		"
 
 SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/data;protocol=git;tag=AU_LINUX_ANDROID_JB_2.5.6.04.02.02.093.144"
