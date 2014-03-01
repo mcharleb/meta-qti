@@ -9,9 +9,9 @@ PR = "r7"
 
 EXTRA_OECONF = "--with-common-includes=${STAGING_INCDIR} \
                 --with-glib \
-                --with-stderr"
+                --with-qxdm"
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/xmllib;protocol=git;tag=AU_LINUX_ANDROID_JB_2.5.6.04.02.02.093.144"
+SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/xmllib;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 do_unpack_append() {
     import shutil

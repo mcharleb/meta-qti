@@ -1,15 +1,14 @@
 DESCRIPTION = "Qualcomm common include files."
-AUTHOR = "Gene W. Marsh <gmarsh@codeaurora.org"
+AUTHOR = "Gene W. Marsh <gmarsh@qti.qualcomm.com>"
 
-LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://../COPYING.MIT;md5=838c366f69b72c5df05c96dff79b35f2"
+LICENSE = "QUALCOMM-Proprietary"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PROVIDES += "common"
 PN = "qcom-common"
 PR = "r0"
 
-SRC_URI = "git://git.quicinc.com:29418/platform/vendor/qcom-proprietary/ship/common;protocol=ssh;tag=AU_LINUX_ANDROID_JB_2.5.6.04.02.02.093.144"
-SRC_URI += "file://COPYING.MIT"
+SRC_URI = "git://git.quicinc.com:29418/platform/vendor/qcom-proprietary/ship/common;protocol=ssh;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 PACKAGES = "${PN}"
 

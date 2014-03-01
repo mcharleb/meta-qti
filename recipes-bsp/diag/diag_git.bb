@@ -7,10 +7,10 @@ DEPENDS += "common glib-2.0 android-tools"
 
 PV = "1.0"
 PR = "r7"
-SRC_URI = "git://git.quicinc.com:29418/platform/vendor/qcom-proprietary/ship/diag;protocol=ssh;tag=AU_LINUX_ANDROID_JB_2.5.6.04.02.02.093.144"
+SRC_URI = "git://git.quicinc.com:29418/platform/vendor/qcom-proprietary/ship/diag;protocol=ssh;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://chgrp-diag"
 PACKAGES = "${PN}"
-SRCREV = "AU_LINUX_ANDROID_JB_2.5.6.04.02.02.093.144"
+SRCREV = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 EXTRA_OECONF += "--with-glib --with-common-includes=${STAGING_INCDIR}"
 

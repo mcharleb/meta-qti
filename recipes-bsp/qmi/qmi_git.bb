@@ -9,13 +9,15 @@ PR = "r10"
 
 DEPENDS = "configdb diag"
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/qmi;protocol=git;tag=AU_LINUX_ANDROID_JB_2.5.6.04.02.02.093.144"
+SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/qmi;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 CFLAGS += "${CFLAGS_EXTRA}"
 CFLAGS_EXTRA_append_arm = " -fforward-propagate"
 
-EXTRA_OECONF = "--with-stderr \
-                --with-common-includes=${STAGING_INCDIR}"
+EXTRA_OECONF = "--with-qxdm \
+                --with-common-includes=${STAGING_INCDIR} \
+		DIAG_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/diag \
+		"
 
 EXTRA_OECONF_append_msm8960 = " --enable-auto-answer=yes"
 

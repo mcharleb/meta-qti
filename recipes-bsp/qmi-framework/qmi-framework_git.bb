@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 
 PR = "r6"
 
-SRC_URI = "git://git.quicinc.com:29418/platform/vendor/qcom-proprietary/ship/qmi-framework;protocol=ssh;tag=AU_LINUX_ANDROID_JB_2.5.6.04.02.02.093.144"
+SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/qmi-framework;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://start_irsc_util"
 
 DEPENDS = "qmi"
