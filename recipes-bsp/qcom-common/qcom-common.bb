@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 
 PROVIDES += "common"
 PN = "qcom-common"
+PV = "1.0"
 PR = "r0"
 
 SRC_URI = "git://git.quicinc.com:29418/platform/vendor/qcom-proprietary/ship/common;protocol=ssh;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"

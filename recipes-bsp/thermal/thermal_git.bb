@@ -5,6 +5,9 @@ SECTION = "base"
 LICENSE = "QUALCOMM-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
+inherit qti_proprietary_binary
+
+PV = "1.0"
 PR = "r4"
 
 SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/thermal;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
