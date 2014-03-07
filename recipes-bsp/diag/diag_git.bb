@@ -20,7 +20,7 @@ EXTRA_OECONF += "--with-glib --with-common-includes=${STAGING_INCDIR}"
 INITSCRIPT_NAME = "chgrp-diag"
 INITSCRIPT_PARAMS = "start 15 2 3 4 5 ."
 
-inherit autotools update-rc.d
+inherit autotools qr-update-rc.d
 
 do_install_append() {
     install -m 0755 ${WORKDIR}/chgrp-diag -D ${D}${sysconfdir}/init.d/chgrp-diag

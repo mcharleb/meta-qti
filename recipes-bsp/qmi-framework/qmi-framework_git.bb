@@ -26,7 +26,7 @@ BASEMACHINE = "${@d.getVar('MACHINE', True).replace('-perf', '')}"
 INITSCRIPT_NAME = "init_irsc_util"
 INITSCRIPT_PARAMS = "start 29 2 3 4 5 . stop 71 0 1 6 ."
 
-inherit update-rc.d
+inherit qr-update-rc.d
 
 do_unpack_append() {
     import shutil
