@@ -9,7 +9,7 @@ PN = "qcom-common"
 PV = "1.0"
 PR = "r0"
 
-SRC_URI = "git://git.quicinc.com:29418/platform/vendor/qcom-proprietary/ship/common;protocol=ssh;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/common;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 PACKAGES = "${PN}"
 

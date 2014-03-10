@@ -43,7 +43,6 @@ do_install_append() {
 }
 
 pkg_postinst_qmi-framework () {
-          [ -n "$D" ] && OPT="-r $D" || OPT="-s"
-          update-rc.d $OPT -f ${INITSCRIPT_NAME} remove
-          update-rc.d $OPT ${INITSCRIPT_NAME} ${INITSCRIPT_PARAMS}
+          update-rc.d -f ${INITSCRIPT_NAME} remove
+          update-rc.d ${INITSCRIPT_NAME} ${INITSCRIPT_PARAMS}
 }
