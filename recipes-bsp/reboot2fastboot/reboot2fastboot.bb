@@ -10,13 +10,14 @@ PN = "reboot2fastboot"
 
 PROVIDES = "reboot2fastboot"
 
-#PACKAGE_ARCH = "armhf"
+FILES_{PN} += "${prefix}/share/reboot2fastboot/NOTICE"
 
 SRC_URI += "file://configure.ac \
 	    file://Makefile.am \
             file://reboot2fastboot.c \
             file://__rfastboot.S \
             file://COPYING \
+	    file://NOTICE \
 	    "
 
 
@@ -36,3 +37,7 @@ do_unpack_append() {
     shutil.copy(wd+'/COPYING', s)
 }
 
+do_install_append() {
+    install -d ${D}${prefix}/share/reboot2fastboot
+    install ${WORKDIR}/NOTICE ${D}${prefix}/share/reboot2fastboot/NOTICE
+}
