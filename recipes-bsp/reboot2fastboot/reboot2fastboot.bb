@@ -33,7 +33,6 @@ do_unpack_append() {
     shutil.copy(wd+'/Makefile.am', s)
     shutil.copy(wd+'/reboot2fastboot.c', s)
     shutil.copy(wd+'/__rfastboot.S', s)
-    shutil.copy(wd+'/COPYING', s)
 }
 
 do_install_append() {
