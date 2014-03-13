@@ -1,0 +1,28 @@
+From 2aa268854794b808bc4ed8e7c72c01385683c6c7 Mon Sep 17 00:00:00 2001
+From: Rahul Anand <ranand@qti.qualcomm.com>
+Date: Thu, 13 Mar 2014 16:28:29 -0700
+Subject: [PATCH] init script mods to correctly call start-stop-daemon
+
+start-stop-daemon requires -S -b -x instead of -S -b -a as in this file
+
+Change-Id: I29fa3a21d09e1259320cd3cfeb05a1dd23319547
+---
+ start_thermald_le |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/start_thermald_le b/start_thermald_le
+index 51cf08b..d37b122 100755
+--- a/start_thermald_le
++++ b/start_thermald_le
+@@ -10,7 +10,7 @@ set -e
+ case "$1" in
+   start)
+         echo -n "Starting thermald: "
+-        start-stop-daemon -S -b -a /usr/bin/thermald
++        start-stop-daemon -S -b -x /usr/bin/thermald
+         echo "done"
+         ;;
+   stop)
+-- 
+1.7.9.5
+
