@@ -11,7 +11,6 @@ PACKAGES = "${PN}"
 SRCREV = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 inherit autotools
-inherit qti_proprietary_binary
 
 do_unpack_append() {
     import shutil

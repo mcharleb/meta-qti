@@ -1,4 +1,4 @@
-inherit autotools qti_proprietary_binary
+inherit autotools
 
 DESCRIPTION = "reboot2fastboot causes target system to reboot into fastboot mode."
 LICENSE = "QUALCOMM-Proprietary"
@@ -16,7 +16,6 @@ SRC_URI += "file://configure.ac \
 	    file://Makefile.am \
             file://reboot2fastboot.c \
             file://__rfastboot.S \
-            file://COPYING \
 	    file://NOTICE \
 	    "
 

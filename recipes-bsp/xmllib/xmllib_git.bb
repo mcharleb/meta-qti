@@ -5,8 +5,6 @@ HOMEPAGE = "http://support.cdmatech.com"
 LICENSE = "QUALCOMM-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
-inherit qti_proprietary_binary
-
 DEPENDS = "common diag glib-2.0"
 PV = "1.0"
 PR = "r7"
@@ -19,7 +17,8 @@ SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/xmllib;pr
 
 do_unpack_append() {
     import shutil
-    import os
+    import os.path
+
     s = d.getVar('S', True)
     wd = d.getVar('WORKDIR',True)
     if os.path.exists(s):
