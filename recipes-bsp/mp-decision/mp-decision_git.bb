@@ -7,12 +7,19 @@ PV = "1.0"
 PR = "r6"
 SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/mp-decision;protocol=git"
 SRC_URI += "file://0001-Assignment-of-O2-changed-to-to-remove-warnings.patch"
+SRC_URI += "file://0001-Add-init-script-start_mpdecision.patch"
+
 PACKAGES = "${PN}"
-SRCREV_som8064 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-SRCREV_liquid8064 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-SRCREV_ifc6410 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.116"
+SRCREV = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 inherit autotools
+
+INITSCRIPT_NAME = "mpdecision"
+INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
+
+inherit qr-update-rc.d
 
 do_unpack_append() {
     import shutil
@@ -25,7 +32,7 @@ do_unpack_append() {
 }
 
 do_install_append() {
-   bbnote "Doing do_install: ${WORKDIR} ${D} ${S} ${IMAGE_ROOTFS}"
+       install -m 0755 ${S}/start_mpdecision -D ${D}${sysconfdir}/init.d/mpdecision
 }
 
 # The mpdecision package contains symlinks that trip up insane

@@ -1,0 +1,52 @@
+From eb7937cd238b52cf9fef98d17a5a24ad5e504ec5 Mon Sep 17 00:00:00 2001
+From: Rahul Anand <ranand@qti.qualcomm.com>
+Date: Thu, 13 Mar 2014 17:38:53 -0700
+Subject: [PATCH] Add init script start_mpdecision
+
+Change-Id: I0b6224c8b51b072899cb18cdd76d85839aa33d1c
+---
+ start_mpdecision |   31 ++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+ create mode 100644 start_mpdecision
+
+diff --git a/start_mpdecision b/start_mpdecision
+new file mode 100644
+index 0000000..9e8e6aa
+--- /dev/null
++++ b/start_mpdecision
+@@ -0,0 +1,31 @@
++#! /bin/sh
++#
++#Copyright (c) 2013 Qualcomm Technologies, Inc.  All Rights Reserved.
++#Qualcomm Technologies Proprietary and Confidential.
++
++# mpdecision        init.d script to start mpdecision
++
++set -e
++
++case "$1" in
++  start)
++        echo -n "Starting mpdecision: "
++        start-stop-daemon -S -b -x /usr/bin/mpdecision
++        echo "done"
++        ;;
++  stop)
++        echo -n "Stopping mpdecision: "
++        start-stop-daemon -K -n mpdecision
++        echo "done"
++        ;;
++  restart)
++        $0 stop
++        $0 start
++        ;;
++  *)
++        echo "Usage thermald { start | stop | restart}" >&2
++        exit 1
++        ;;
++esac
++
++exit 0
+
+-- 
+1.7.9.5
+
