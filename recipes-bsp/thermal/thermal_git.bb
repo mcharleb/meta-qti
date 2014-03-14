@@ -9,6 +9,7 @@ PV = "1.0"
 PR = "r4"
 
 SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/thermal;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRC_URI += "file://0001-init-script-mods-to-correctly-call-start-stop-daemon.patch"
 
 DEPENDS = "qmi-framework glib-2.0"
 
