@@ -1,3 +1,3 @@
 
 PACKAGE_GROUP_boot = "lk"
-IMAGE_FEATURES += "boot" 
+IMAGE_FEATURES_som8064 += "boot" 
