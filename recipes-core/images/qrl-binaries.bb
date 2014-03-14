@@ -30,7 +30,6 @@ EXTRA_IMAGECMD_ext4 += "-O ^has_journal -i 8192"
 inherit image_types
 
 copy_packages() {
-  echo "Copying packages..."
   if [ -e ${DEPLOY_DIR}/persist/${MACHINE} ]; then
     install -m 644 ${DEPLOY_DIR}/persist/${MACHINE}/* ${IMAGE_ROOTFS}
   fi
@@ -49,9 +48,8 @@ copy_packages() {
 IMAGE_PREPROCESS_COMMAND = "copy_packages"
 
 copy_image() {
-	     
-  echo "Copying image..."
-  cp ${DEPLOY_DIR_IMAGE}/${PN}-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/persist.img
+  install -d ${DEPLOY_DIR_IMAGE}/out
+  cp ${DEPLOY_DIR_IMAGE}/${PN}-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/out/persist.img
 }
 
 IMAGE_POSTPROCESS_COMMAND = "copy_image"
