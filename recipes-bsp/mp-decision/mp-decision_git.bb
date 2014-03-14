@@ -5,10 +5,12 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${L
 
 PV = "1.0"
 PR = "r6"
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/mp-decision;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/mp-decision;protocol=git"
 SRC_URI += "file://0001-Assignment-of-O2-changed-to-to-remove-warnings.patch"
 PACKAGES = "${PN}"
-SRCREV = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRCREV_som8064 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRCREV_liquid8064 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRCREV_ifc6410 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.116"
 
 inherit autotools
 
