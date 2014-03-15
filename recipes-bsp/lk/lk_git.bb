@@ -51,7 +51,8 @@ do_install() {
 FILES_${PN} = "/usr/share/lk/NOTICE"
 
 do_deploy () {
-        install ${S}/build-${MY_TARGET}/${BOOTLOADER_NAME}.{mbn,raw} ${DEPLOYDIR}
+	install -d ${DEPLOYDIR}/out
+        install ${S}/build-${MY_TARGET}/${BOOTLOADER_NAME}.mbn ${DEPLOYDIR}/out
 }
 
 do_deploy[dirs] = "${S} ${DEPLOYDIR}"
