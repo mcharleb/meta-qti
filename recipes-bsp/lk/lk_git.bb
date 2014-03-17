@@ -14,7 +14,7 @@ SRC_URI  = "git://codeaurora.org/kernel/lk;protocol=git;tag=AU_LINUX_ANDROID_JB_
 	 file://0103-SOM-Carrier-RevB-board-serial-port-rework-fix-with-L.patch \
 	 file://0104-SOM-UART_4wire-on-GSBI1-as-default-serial-port.patch"
 
-PR       = "1.0"
+PV       = "1.0"
 PR       = "r9"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
