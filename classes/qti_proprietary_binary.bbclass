@@ -3,7 +3,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3
 # For non-opensource packages, we can't install them into the rootfs.
 # We need to copy them into a pre-defined output directory where they
 # will get picked up and packaged for release through regular channels
-QTI_BINARY_PKG_LOC = "/images/${MACHINE}/qcom-proprietary"
+QTI_BINARY_PKG_LOC = "/images/${MACHINE}/deb"
 
 do_package_write_deb_append() {
     import shutil

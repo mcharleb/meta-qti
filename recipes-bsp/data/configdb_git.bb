@@ -20,6 +20,7 @@ EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
 		DSUTILS_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/dsutils \
 		GLIB_CFLAGS='-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/glib-2.0 -I${PKG_CONFIG_SYSROOT_DIR}/usr/lib/glib-2.0/include' \
 		"
+inherit qti_proprietary_binary
 
 do_unpack_append() {
     import shutil

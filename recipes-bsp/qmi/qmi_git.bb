@@ -27,6 +27,7 @@ INITSCRIPT_NAME = "qmuxd"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
 
 inherit qr-update-rc.d
+inherit qti_proprietary_binary
 
 do_unpack_append() {
     import shutil
