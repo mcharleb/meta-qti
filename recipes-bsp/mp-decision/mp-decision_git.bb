@@ -8,6 +8,7 @@ PR = "r6"
 SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/mp-decision;protocol=git"
 SRC_URI += "file://0001-Assignment-of-O2-changed-to-to-remove-warnings.patch"
 SRC_URI += "file://0001-Add-init-script-start_mpdecision.patch"
+SRC_URI += "file://mpdecision.conf"
 
 PACKAGES = "${PN}"
 SRCREV_som8064 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"	
@@ -36,7 +37,7 @@ do_unpack_append() {
 }
 
 do_install_append() {
-       install -m 0755 ${S}/start_mpdecision -D ${D}${sysconfdir}/init.d/mpdecision
+       install -m 0755 ${WORKDIR}/mpdecision.conf -D ${D}${sysconfdir}/init/mpdecision.conf
 }
 
 # The mpdecision package contains symlinks that trip up insane

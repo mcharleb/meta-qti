@@ -10,6 +10,9 @@ PR = "r4"
 
 SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/thermal;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://0001-init-script-mods-to-correctly-call-start-stop-daemon.patch"
+SRC_URI += "file://thermald.conf"
+SRC_URI += "file://thermald-8064.conf"
+SRC_URI += "file://thermald-8064ab.conf"
 
 DEPENDS = "qmi-framework glib-2.0"
 
@@ -36,6 +39,7 @@ do_unpack_append() {
 }
 
 do_install_append() {
-       install -m 0755 ${S}/start_thermald_le -D ${D}${sysconfdir}/init.d/thermald
-       install -m 0755 ${S}/thermald-8064.conf -D ${D}${sysconfdir}/thermald.conf
+       install -m 0755 ${WORKDIR}/thermald.conf -D ${D}${sysconfdir}/init/thermald.conf
+       install -m 0755 ${WORKDIR}/thermald-8064.conf -D ${D}${sysconfdir}/thermald-8064.conf
+       install -m 0755 ${WORKDIR}/thermald-8064ab.conf -D ${D}${sysconfdir}/thermald-8064ab.conf
 }
