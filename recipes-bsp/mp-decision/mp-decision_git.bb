@@ -24,8 +24,6 @@ inherit qti_proprietary_binary
 INITSCRIPT_NAME = "mpdecision"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
 
-inherit qr-update-rc.d
-
 do_unpack_append() {
     import shutil
     import os
