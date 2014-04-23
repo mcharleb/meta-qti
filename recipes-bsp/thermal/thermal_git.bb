@@ -9,7 +9,8 @@ PV = "1.0"
 PR = "r4"
 
 SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/thermal;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-SRC_URI += "file://0001-init-script-mods-to-correctly-call-start-stop-daemon.patch"
+# The following is a candidate AU from JB2.6, but it didn't link because of QMI issues.
+#SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/thermal;protocol=git;tag=AU_LINUX_ANDROID_JB_2.6.1.04.03.00.121.115"
 SRC_URI += "file://thermald.conf"
 SRC_URI += "file://thermald-8064.conf"
 SRC_URI += "file://thermald-8064ab.conf"
@@ -17,7 +18,7 @@ SRC_URI += "file://thermald-8064ab.conf"
 DEPENDS = "qmi-framework glib-2.0"
 
 EXTRA_OECONF = "--with-glib \
-     	        QMI_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/qmi \
+    	        QMI_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/qmi \
      	        QMIF_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/qmi-framework \
 		GLIB_CFLAGS='-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/glib-2.0 -I${PKG_CONFIG_SYSROOT_DIR}/usr/lib/glib-2.0/include' \
 		"
@@ -41,4 +42,13 @@ do_install_append() {
        install -m 0755 ${WORKDIR}/thermald.conf -D ${D}${sysconfdir}/init/thermald.conf
        install -m 0755 ${WORKDIR}/thermald-8064.conf -D ${D}${sysconfdir}/thermald-8064.conf
        install -m 0755 ${WORKDIR}/thermald-8064ab.conf -D ${D}${sysconfdir}/thermald-8064ab.conf
+}
+
+pkg_postinst_thermal() {
+   start thermald
+}
+
+pkg_prerm_thermal() {
+   stop thermald
+   echo "Stopped thermald if necessary"
 }

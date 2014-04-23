@@ -13,7 +13,7 @@ SRC_URI += "file://mpdecision.conf"
 PACKAGES = "${PN}"
 SRCREV_som8064 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"	
 SRCREV_liquid8064 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-SRCREV_ifc6410 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"	
+SRCREV_ifc6410 = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.181"	
 
 
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
@@ -40,3 +40,13 @@ do_install_append() {
 
 # The mpdecision package contains symlinks that trip up insane
 INSANE_SKIP_${PN} = "dev-so"
+
+pkg_postinst_mp-decision() {
+   start mpdecision
+}
+
+pkg_prerm_mp-decision() {
+   stop mpdecision
+   echo "Stopped mpdecision if necessary"
+}
+
