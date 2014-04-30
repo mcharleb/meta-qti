@@ -23,6 +23,8 @@ DEPENDS += " \
 	thermal \
 	xmllib \
 	reboot2fastboot \
+	btnvtool \
+	hci-qcomm-init \
 "
 
 EXTRA_IMAGECMD_ext4 += "-O ^has_journal -i 8192"
@@ -43,6 +45,7 @@ copy_packages() {
   install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/thermal_1.0-r4_armhf.deb ${IMAGE_ROOTFS}/deb
   install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libxml0_1.0-r7_armhf.deb ${IMAGE_ROOTFS}/deb
   install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/reboot2fastboot_1.0-r0_armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/hci-qcomm-init_1.0-r1_armhf.deb ${IMAGE_ROOTFS}/deb
 }
 
 IMAGE_PREPROCESS_COMMAND = "copy_packages"

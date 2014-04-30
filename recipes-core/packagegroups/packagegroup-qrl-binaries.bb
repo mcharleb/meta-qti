@@ -18,6 +18,8 @@ RDEPENDS_packagegroup-qrl-binaries = " \
 	thermal \
 	xmllib \
 	reboot2fastboot \
+	btnvtool \
+	hci-qcomm-init \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

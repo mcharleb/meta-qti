@@ -1,0 +1,130 @@
+From b964dd60d740914fee05231ce75beaae713a3a3e Mon Sep 17 00:00:00 2001
+From: Simon Teplitsky <simont@qti.qualcomm.com>
+Date: Tue, 29 Oct 2013 19:30:13 -0700
+Subject: =?UTF-8?q?Committing=20this=20so=20that=20I=20can=20create=20a=20?=
+ =?UTF-8?q?patch.=0A=09modified:=20=20=20Makefile=0A=09modified:=20=20=20b?=
+ =?UTF-8?q?thci=5Fqcomm=5Flinux.cpp=0A=09modified:=20=20=20bthci=5Fqcomm?=
+ =?UTF-8?q?=5Flinux=5Fuart.c=0A=09modified:=20=20=20btqsocnvmplatform=5Fli?=
+ =?UTF-8?q?nux.c=0A=09new=20file:=20=20=20inc/armasm.h=0A=09new=20file:=20?=
+ =?UTF-8?q?=20=20inc/comdef.h=0A=09new=20file:=20=20=20inc/common=5Flog.h?=
+ =?UTF-8?q?=0A=09new=20file:=20=20=20inc/customer.h=0A=09new=20file:=20=20?=
+ =?UTF-8?q?=20inc/rex.h=0A=09new=20file:=20=20=20inc/stringl.h=0A=09new=20?=
+ =?UTF-8?q?file:=20=20=20inc/target.h?=
+
+---
+ bthci_qcomm_linux.cpp     |   18 +-
+ bthci_qcomm_linux_uart.c  |   10 +-
+ btqsocnvmplatform_linux.c |   10 +
+ 3 files changed,  33 insertions(+), 5 deletions(-)
+
+diff --git a/bthci_qcomm_linux.cpp b/bthci_qcomm_linux.cpp
+index ef1b8b7..2b69a69 100755
+--- a/bthci_qcomm_linux.cpp
++++ b/bthci_qcomm_linux.cpp
+@@ -62,7 +62,11 @@ All Rights Reserved. Qualcomm Technologies Proprietary and Confidential.
+ #include <sys/ioctl.h>
+ #include <time.h>
+ #include <termios.h>
++
++#warning "*** QCOM Kau Fix **"
++#ifdef ANDROID
+ #include <cutils/properties.h>
++#endif
+ 
+ #include "comdef.h"
+ #include "bthci_qcomm.h"
+@@ -155,7 +159,7 @@ char *path_to_binary = NULL;
+ char *path_to_override = NULL;
+ 
+ /* Variables to identify the platform */
+-bt_hci_transport_device_type bt_hci_transport_device;
++extern bt_hci_transport_device_type bt_hci_transport_device;
+ #ifdef BT_QSOC_HCI_DEVICE
+ const char *device_name = BT_QSOC_HCI_DEVICE;
+ #else
+@@ -568,10 +572,14 @@ boolean bt_hci_qcomm_pfal_get_bdaddress ( uint8 *pCmdBuffer )
+ 
+ bt_qsoc_enum_wlan_type bt_hci_qcomm_pfal_get_wlan_type( void )
+ {
++#ifdef ANDROID
+   static char ath6kl_supported[PROPERTY_VALUE_MAX];
++#endif
+   bt_qsoc_enum_wlan_type rval = BT_QSOC_WLAN_DEFAULT;
+ 
+-  property_get("wlan.driver.ath", ath6kl_supported, 0);
++#warning "** KAU no use property **"
++#ifdef ANDROID
++  /*property_get("wlan.driver.ath", ath6kl_supported, 0);
+ 
+   if(*ath6kl_supported == '1')
+   {
+@@ -580,7 +588,11 @@ bt_qsoc_enum_wlan_type bt_hci_qcomm_pfal_get_wlan_type( void )
+   else
+   {
+     rval = BT_QSOC_WLAN_LIBRA;
+-  }
++  }*/
++#else
++  /* For Clarence-Linux */
++  rval = BT_QSOC_WLAN_LIBRA;
++#endif
+ 
+   fprintf(stderr, "bt_hci_qcomm_pfal_get_wlan_type: %d\n", rval);
+   fflush (stderr);
+diff --git a/bthci_qcomm_linux_uart.c b/bthci_qcomm_linux_uart.c
+index 4e4b2df..12f60dd 100644
+--- a/bthci_qcomm_linux_uart.c
++++ b/bthci_qcomm_linux_uart.c
+@@ -161,8 +161,9 @@ extern uint32 starting_baud;    /* JMF: shoddy global */
+ #define APPS_RIVA_BT_ACL_CH  "/dev/smd2"
+ #define APPS_RIVA_BT_CMD_CH  "/dev/smd3"
+ 
++#ifdef ANDROID
+ static char transport_type[PROPERTY_VALUE_MAX];
+-
++#endif
+ 
+ /*===========================================================================
+ FUNCTION   bt_hci_set_transport
+@@ -205,12 +206,17 @@ bt_hci_transport_device_type bt_hci_set_transport
+         bt_hci_transport_device.pkt_ind = 0;
+     }
+ #else
+-    //TODO: Currently on non-Android linux platforms,
++    /*//TODO: Currently on non-Android linux platforms,
+     //transport defualted to UART. For supporting above transports,
+     //platform specific changes need to be ported.
+     bt_hci_transport_device.type = BT_HCI_UART;
+     bt_hci_transport_device.name = BT_HS_UART_DEVICE;
+     bt_hci_transport_device.pkt_ind = 0;
++    */
++	/* For Clarence-Linux: RIVA SMD in WCN3660 */
++        bt_hci_transport_device.type = BT_HCI_SMD;
++        bt_hci_transport_device.name = APPS_RIVA_BT_CMD_CH;
++        bt_hci_transport_device.pkt_ind = 1;
+ #endif
+ 
+     return bt_hci_transport_device;
+diff --git a/btqsocnvmplatform_linux.c b/btqsocnvmplatform_linux.c
+index 522ecfa..a599fd1 100755
+--- a/btqsocnvmplatform_linux.c
++++ b/btqsocnvmplatform_linux.c
+@@ -158,7 +158,17 @@ char * filename
+ 
+   if (firmware_file_name != NULL)
+   {
++#ifdef ANDROID
+      strlcpy(filename, firmware_file_name, FILENAME_LENGTH_MAX);
++#else
++     /* For Clarence-Linux: 
++	GNU C lib doesnt have strlcpy routine
++        replacing it with strncpy
++      */
++     strncpy(filename, firmware_file_name, FILENAME_LENGTH_MAX);
++     filename[FILENAME_LENGTH_MAX-1]='\0';
++#endif
++
+      return_status = TRUE;
+   }
+   return return_status;
+
