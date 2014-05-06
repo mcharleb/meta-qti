@@ -10,8 +10,6 @@ PR = "r10"
 
 DEPENDS = "configdb diag"
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/qmi;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-
 CFLAGS += "${CFLAGS_EXTRA}"
 CFLAGS_EXTRA_append_arm = " -fforward-propagate"
 
@@ -27,7 +25,7 @@ INITSCRIPT_NAME = "qmuxd"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
 
 inherit qr-update-rc.d
-inherit qti_proprietary_binary
+inherit qti-proprietary-binary repo-source
 
 do_unpack_append() {
     import shutil

@@ -8,9 +8,11 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 DEPENDS = "common diag glib-2.0"
 PV = "1.0"
 PR = "r6"
-inherit qti_proprietary_binary
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/data;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRC_DIR = "${COREBASE}/../data"
+
+inherit qti-proprietary-binary repo-source
+
 
 EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
                 --with-common-includes=${STAGING_INCDIR} \

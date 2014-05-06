@@ -3,7 +3,7 @@ LICENSE = "QUALCOMM-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 PR = "r0"
 
-inherit packagegroup qti_proprietary_binary
+inherit packagegroup qti-proprietary-binary
 
 PROVIDES = "${PACKAGES}"
 PACKAGES = "packagegroup-qrl-binaries"

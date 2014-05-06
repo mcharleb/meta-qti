@@ -7,10 +7,9 @@ DEPENDS += "common glib-2.0 android-tools"
 
 PV = "1.0"
 PR = "r7"
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/diag;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+
 SRC_URI += "file://chgrp-diag"
 PACKAGES = "${PN}"
-SRCREV = "AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 EXTRA_OECONF += "--with-glib --with-common-includes=${STAGING_INCDIR}"
 
@@ -18,11 +17,7 @@ EXTRA_OECONF += "--with-glib --with-common-includes=${STAGING_INCDIR}"
 INITSCRIPT_NAME = "chgrp-diag"
 INITSCRIPT_PARAMS = "start 15 2 3 4 5 ."
 
-inherit autotools qr-update-rc.d
-
-do_install_append() {
-    install -m 0755 ${WORKDIR}/chgrp-diag -D ${D}${sysconfdir}/init.d/chgrp-diag
-}
+inherit autotools qr-update-rc.d qti-proprietary-binary repo-source
 
 do_unpack_append() {
     import shutil
@@ -32,4 +27,8 @@ do_unpack_append() {
     if os.path.exists(s):
         shutil.rmtree(s)
     shutil.move(wd+'/git', s)
+}
+
+do_install_append() {
+    install -m 0755 ${WORKDIR}/chgrp-diag -D ${D}${sysconfdir}/init.d/chgrp-diag
 }

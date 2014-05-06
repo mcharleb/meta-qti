@@ -13,9 +13,7 @@ EXTRA_OECONF = "--with-common-includes=${STAGING_INCDIR} \
                 --with-glib \
                 --with-qxdm"
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/xmllib;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-
-inherit qti_proprietary_binary
+inherit qti-proprietary-binary repo-source
 
 do_unpack_append() {
     import shutil

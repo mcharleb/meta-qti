@@ -21,7 +21,7 @@ SRC_URI += "file://configure.ac \
 
 
 #EXTRA_OECONF = "--host=${ELT_TARGET_PREFIX}"
-inherit qti_proprietary_binary
+inherit qti-proprietary-binary
 
 do_unpack_append() {
     import shutil

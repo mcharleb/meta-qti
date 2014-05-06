@@ -9,7 +9,7 @@ DEPENDS = "common dsutils diag xmllib glib-2.0"
 PV = "1.0"
 PR = "r6"
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/data;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+SRC_DIR = "${COREBASE}/../data"
 
 EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
                 --with-common-includes=${STAGING_INCDIR} \
@@ -20,7 +20,7 @@ EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
 		DSUTILS_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/dsutils \
 		GLIB_CFLAGS='-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/glib-2.0 -I${PKG_CONFIG_SYSROOT_DIR}/usr/lib/glib-2.0/include' \
 		"
-inherit qti_proprietary_binary
+inherit qti-proprietary-binary repo-source
 
 do_unpack_append() {
     import shutil

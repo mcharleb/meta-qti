@@ -5,13 +5,12 @@ LICENSE = "QUALCOMM-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PROVIDES += "common"
-PN = "qcom-common"
 PV = "1.0"
 PR = "r0"
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/ship/common;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-
 PACKAGES = "${PN}"
+
+inherit repo-source
 
 do_unpack_append() {
     import shutil

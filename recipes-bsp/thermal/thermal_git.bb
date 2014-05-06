@@ -8,9 +8,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r4"
 
-SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/thermal;protocol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-# The following is a candidate AU from JB2.6, but it didn't link because of QMI issues.
-#SRC_URI = "git://git.quicinc.com/platform/vendor/qcom-proprietary/thermal;protocol=git;tag=AU_LINUX_ANDROID_JB_2.6.1.04.03.00.121.115"
 SRC_URI += "file://thermald.conf"
 SRC_URI += "file://thermald-8064.conf"
 SRC_URI += "file://thermald-8064ab.conf"
@@ -26,7 +23,7 @@ EXTRA_OECONF = "--with-glib \
 INITSCRIPT_NAME = "thermald"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
 
-inherit qti_proprietary_binary
+inherit qti-proprietary-binary repo-source
 
 do_unpack_append() {
     import shutil
