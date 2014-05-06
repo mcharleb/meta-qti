@@ -9,11 +9,13 @@ DEPENDS = "common diag glib-2.0"
 PV = "1.0"
 PR = "r7"
 
+SRC_URI = "git://${COREBASE}/../${PN};protcol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+
 EXTRA_OECONF = "--with-common-includes=${STAGING_INCDIR} \
                 --with-glib \
                 --with-qxdm"
 
-inherit qti-proprietary-binary repo-source
+inherit qti-proprietary-binary
 
 do_unpack_append() {
     import shutil

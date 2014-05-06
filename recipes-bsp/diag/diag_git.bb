@@ -8,16 +8,16 @@ DEPENDS += "common glib-2.0 android-tools"
 PV = "1.0"
 PR = "r7"
 
+SRC_URI = "git://${COREBASE}/../diag;protocol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://chgrp-diag"
 PACKAGES = "${PN}"
 
 EXTRA_OECONF += "--with-glib --with-common-includes=${STAGING_INCDIR}"
 
-
 INITSCRIPT_NAME = "chgrp-diag"
 INITSCRIPT_PARAMS = "start 15 2 3 4 5 ."
 
-inherit autotools qr-update-rc.d qti-proprietary-binary repo-source
+inherit autotools qr-update-rc.d qti-proprietary-binary
 
 do_unpack_append() {
     import shutil

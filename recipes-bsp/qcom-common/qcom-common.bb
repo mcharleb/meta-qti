@@ -10,7 +10,7 @@ PR = "r0"
 
 PACKAGES = "${PN}"
 
-inherit repo-source
+SRC_URI = "git://${COREBASE}/../${PN};protocol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 do_unpack_append() {
     import shutil

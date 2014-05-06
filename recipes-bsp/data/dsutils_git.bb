@@ -9,9 +9,9 @@ DEPENDS = "common diag glib-2.0"
 PV = "1.0"
 PR = "r6"
 
-SRC_DIR = "${COREBASE}/../data"
+SRC_URI = "git://${COREBASE}/../data;protocol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
-inherit qti-proprietary-binary repo-source
+inherit qti-proprietary-binary
 
 
 EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \

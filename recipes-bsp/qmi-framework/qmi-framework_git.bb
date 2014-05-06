@@ -5,9 +5,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r6"
 
+SRC_URI = "git://${COREBASE}/../${PN};protcol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://start_irsc_util"
-
-inherit repo-source
 
 DEPENDS = "qmi"
 DEPENDS += "glib-2.0"

@@ -1,4 +1,4 @@
-inherit autotools repo-source
+inherit autotools
 
 DESCRIPTION = "hci_qcomm_init proprietary binary to configure bluetooth"
 SECTION = "base"
@@ -8,6 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r1"
 
+SRC_URI = "git://${COREBASE}/../${PN};protocol=file;tag=AU_LINUX_ANDROID_JB_2.5.04.02.02.40.241"
 SRC_URI += "file://Makefile.am file://configure.ac"
 SRC_URI += "file://0000-hci_qcomm_init-and-btnvtool.patch"
 SRC_URI += "file://bt.init.sh"

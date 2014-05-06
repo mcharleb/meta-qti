@@ -8,6 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r4"
 
+SRC_URI = "git://${COREBASE}/../${PN};protcol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://thermald.conf"
 SRC_URI += "file://thermald-8064.conf"
 SRC_URI += "file://thermald-8064ab.conf"
@@ -23,7 +24,7 @@ EXTRA_OECONF = "--with-glib \
 INITSCRIPT_NAME = "thermald"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
 
-inherit qti-proprietary-binary repo-source
+inherit qti-proprietary-binary
 
 do_unpack_append() {
     import shutil

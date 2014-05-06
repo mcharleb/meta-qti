@@ -9,7 +9,7 @@ DEPENDS = "common dsutils diag xmllib glib-2.0"
 PV = "1.0"
 PR = "r6"
 
-SRC_DIR = "${COREBASE}/../data"
+SRC_URI = "git://${COREBASE}/../data;procotol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
                 --with-common-includes=${STAGING_INCDIR} \
@@ -20,7 +20,7 @@ EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
 		DSUTILS_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/dsutils \
 		GLIB_CFLAGS='-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/glib-2.0 -I${PKG_CONFIG_SYSROOT_DIR}/usr/lib/glib-2.0/include' \
 		"
-inherit qti-proprietary-binary repo-source
+inherit qti-proprietary-binary
 
 do_unpack_append() {
     import shutil

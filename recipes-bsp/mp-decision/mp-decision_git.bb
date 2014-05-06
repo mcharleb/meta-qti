@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${L
 PV = "1.0"
 PR = "r6"
 
+SRC_URI = "git://${COREBASE}/../${PN};protocol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://0001-Assignment-of-O2-changed-to-to-remove-warnings.patch"
 SRC_URI += "file://0001-Add-init-script-start_mpdecision.patch"
 SRC_URI += "file://mpdecision.conf"
@@ -15,7 +16,7 @@ PACKAGES = "${PN}"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 inherit autotools
-inherit qti-proprietary-binary repo-source
+inherit qti-proprietary-binary 
 
 INITSCRIPT_NAME = "mpdecision"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
