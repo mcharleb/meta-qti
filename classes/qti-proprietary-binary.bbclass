@@ -1,4 +1,5 @@
-LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3b58"
+LICENSE          = "QUALCOMM-Proprietary"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 # For non-opensource packages, we can't install them into the rootfs.
 # We need to copy them into a pre-defined output directory where they
