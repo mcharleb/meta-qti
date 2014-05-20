@@ -52,7 +52,7 @@ IMAGE_PREPROCESS_COMMAND = "copy_packages"
 
 copy_image() {
   install -d ${DEPLOY_DIR_IMAGE}/out
-  cp ${DEPLOY_DIR_IMAGE}/${PN}-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/out/persist.img
+  cp ${DEPLOY_DIR_IMAGE}/${PN}-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/out/cache.img
 }
 
 IMAGE_POSTPROCESS_COMMAND = "copy_image"
