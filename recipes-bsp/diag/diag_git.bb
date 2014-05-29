@@ -6,9 +6,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 DEPENDS += "common glib-2.0 android-tools"
 
 PV = "1.0"
-PR = "r7"
+PR = "r0"
 
-SRC_URI = "git://${COREBASE}/../diag;protocol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://chgrp-diag"
 PACKAGES = "${PN}"
 
@@ -19,15 +18,19 @@ INITSCRIPT_PARAMS = "start 15 2 3 4 5 ."
 
 inherit autotools qr-update-rc.d qti-proprietary-binary
 
-do_unpack_append() {
+do_fetch_append() {
     import shutil
     import os
+    src = d.getVar('COREBASE', True)+'/../diag'
     s = d.getVar('S', True)
-    wd = d.getVar('WORKDIR',True)
     if os.path.exists(s):
         shutil.rmtree(s)
-    shutil.move(wd+'/git', s)
+    shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
 }
+
+# We know there's a bunch of installed files that we don't ship
+# so ignore that check
+INSANE_SKIP_${PN} = "installed-vs-shipped"
 
 do_install_append() {
     install -m 0755 ${WORKDIR}/chgrp-diag -D ${D}${sysconfdir}/init.d/chgrp-diag

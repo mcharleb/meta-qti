@@ -36,16 +36,16 @@ copy_packages() {
     install -m 644 ${DEPLOY_DIR}/persist/${MACHINE}/* ${IMAGE_ROOTFS}
   fi
   mkdir -p ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libconfigdb0_1.0-r6_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libdsutils1_1.0-r6_armhf.deb  ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/diag_1.0-r7_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/mp-decision_1.0-r6_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/qmi_1.0-r10_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/qmi-framework_1.0-r6_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/thermal_1.0-r4_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libxml0_1.0-r7_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/reboot2fastboot_1.0-r0_armhf.deb ${IMAGE_ROOTFS}/deb
-  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/hci-qcomm-init_1.0-r1_armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libconfigdb*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libdsutils*armhf.deb  ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/diag*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/mp-decision*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/qmi*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/qmi-framework*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/thermal*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libxml*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/reboot2fastboot*armhf.deb ${IMAGE_ROOTFS}/deb
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/hci-qcomm-init*armhf.deb ${IMAGE_ROOTFS}/deb
 }
 
 IMAGE_PREPROCESS_COMMAND = "copy_packages"

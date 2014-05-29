@@ -10,16 +10,14 @@ PR = "r0"
 
 PACKAGES = "${PN}"
 
-SRC_URI = "git://${COREBASE}/../${PN};protocol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
-
-do_unpack_append() {
+do_fetch_append() {
     import shutil
     import os
+    src = d.getVar('COREBASE', True)+'/../qcom-common'
     s = d.getVar('S', True)
-    wd = d.getVar('WORKDIR',True)
     if os.path.exists(s):
         shutil.rmtree(s)
-    shutil.move(wd+'/git', s)
+    shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
 }
 
 do_install() {

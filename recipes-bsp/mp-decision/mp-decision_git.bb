@@ -4,9 +4,8 @@ LICENSE          = "QUALCOMM-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PV = "1.0"
-PR = "r6"
+PR = "r0"
 
-SRC_URI = "git://${COREBASE}/../${PN};protocol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 SRC_URI += "file://0001-Assignment-of-O2-changed-to-to-remove-warnings.patch"
 SRC_URI += "file://0001-Add-init-script-start_mpdecision.patch"
 SRC_URI += "file://mpdecision.conf"
@@ -21,14 +20,14 @@ inherit qti-proprietary-binary
 INITSCRIPT_NAME = "mpdecision"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
 
-do_unpack_append() {
+do_fetch_append() {
     import shutil
     import os
+    src = d.getVar('COREBASE', True)+'/../mp-decision'
     s = d.getVar('S', True)
-    wd = d.getVar('WORKDIR',True)
     if os.path.exists(s):
         shutil.rmtree(s)
-    shutil.move(wd+'/git', s)
+    shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
 }
 
 do_install_append() {

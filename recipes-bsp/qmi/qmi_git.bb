@@ -6,11 +6,9 @@ LICENSE = "QUALCOMM-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PV = "1.0"
-PR = "r10"
+PR = "r0"
 
 DEPENDS = "configdb diag"
-
-SRC_URI = "git://${COREBASE}/../${PN};protcol=git;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
 
 CFLAGS += "${CFLAGS_EXTRA}"
 CFLAGS_EXTRA_append_arm = " -fforward-propagate"
@@ -29,14 +27,14 @@ INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
 inherit qr-update-rc.d
 inherit qti-proprietary-binary
 
-do_unpack_append() {
+do_fetch_append() {
     import shutil
     import os
+    src = d.getVar('COREBASE', True)+'/../qmi'
     s = d.getVar('S', True)
-    wd = d.getVar('WORKDIR',True)
     if os.path.exists(s):
         shutil.rmtree(s)
-    shutil.move(wd+'/git', s)
+    shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
 }
 
 do_install_append() {

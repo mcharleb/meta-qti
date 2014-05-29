@@ -7,9 +7,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 
 DEPENDS = "common dsutils diag xmllib glib-2.0"
 PV = "1.0"
-PR = "r6"
-
-SRC_URI = "git://${COREBASE}/../data;procotol=file;tag=AU_LINUX_BASE_HORSESHOE_TARGET_ALL.04.00.189"
+PR = "r0"
 
 EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
                 --with-common-includes=${STAGING_INCDIR} \
@@ -22,12 +20,12 @@ EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
 		"
 inherit qti-proprietary-binary
 
-do_unpack_append() {
+do_fetch_append() {
     import shutil
     import os
+    src = d.getVar('COREBASE', True)+'/../data/configdb'
     s = d.getVar('S', True)
-    wd = d.getVar('WORKDIR',True)
     if os.path.exists(s):
         shutil.rmtree(s)
-    shutil.move(wd+'/git/configdb', s)
+    shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
 }
