@@ -37,10 +37,6 @@ do_install_append() {
 # The mpdecision package contains symlinks that trip up insane
 INSANE_SKIP_${PN} = "dev-so"
 
-pkg_postinst_mp-decision() {
-   start mpdecision
-}
-
 pkg_prerm_mp-decision() {
    stop mpdecision
    echo "Stopped mpdecision if necessary"

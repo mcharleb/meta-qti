@@ -12,6 +12,8 @@ SRC_URI += "file://thermald.conf"
 SRC_URI += "file://thermald-8064.conf"
 SRC_URI += "file://thermald-8064ab.conf"
 
+PACKAGES = "${PN}"
+
 DEPENDS = "qmi-framework glib-2.0"
 
 EXTRA_OECONF = "--with-glib \
@@ -22,6 +24,7 @@ EXTRA_OECONF = "--with-glib \
 
 INITSCRIPT_NAME = "thermald"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
+INSANE_SKIP_${PN} = "installed-vs-shipped"
 
 inherit qti-proprietary-binary
 
@@ -39,10 +42,6 @@ do_install_append() {
        install -m 0755 ${WORKDIR}/thermald.conf -D ${D}${sysconfdir}/init/thermald.conf
        install -m 0755 ${WORKDIR}/thermald-8064.conf -D ${D}${sysconfdir}/thermald-8064.conf
        install -m 0755 ${WORKDIR}/thermald-8064ab.conf -D ${D}${sysconfdir}/thermald-8064ab.conf
-}
-
-pkg_postinst_thermal() {
-   start thermald
 }
 
 pkg_prerm_thermal() {

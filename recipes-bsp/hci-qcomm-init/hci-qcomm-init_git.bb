@@ -21,6 +21,7 @@ EXTRA_OECONF += "CPPFLAGS='-I${PKG_CONFIG_SYSROOT_DIR}/usr/include' "
 
 INITSCRIPT_NAME = "bt.init.sh"
 #INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
+INSANE_SKIP_${PN} = "installed-vs-shipped"
 
 do_fetch_append() {
     import shutil
