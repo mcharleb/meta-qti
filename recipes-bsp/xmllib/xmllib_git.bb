@@ -2,7 +2,7 @@ inherit autotools
 
 DESCRIPTION = "Qualcomm XML Library"
 HOMEPAGE = "http://support.cdmatech.com"
-LICENSE = "QUALCOMM-Proprietary"
+LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 DEPENDS = "common diag glib-2.0"

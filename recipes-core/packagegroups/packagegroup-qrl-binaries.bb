@@ -1,5 +1,5 @@
 DESCRIPTION = "Create a meta-package to install all required binary deliverables."
-LICENSE = "QUALCOMM-Proprietary"
+LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 PR = "r0"
 

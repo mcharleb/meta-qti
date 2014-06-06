@@ -1,7 +1,7 @@
 inherit autotools
 
 DESCRIPTION = "reboot2fastboot causes target system to reboot into fastboot mode."
-LICENSE = "QUALCOMM-Proprietary"
+LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PR = "r0"

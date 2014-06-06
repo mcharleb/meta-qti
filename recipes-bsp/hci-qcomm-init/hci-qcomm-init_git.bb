@@ -2,7 +2,7 @@ inherit autotools
 
 DESCRIPTION = "hci_qcomm_init proprietary binary to configure bluetooth"
 SECTION = "base"
-LICENSE = "QUALCOMM-Proprietary"
+LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PV = "1.0"

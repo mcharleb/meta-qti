@@ -1,7 +1,7 @@
 DESCRIPTION = "This recipe includes the binary packages needed for a qrl system."
 AUTHOR = "Gene W. Marsh <gmarsh@qti.qualcomm.com>"
 
-LICENSE = "QUALCOMM-Proprietary"
+LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PV = "1.0"
