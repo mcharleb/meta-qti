@@ -1,9 +1,11 @@
 #!/bin/bash
 ###############################################################################
-## Author: Rahul Anand (ranand@codeaurora.org)
+## Author: Rahul Anand (ranand@qti.qualcomm.com)
 ## 
-## This is the build script for the QR-Linux project
+## This is the build script for the QR-Linux project used by OEMs
 ##
+## Copyright (c) 2012-2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+## Qualcomm Technologies Proprietary and Confidential.
 ###############################################################################
 
 MACHINE_IFC6410=ifc6410
