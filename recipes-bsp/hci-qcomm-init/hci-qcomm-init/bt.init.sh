@@ -83,10 +83,18 @@ cfgModule=`grep cfg80211 /proc/modules`
 cfgModule=${#cfgModule}
 if [ $cfgModule -eq 0 ]
 then
-    echo "FAILED"
-    echo -n "    "
-    echo "NOTE: WiFi harware initilization must be done before bluetooth configuration"
-    ERROR_FLAG=1
+    ifup wlan0
+    cfgModule=`grep cfg80211 /proc/modules`
+    cfgModule=${#cfgModule}
+    if [ $cfgModule -eq 0 ]
+    then
+        echo "FAILED"
+        echo -n "    "
+        echo "NOTE: WiFi harware initilization must be done before bluetooth configuration"
+        ERROR_FLAG=1
+    else
+       echo "loaded wlan0"
+    fi
 else
     echo "OK"
 fi
