@@ -1,0 +1,26 @@
+From ae8db5097b2aede6b8cb96269d4d83762a852de4 Mon Sep 17 00:00:00 2001
+From: Kaustubh Gondkar <kgondkar@qti.qualcomm.com>
+Date: Wed, 18 Jun 2014 16:04:38 -0700
+Subject: [PATCH] enable yuv preview snapshot dump
+
+Change-Id: Iacf2c06f0637c8feecac7c50812c496cf2ce7c27
+---
+ apps/appslib/camframe.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/apps/appslib/camframe.c b/apps/appslib/camframe.c
+index 7a17e00..8404216 100644
+--- a/apps/appslib/camframe.c
++++ b/apps/appslib/camframe.c
+@@ -34,7 +34,7 @@ struct inode;
+ 
+ #define MAX_PREVIEW_FRAMES_NUM  6
+ #define MAX_VIDEO_FRAMES_NUM  9
+-#define DBG_DUMP_YUV_FRAME 0
++#define DBG_DUMP_YUV_FRAME 1
+ #define BUFF_SIZE_128 128
+ #define BUFF_SIZE_256 256
+ 
+-- 
+1.8.2.1
+

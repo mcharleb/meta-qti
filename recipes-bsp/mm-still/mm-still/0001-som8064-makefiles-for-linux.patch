@@ -1,0 +1,1005 @@
+From 44722f4bf3ed31ffe089451a8349e6ce1ac72026 Mon Sep 17 00:00:00 2001
+From: Kaustubh Gondkar <kgondkar@qti.qualcomm.com>
+Date: Fri, 20 Jun 2014 11:45:53 -0700
+Subject: [PATCH] som8064 makefiles for linux
+
+Change-Id: Icca33e35f7224c4f7d68535011f0f9bb13c773ca
+---
+ Makefile.am                            |  31 ++++++++
+ configure.ac                           | 134 +++++++++++++++++++++++++++++++
+ gemini/Makefile.am                     |  48 +++++++++++
+ ipl/Makefile.am                        |  52 ++++++++++++
+ jpeg/Makefile.am                       | 123 ++++++++++++++++++++++++++++
+ jpeg2/Makefile.am                      | 141 +++++++++++++++++++++++++++++++++
+ jps/Makefile.am                        |  48 +++++++++++
+ mercury/Makefile.am                    |  36 +++++++++
+ mpo/Makefile.am                        |  48 +++++++++++
+ mpod/Makefile.am                       |  56 +++++++++++++
+ omx/common/Makefile.am                 |  34 ++++++++
+ omx/libimage_core/Makefile.am          |  34 ++++++++
+ omx/libimage_jpeg_dec_comp/Makefile.am |  49 ++++++++++++
+ omx/libimage_jpeg_enc_comp/Makefile.am |  47 +++++++++++
+ 14 files changed, 881 insertions(+)
+ create mode 100644 Makefile.am
+ create mode 100644 configure.ac
+ create mode 100644 gemini/Makefile.am
+ create mode 100644 ipl/Makefile.am
+ create mode 100644 jpeg/Makefile.am
+ create mode 100644 jpeg2/Makefile.am
+ create mode 100644 jps/Makefile.am
+ create mode 100644 mercury/Makefile.am
+ create mode 100644 mpo/Makefile.am
+ create mode 100644 mpod/Makefile.am
+ create mode 100644 omx/common/Makefile.am
+ create mode 100644 omx/libimage_core/Makefile.am
+ create mode 100644 omx/libimage_jpeg_dec_comp/Makefile.am
+ create mode 100644 omx/libimage_jpeg_enc_comp/Makefile.am
+
+diff --git a/Makefile.am b/Makefile.am
+new file mode 100644
+index 0000000..a5e6958
+--- /dev/null
++++ b/Makefile.am
+@@ -0,0 +1,31 @@
++# Makefile.am - Automake script for mm-still
++#
++ACLOCAL_AMFLAGS = -I m4
++
++if TARGET_MSM7627A
++SUBDIRS = ipl \
++   jpeg \
++   gemini \
++   omx/common \
++   omx/libimage_core
++endif # TARGET_MSM7627A #
++
++if TARGET_MSM7627
++SUBDIRS = ipl \
++   jpeg \
++   gemini
++endif # TARGET_MSM7627 #
++
++if TARGET_MSM8960
++SUBDIRS = ipl \
++   gemini \
++   mercury \
++   jpeg2 \
++   mpod \
++   mpo \
++   jps \
++   omx/common \
++   omx/libimage_core \
++   omx/libimage_jpeg_enc_comp \
++   omx/libimage_jpeg_dec_comp
++endif # TARGET_MSM8960#
+diff --git a/configure.ac b/configure.ac
+new file mode 100644
+index 0000000..d886209
+--- /dev/null
++++ b/configure.ac
+@@ -0,0 +1,134 @@
++#                                               -*- Autoconf -*-
++# configure.ac -- Autoconf script for mm-still
++#
++
++# Process this file with autoconf to produce a configure script.
++
++AC_PREREQ(2.61)
++AC_INIT([mm-still],1.0.0)
++
++AM_INIT_AUTOMAKE([-Wall gnu foreign subdir-objects])
++AM_MAINTAINER_MODE
++
++AC_CONFIG_HEADER([config.h])
++AC_CONFIG_MACRO_DIR([m4])
++
++# Checks for programs.
++AM_PROG_AR
++AC_PROG_CC
++AC_PROG_CPP
++AC_PROG_CXX
++AM_PROG_CC_C_O
++AC_PROG_LIBTOOL
++AC_PROG_AWK
++AC_PROG_INSTALL
++AC_PROG_LN_S
++AC_PROG_MAKE_SET
++
++# Checks for typedefs, structures, and compiler characteristics.
++AC_TYPE_SIZE_T
++AC_TYPE_SSIZE_T
++AC_TYPE_UINT16_T
++AC_TYPE_UINT32_T
++AC_TYPE_UINT64_T
++AC_TYPE_UINT8_T
++
++AC_CHECK_TOOL(OBJCOPY, objcopy, false)
++
++AC_ARG_WITH([sanitized-headers],
++	[AS_HELP_STRING([--with-sanitized-headers=DIR],[location of the sanitized Linux kernel headers])],
++	[CFLAGS="$CFLAGS -I $withval"])
++
++AC_ARG_WITH([common-includes],
++	[AS_HELP_STRING([--with-common-includes=DIR],[location of common headers])],
++	[CPPFLAGS="$CPPFLAGS -I$withval"])
++
++AC_ARG_WITH([camera-hal-includes],
++	[AS_HELP_STRING([--with-camera-hal-includes=DIR],[Specify the location of Camera hal headers])],
++	[CPPFLAGS="$CPPFLAGS -I$withval"])
++
++AC_ARG_WITH([omx-includes],
++        [AS_HELP_STRING([--with-omx-includes=DIR],[location of OMX interface headers])],
++        [CPPFLAGS="$CPPFLAGS -I$withval"])
++
++AC_ARG_ENABLE([target],
++	[AS_HELP_STRING([--enable-target=TARGET],[target to build for])],
++	[],
++	[enable_target=none])
++
++if test "x$enable_target" = "xmsm7627a"; then
++    MSM_VERSION=7x27A
++    TARGET_USES_ION=true
++    JPEG_LIB=jpeg1_lib
++    JPEG_DEC=q5_sw
++    JPEG_ENC=q5_sw
++    TARGET_USES_ARMV7=true
++    TARGET_USES_GEMINI=false
++    TARGET_USES_MERCURY=false
++elif test "x$enable_target" = "xmsm7625"; then
++    MSM_VERSION=7625
++    TARGET_USES_ION=false
++    JPEG_LIB=jpeg2_lib
++    JPEG_DEC=q5_sw
++    JPEG_ENC=hw_sw
++    TARGET_USES_GEMINI=true
++elif test "x$enable_target" = "xmsm7627"; then
++    MSM_VERSION=7627
++    TARGET_USES_ION=true
++    JPEG_LIB=jpeg1_lib
++    JPEG_DEC=q5_sw
++    JPEG_ENC=sw_only
++    TARGET_USES_GEMINI=false
++elif test "x$enable_target" = "xmsm8960"; then
++    MSM_VERSION=8960
++    TARGET_USES_ION=true
++    JPEG_LIB=jpeg2_lib
++    JPEG_DEC=q5_sw
++    JPEG_ENC=hw_sw
++    TARGET_USES_ARMV7=true
++    TARGET_USES_GEMINI=true
++    TARGET_USES_MERCURY=true
++else
++    AC_MSG_NOTICE([A valid target was not specified. Please check the '--enable-target' option.])
++    TARGET_USES_ION=false
++fi
++
++AC_ARG_ENABLE([jelly-bean],
++	AC_HELP_STRING([--enable-jelly-bean],
++		[Enable conditional compile for jelly-bean [default=no]]),
++	[jelly_bean="${enableval}"],
++	jelly_bean=no)
++
++AM_CONDITIONAL([TARGET_MSM7627A], [test "x$MSM_VERSION" = "x7x27A"])
++AM_CONDITIONAL([TARGET_MSM7627], [test "x$MSM_VERSION" = "x7627"])
++AM_CONDITIONAL([TARGET_MSM7625], [test "x$MSM_VERSION" = "x7625"])
++AM_CONDITIONAL([TARGET_MSM8960], [test "x$MSM_VERSION" = "x8960"])
++AM_CONDITIONAL([JELLY_BEAN], [test x$jelly_bean = xyes])
++AM_CONDITIONAL([USES_ION], [test "x$TARGET_USES_ION" = "xtrue"])
++AM_CONDITIONAL([USES_ARMV7], [test "x$TARGET_USES_ARMV7" = "xtrue"])
++AM_CONDITIONAL([USES_GEMINI], [test "x$TARGET_USES_GEMINI" = "xtrue"])
++AM_CONDITIONAL([USES_MERCURY], [test "x$TARGET_USES_MERCURY" = "xtrue"])
++AM_CONDITIONAL([JPEG1_LIB],[test "x$JPEG_LIB" = "xjpeg1_lib"]])
++AM_CONDITIONAL([JPEG_DEC_Q5_SW], [test "x$JPEG_DEC" = "xq5_sw"])
++AM_CONDITIONAL([JPEG_DEC_SW_ONLY], [test "x$JPEG_DEC" = "xsw_only"])
++AM_CONDITIONAL([JPEG_ENC_Q5_SW], [test "x$JPEG_ENC" = "xq5_sw"])
++AM_CONDITIONAL([JPEG_ENC_HW_SW], [test "x$JPEG_ENC" = "xhw_sw"])
++AM_CONDITIONAL([JPEG_ENC_SW_ONLY], [test "x$JPEG_ENC" = "xsw_only"])
++
++AC_CONFIG_FILES([ \
++    Makefile \
++    gemini/Makefile \
++    ipl/Makefile \
++    jpeg/Makefile \
++    jpeg2/Makefile \
++    mpod/Makefile \
++    mpo/Makefile \
++    jps/Makefile \
++    omx/common/Makefile \
++    omx/libimage_core/Makefile \
++    omx/libimage_jpeg_enc_comp/Makefile \
++    omx/libimage_jpeg_dec_comp/Makefile \
++    mercury/Makefile \
++   ])
++AC_OUTPUT
++
+diff --git a/gemini/Makefile.am b/gemini/Makefile.am
+new file mode 100644
+index 0000000..8ca4ca2
+--- /dev/null
++++ b/gemini/Makefile.am
+@@ -0,0 +1,48 @@
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++if TARGET_MSM7627A
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CAMERA_HEAP_ID
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++c_sources := $(abs_srcdir)/src/gemini_lib.c
++c_sources += $(abs_srcdir)/src/gemini_lib_hw.c
++c_sources += $(abs_srcdir)/src/gemini_app_util_mmap.c
++c_sources += $(abs_srcdir)/src/gemini_app_calc_param.c
++c_sources += $(abs_srcdir)/src/gemini_inline.c
++
++# ---------------------------------------------------------------------------------
++#                       Make the shared library (libgemini)
++# ---------------------------------------------------------------------------------
++
++lib_LTLIBRARIES = libgemini.la
++libgemini_la_SOURCES := $(c_sources)
++libgemini_la_CFLAGS := $(AM_CFLAGS)
++libgemini_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libgemini_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++libgemini_la_CPPFLAGS += -I$(abs_srcdir)/src/
++libgemini_la_LIBADD = -llog -ldl
++libgemini_la_LDFLAGS = -shared
++
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/ipl/Makefile.am b/ipl/Makefile.am
+new file mode 100644
+index 0000000..be079d1
+--- /dev/null
++++ b/ipl/Makefile.am
+@@ -0,0 +1,52 @@
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++#TBD VENK
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++#if TARGET_MSM7627A
++#AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CAMERA_HEAP_ID
++#else
++#AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++#endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                       Make the ipl library (libmmipl)
++# ---------------------------------------------------------------------------------
++
++c_sources := $(abs_srcdir)/src/ipl_attic.c
++c_sources += $(abs_srcdir)/src/ipl_compose.c
++c_sources += $(abs_srcdir)/src/ipl_convert.c
++c_sources += $(abs_srcdir)/src/ipl_downSize.c
++c_sources += $(abs_srcdir)/src/ipl_efx.c
++c_sources += $(abs_srcdir)/src/ipl_helper.c
++c_sources += $(abs_srcdir)/src/ipl_hjr.c
++c_sources += $(abs_srcdir)/src/ipl_rotAddCrop.c
++c_sources += $(abs_srcdir)/src/ipl_upSize.c
++c_sources += $(abs_srcdir)/src/ipl_util.c
++c_sources += $(abs_srcdir)/src/ipl_xform.c
++
++libmmipl_la_CFLAGS := $(AM_CFLAGS)
++libmmipl_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libmmipl_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/jpeg/Makefile.am b/jpeg/Makefile.am
+new file mode 100644
+index 0000000..42b9fb5
+--- /dev/null
++++ b/jpeg/Makefile.am
+@@ -0,0 +1,123 @@
++# ---------------------------------------------------------------------------------
++#      Make the prebuilt library (libmmjpeg-enc-rvct, libmmjpeg-dec-rvct)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++if TARGET_MSM7627A
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CAMERA_HEAP_ID
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++c_sources := $(abs_srcdir)/src/jpege.c
++c_sources += $(abs_srcdir)/src/jpegd.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_fetch_dct.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_huff.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_scale_up.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_scale_down.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_scale.c
++c_sources += $(abs_srcdir)/src/jpege_engine_bs.c
++c_sources += $(abs_srcdir)/src/jpege_engine_q5.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_utils.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_progressive.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_utils.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_idct.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_huff.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_q5.c
++c_sources += $(abs_srcdir)/src/jpeg_q5_helper_sp.c
++c_sources += $(abs_srcdir)/src/jpeg_writer.c
++c_sources += $(abs_srcdir)/src/jpeg_file_size_control.c
++#c_sources += $(abs_srcdir)/src/jpeg_reader.c
++c_sources += $(abs_srcdir)/src/jpeg_buffer.c
++c_sources += $(abs_srcdir)/src/jpeg_header.c
++c_sources += $(abs_srcdir)/src/jpeg_debug.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocessor.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_config.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_dm.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_cc.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_ds.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_yuv2rgb.c
++c_sources += $(abs_srcdir)/src/exif.c
++c_sources += $(abs_srcdir)/src/exif_defaults.c
++c_sources += $(abs_srcdir)/src/os/os_pmem_sp.c
++c_sources += $(abs_srcdir)/src/os/os_thread_sp.c
++c_sources += $(abs_srcdir)/src/os/os_timer_sp.c
++
++# Add platform-specific source files
++if JPEG_DEC_Q5_SW
++c_sources += $(abs_srcdir)/src/jpegd_englist_q5_sw.c
++endif
++if JPEG_DEC_SW_ONLY
++c_sources += $(abs_srcdir)/src/jpegd_englist_sw_only.c
++endif
++
++# Add platform-specific source files
++if JPEG_ENC_Q5_SW
++c_sources += $(abs_srcdir)/src/jpege_englist_q5_sw.c
++endif
++if JPEG_ENC_SW_ONLY
++c_sources += $(abs_srcdir)/src/jpege_englist_sw_only.c
++endif
++if JPEG_ENC_HW_SW
++#c_sources += $(abs_srcdir)/src/jpege_engine_hw.c
++c_sources += $(abs_srcdir)/src/jpege_englist_hw_sw.c
++endif
++
++# ---------------------------------------------------------------------------------
++#                       Make the shared library (libmmjpeg)
++# ---------------------------------------------------------------------------------
++
++lib_LTLIBRARIES = libmmjpeg.la
++libmmjpeg_la_SOURCES := $(c_sources)
++libmmjpeg_la_CFLAGS := $(AM_CFLAGS)
++libmmjpeg_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/asm/arm
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/os/
++
++if USES_ARMV7
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/asm/armv7
++else
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/asm/armv6
++endif
++libmmjpeg_la_LIBADD = -llog -ldl
++
++if USES_ARMV7
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv7/libmmjpeg-dec-rvct.a
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv7/libmmjpeg-enc-rvct.a
++else
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv6/libmmjpeg-dec-rvct.a
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv6/libmmjpeg-enc-rvct.a
++endif
++
++libmmjpeg_la_LDFLAGS = -shared
++
++# ---------------------------------------------------------------------------------
++#                          Make the tests (mm-jpeg-dec-test)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/jpeg2/Makefile.am b/jpeg2/Makefile.am
+new file mode 100644
+index 0000000..99facf6
+--- /dev/null
++++ b/jpeg2/Makefile.am
+@@ -0,0 +1,141 @@
++# ---------------------------------------------------------------------------------
++#      Make the prebuilt library (libmmjpeg-enc-rvct, libmmjpeg-dec-rvct)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++if TARGET_MSM7627A
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CAMERA_HEAP_ID
++endif
++
++if USES_GEMINI
++AM_CFLAGS += -DUSE_GEMINI
++endif
++
++if USES_MERCURY
++AM_CFLAGS+= -DMERCURY_HW_DECODE
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++c_sources := $(abs_srcdir)/src/jpege.c
++c_sources += $(abs_srcdir)/src/jpegd.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_fetch_dct.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_huff.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_scale_up.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_scale_down.c
++c_sources += $(abs_srcdir)/src/jpege_engine_sw_scale.c
++c_sources += $(abs_srcdir)/src/jpege_engine_bs.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_hw_utils.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_utils.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_progressive.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_utils.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_idct.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_sw_huff.c
++c_sources += $(abs_srcdir)/src/jpeg_q5_helper_sp.c
++c_sources += $(abs_srcdir)/src/jpeg_writer.c
++c_sources += $(abs_srcdir)/src/jpeg_file_size_control.c
++c_sources += $(abs_srcdir)/src/jpeg_reader.c
++c_sources += $(abs_srcdir)/src/jpeg_buffer.c
++c_sources += $(abs_srcdir)/src/jpeg_header.c
++c_sources += $(abs_srcdir)/src/jpeg_debug.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocessor.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_config.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_dm.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_cc.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_ds.c
++c_sources += $(abs_srcdir)/src/jpeg_postprocess_yuv2rgb.c
++c_sources += $(abs_srcdir)/src/jpeg_queue.c
++c_sources += $(abs_srcdir)/src/exif.c
++c_sources += $(abs_srcdir)/src/exif_defaults.c
++c_sources += $(abs_srcdir)/src/os/os_pmem_sp.c
++c_sources += $(abs_srcdir)/src/os/os_thread_sp.c
++c_sources += $(abs_srcdir)/src/os/os_timer_sp.c
++c_sources += $(abs_srcdir)/src/writer_utility.c
++c_sources += $(abs_srcdir)/src/jpsd.c
++
++# Add platform-specific source files
++if JPEG_ENC_Q5_SW
++c_sources += $(abs_srcdir)/src/jpegd_engine_q5.c
++c_sources += $(abs_srcdir)/src/jpege_englist_q5_sw.c
++endif
++if JPEG_ENC_SW_ONLY
++c_sources += $(abs_srcdir)/src/jpegd_englist_sw_only.c
++c_sources += $(abs_srcdir)/src/jpege_englist_sw_only.c
++endif
++if JPEG_ENC_HW_SW
++c_sources += $(abs_srcdir)/src/jpege_engine_hw.c
++c_sources += $(abs_srcdir)/src/jpege_englist_hw_sw.c
++c_sources += $(abs_srcdir)/src/jpegd_engine_hw.c
++c_sources += $(abs_srcdir)/src/jpegd_englist_hw_sw.c
++endif
++
++# ---------------------------------------------------------------------------------
++#                       Make the shared library (libmmjpeg)
++# ---------------------------------------------------------------------------------
++
++lib_LTLIBRARIES = libmmjpeg.la
++libmmjpeg_la_SOURCES := $(c_sources)
++libmmjpeg_la_CFLAGS := $(AM_CFLAGS)
++libmmjpeg_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/asm/arm
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/os/
++
++if USES_ARMV7
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/asm/armv7
++else
++libmmjpeg_la_CPPFLAGS += -I$(abs_srcdir)/src/asm/armv6
++endif
++libmmjpeg_la_LIBADD = -llog -ldl -lrt -lpthread
++
++if USES_ARMV7
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv7/libmmjpeg-dec-rvct.a
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv7/libmmjpeg-enc-rvct.a
++else
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv6/libmmjpeg-dec-rvct.a
++libmmjpeg_la_LIBADD += $(abs_srcdir)/lib/os/armv6/libmmjpeg-enc-rvct.a
++endif
++
++if USES_GEMINI
++libmmjpeg_la_LIBADD += ../gemini/libgemini.la
++endif
++
++if USES_MERCURY
++libmmjpeg_la_LIBADD += ../mercury/libmercury.la
++endif
++
++libmmjpeg_la_LDFLAGS = -shared
++
++# ---------------------------------------------------------------------------------
++#                          Make the tests (mm-jpeg-enc-test)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                          Make the tests (mm-jpeg-dec-test)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/jps/Makefile.am b/jps/Makefile.am
+new file mode 100644
+index 0000000..410dd99
+--- /dev/null
++++ b/jps/Makefile.am
+@@ -0,0 +1,48 @@
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                       Make the shared library (libmmjps)
++# ---------------------------------------------------------------------------------
++c_sources := src/jpse.c
++c_sources += src/jps_writer.c
++c_sources += src/jpse_englist_sw_only.c
++
++lib_LTLIBRARIES = libmmjps.la
++libmmjps_la_SOURCES := $(c_sources)
++libmmjps_la_CFLAGS := $(AM_CFLAGS)
++libmmjps_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libmmjps_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++libmmjps_la_CPPFLAGS += -I$(abs_srcdir)/src/
++libmmjps_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/
++libmmjps_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/os/
++libmmjps_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/inc/
++libmmjps_la_LIBADD = -llog -ldl
++libmmjps_la_LDFLAGS = -shared
++
++# ---------------------------------------------------------------------------------
++#                          Make the tests (mm-jpse-test)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/mercury/Makefile.am b/mercury/Makefile.am
+new file mode 100644
+index 0000000..9cf5446
+--- /dev/null
++++ b/mercury/Makefile.am
+@@ -0,0 +1,36 @@
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                       Make the mercury library (libmmmercury)
++# ---------------------------------------------------------------------------------
++c_sources := src/mercury_lib.c
++c_sources += src/mercury_lib_hw.c
++
++lib_LTLIBRARIES = libmercury.la
++libmercury_la_SOURCES := $(c_sources)
++libmercury_la_CFLAGS := $(AM_CFLAGS)
++libmercury_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libmercury_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/mpo/Makefile.am b/mpo/Makefile.am
+new file mode 100644
+index 0000000..f8f80f6
+--- /dev/null
++++ b/mpo/Makefile.am
+@@ -0,0 +1,48 @@
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++	AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                       Make the shared library (libmmmpo)
++# ---------------------------------------------------------------------------------
++c_sources := src/mpoe.c
++c_sources += src/mpo.c
++#c_sources += src/mpo_info.c
++c_sources += src/mpo_writer.c
++
++lib_LTLIBRARIES = libmmmpo.la
++libmmmpo_la_SOURCES := $(c_sources)
++libmmmpo_la_CFLAGS := $(AM_CFLAGS)
++libmmmpo_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libmmmpo_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++libmmmpo_la_CPPFLAGS += -I$(abs_srcdir)/src/
++libmmmpo_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/
++libmmmpo_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/os/
++libmmmpo_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/inc/
++libmmmpo_la_LIBADD = -llog -ldl
++libmmmpo_la_LDFLAGS = -shared
++
++# ---------------------------------------------------------------------------------
++#                          Make the tests (mm-mpo-test)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/mpod/Makefile.am b/mpod/Makefile.am
+new file mode 100644
+index 0000000..f5c05f7
+--- /dev/null
++++ b/mpod/Makefile.am
+@@ -0,0 +1,56 @@
++# ---------------------------------------------------------------------------------
++#                           Common definitons
++# ---------------------------------------------------------------------------------
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++
++#TBD VENK
++if TARGET_MSM8960
++AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++endif
++
++#if TARGET_MSM7627A
++#AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CAMERA_HEAP_ID
++#else
++#AM_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++#endif
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                       Make the shared library (libmmmpod)
++# ---------------------------------------------------------------------------------
++
++c_sources := src/mpod.c
++c_sources += src/mpo.c
++c_sources += src/mpo_header.c
++c_sources += src/mpo_reader.c
++
++lib_LTLIBRARIES = libmmmpod.la
++libmmmpod_la_SOURCES := $(c_sources)
++libmmmpod_la_CFLAGS := $(AM_CFLAGS)
++libmmmpod_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libmmmpod_la_CPPFLAGS += -I$(abs_srcdir)/inc/
++libmmmpod_la_CPPFLAGS += -I$(abs_srcdir)/src/
++libmmmpod_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/
++libmmmpod_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/os/
++libmmmpod_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/inc/
++libmmmpod_la_LIBADD = -llog -ldl
++libmmmpod_la_LDFLAGS = -shared
++
++# ---------------------------------------------------------------------------------
++#                          Make the tests (mm-mpo-dec-test)
++# ---------------------------------------------------------------------------------
++
++# ---------------------------------------------------------------------------------
++#                                      END
++# ---------------------------------------------------------------------------------
+diff --git a/omx/common/Makefile.am b/omx/common/Makefile.am
+new file mode 100644
+index 0000000..b3354eb
+--- /dev/null
++++ b/omx/common/Makefile.am
+@@ -0,0 +1,34 @@
++# ---------------------------------------------------------------------------------
++#                       Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                Make the shared library (libomxcommon)
++# ---------------------------------------------------------------------------------
++
++c_sources := omx_jpeg_common.c
++
++lib_LTLIBRARIES = libimage_omx_common.la
++libimage_omx_common_la_SOURCES := $(c_sources)
++libimage_omx_common_la_CFLAGS := $(AM_CFLAGS)
++libimage_omx_common_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libimage_omx_common_la_CPPFLAGS += -I../inc/
++libimage_omx_common_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/inc/
++libimage_omx_common_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/
++libimage_omx_common_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/os/
++
++libimage_omx_common_la_LIBADD = -llog -ldl
++libimage_omx_common_la_LDFLAGS = -shared
+diff --git a/omx/libimage_core/Makefile.am b/omx/libimage_core/Makefile.am
+new file mode 100644
+index 0000000..2fd556a
+--- /dev/null
++++ b/omx/libimage_core/Makefile.am
+@@ -0,0 +1,34 @@
++# ---------------------------------------------------------------------------------
++#                       Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++AM_CFLAGS += -I../inc
++
++c_sources := omx_core.c
++
++# ------------------------------------------------------------------------------
++#                Make the shared library (libimageomxcore)
++# ------------------------------------------------------------------------------
++lib_LTLIBRARIES = libimageomxcore.la
++
++libimageomxcore_la_SOURCES := $(c_sources)
++
++libimageomxcore_la_CFLAGS := $(AM_CFLAGS)
++libimageomxcore_la_CFLAGS += -Dstrlcpy=g_strlcpy
++
++libimageomxcore_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++
++libimageomxcore_la_LIBADD = -lc -lpthread -lglib-2.0 -ldl
+diff --git a/omx/libimage_jpeg_dec_comp/Makefile.am b/omx/libimage_jpeg_dec_comp/Makefile.am
+new file mode 100644
+index 0000000..7556803
+--- /dev/null
++++ b/omx/libimage_jpeg_dec_comp/Makefile.am
+@@ -0,0 +1,49 @@
++# ---------------------------------------------------------------------------------
++#                       Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                Make the shared library (libimage-jpeg-dec-omx-comp)
++# ---------------------------------------------------------------------------------
++
++c_sources:= omx_component.c
++c_sources+= omx_mpo_decoder.c
++c_sources+= omx_jpeg_decoder.c
++
++lib_LTLIBRARIES = libimage-jpeg-dec-omx-comp.la
++libimage_jpeg_dec_omx_comp_la_SOURCES := $(c_sources)
++libimage_jpeg_dec_omx_comp_la_CFLAGS := $(AM_CFLAGS)
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS += -I../inc/
++if JPEG1_LIB
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg/inc/
++else
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/inc/
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/os/
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/mpod/inc/
++libimage_jpeg_dec_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/mpod/src/
++endif
++
++libimage_jpeg_dec_omx_comp_la_LIBADD = -llog -ldl -lpthread
++libimage_jpeg_dec_omx_comp_la_LIBADD += $(abs_top_builddir)/omx/common/libimage_omx_common.la
++if JPEG1_LIB
++libimage_jpeg_dec_omx_comp_la_LIBADD += $(abs_top_builddir)/jpeg/libmmjpeg.la
++else
++libimage_jpeg_dec_omx_comp_la_LIBADD += $(abs_top_builddir)/jpeg2/libmmjpeg.la
++libimage_jpeg_dec_omx_comp_la_LIBADD += $(abs_top_builddir)/mpod/libmmmpod.la
++endif
++libimage_jpeg_dec_omx_comp_la_LDFLAGS = -shared
+diff --git a/omx/libimage_jpeg_enc_comp/Makefile.am b/omx/libimage_jpeg_enc_comp/Makefile.am
+new file mode 100644
+index 0000000..989ee8e
+--- /dev/null
++++ b/omx/libimage_jpeg_enc_comp/Makefile.am
+@@ -0,0 +1,47 @@
++# ---------------------------------------------------------------------------------
++#                       Common definitons
++# ---------------------------------------------------------------------------------
++
++AM_CFLAGS := -g -O3
++AM_CFLAGS += -fno-short-enums
++AM_CFLAGS += -D_DEBUG
++AM_CFLAGS += -DARM_ARCH_7A
++if USES_ION
++AM_CFLAGS += -DUSE_ION
++endif
++
++AM_CPPFLAGS = -DICS
++if JELLY_BEAN
++    AM_CPPFLAGS += -DJELLY_BEAN
++endif
++
++# ---------------------------------------------------------------------------------
++#                Make the shared library (libimage-jpeg-enc-omx-comp)
++# ---------------------------------------------------------------------------------
++
++c_sources:= omx_component.c
++
++lib_LTLIBRARIES = libimage-jpeg-enc-omx-comp.la
++libimage_jpeg_enc_omx_comp_la_SOURCES := $(c_sources)
++libimage_jpeg_enc_omx_comp_la_CFLAGS := $(AM_CFLAGS)
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS := $(AM_CPPFLAGS) $(CPPFLAGS) -fPIC
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS += -I../inc/
++if JPEG1_LIB
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg/inc/
++else
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/inc/
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/jpeg2/src/os/
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/mpod/inc/
++libimage_jpeg_enc_omx_comp_la_CPPFLAGS += -I$(abs_top_builddir)/mpod/src/
++endif
++
++libimage_jpeg_enc_omx_comp_la_LIBADD = -llog -ldl -lpthread
++libimage_jpeg_enc_omx_comp_la_LIBADD += $(abs_top_builddir)/omx/common/libimage_omx_common.la
++if JPEG1_LIB
++libimage_jpeg_enc_omx_comp_la_LIBADD += $(abs_top_builddir)/jpeg/libmmjpeg.la
++else
++libimage_jpeg_enc_omx_comp_la_LIBADD += $(abs_top_builddir)/jpeg2/libmmjpeg.la
++libimage_jpeg_enc_omx_comp_la_LIBADD += $(abs_top_builddir)/mpod/libmmmpod.la
++endif
++libimage_jpeg_enc_omx_comp_la_LDFLAGS = -shared
+-- 
+1.8.2.1
+

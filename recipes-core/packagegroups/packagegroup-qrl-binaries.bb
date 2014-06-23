@@ -20,6 +20,10 @@ RDEPENDS_packagegroup-qrl-binaries = " \
 	reboot2fastboot \
 	btnvtool \
 	hci-qcomm-init \
+	mm-camera \
+	mm-still \
+	mm-camera-lib \
+	camera-hal \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

@@ -25,6 +25,10 @@ DEPENDS += " \
 	reboot2fastboot \
 	btnvtool \
 	hci-qcomm-init \
+	mm-camera \
+	mm-still \
+	mm-camera-lib \
+	camera-hal \
 "
 
 EXTRA_IMAGECMD_ext4 += "-O ^has_journal -i 8192"
@@ -46,6 +50,12 @@ copy_packages() {
   install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libxml*armhf.deb ${IMAGE_ROOTFS}/deb
   install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/reboot2fastboot*armhf.deb ${IMAGE_ROOTFS}/deb
   install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/hci-qcomm-init*armhf.deb ${IMAGE_ROOTFS}/deb
+  
+  mkdir -p ${IMAGE_ROOTFS}/deb/camera
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/mm-camera-lib*armhf.deb ${IMAGE_ROOTFS}/deb/camera
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/mm-camera*armhf.deb ${IMAGE_ROOTFS}/deb/camera
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/mm-still*armhf.deb ${IMAGE_ROOTFS}/deb/camera
+  install -m 644 ${DEPLOY_DIR}/deb/${TUNE_PKGARCH}/libcamera*armhf.deb ${IMAGE_ROOTFS}/deb/camera
 }
 
 IMAGE_PREPROCESS_COMMAND = "copy_packages"

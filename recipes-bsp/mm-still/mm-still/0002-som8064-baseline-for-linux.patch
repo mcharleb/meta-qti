@@ -1,0 +1,518 @@
+From 92a14b54fc6f8737d21d11d45d572e289504281e Mon Sep 17 00:00:00 2001
+From: Kaustubh Gondkar <kgondkar@qti.qualcomm.com>
+Date: Fri, 20 Jun 2014 11:46:27 -0700
+Subject: [PATCH] som8064 baseline for linux
+
+Change-Id: Id3184ac6af91629bda0ebea1829396891c8349f2
+---
+ gemini/inc/gemini_app_util_mmap.h |  8 ++++----
+ gemini/inc/gemini_lib_common.h    |  1 +
+ gemini/src/gemini_app_util_mmap.c |  8 ++++----
+ gemini/src/gemini_dbg.h           | 10 +++++-----
+ gemini/src/gemini_inline.c        |  8 ++++----
+ gemini/src/gemini_lib_hw.c        |  3 ++-
+ jpeg2/inc/jpegd.h                 |  2 +-
+ jpeg2/src/exif_defaults.c         |  2 ++
+ jpeg2/src/jpeg_debug.c            |  2 ++
+ jpeg2/src/jpegd_engine_hw.c       | 11 ++++++-----
+ jpeg2/src/jpegd_engine_hw.h       |  2 +-
+ jpeg2/src/jpege_engine_hw.c       | 10 +++++-----
+ jpeg2/src/jpege_engine_hw_10.c    | 10 +++++-----
+ mercury/inc/mercury_lib.h         |  2 +-
+ mercury/src/mercury_dbg.h         |  5 +++--
+ mercury/src/mercury_lib.c         |  1 +
+ mercury/src/mercury_lib_hw.c      |  1 +
+ mercury/src/mercury_lib_hw.h      |  2 ++
+ omx/inc/omx_debug.h               |  3 +++
+ omx/libimage_core/omx_core.c      |  2 +-
+ 20 files changed, 54 insertions(+), 39 deletions(-)
+
+diff --git a/gemini/inc/gemini_app_util_mmap.h b/gemini/inc/gemini_app_util_mmap.h
+index 6e3e9d3..794f9ee 100644
+--- a/gemini/inc/gemini_app_util_mmap.h
++++ b/gemini/inc/gemini_app_util_mmap.h
+@@ -15,7 +15,7 @@ typedef enum {
+  *
+  * DESCRIPTION:  retured virtual addresss
+  *==========================================================================*/
+-void *do_mmap (long size, int *p_pmem_fd, gemini_pmem_region_type type,
++void *do_mmap_gemini (long size, int *p_pmem_fd, gemini_pmem_region_type type,
+                int *ion_fd, struct ion_allocation_data *alloc,
+ 		       struct ion_fd_data *ion_info_fd);
+ 
+@@ -24,7 +24,7 @@ void *do_mmap (long size, int *p_pmem_fd, gemini_pmem_region_type type,
+  *
+  * DESCRIPTION:
+  *==========================================================================*/
+-int do_munmap (int pmem_fd, void *addr, size_t size,
++int do_munmap_gemini (int pmem_fd, void *addr, size_t size,
+                int ion_fd, struct ion_fd_data *ion_info_fd);
+ 
+ /*===========================================================================
+@@ -33,7 +33,7 @@ int do_munmap (int pmem_fd, void *addr, size_t size,
+  * DESCRIPTION:  This version of mmap is used for ION. The API supports
+  *               cached or uncached memory
+  *==========================================================================*/
+-void *do_mmap_ion(long size, int *p_pmem_fd,
++void *do_mmap_ion_gemini(long size, int *p_pmem_fd,
+   int *ion_fd, struct ion_allocation_data *alloc,
+   struct ion_fd_data *ion_info_fd, int8_t cached);
+ 
+@@ -42,6 +42,6 @@ void *do_mmap_ion(long size, int *p_pmem_fd,
+  *
+  * DESCRIPTION:
+  *==========================================================================*/
+-int do_clearcache(int pmem_fd, void *addr, size_t size,
++int do_clearcache_gemini(int pmem_fd, void *addr, size_t size,
+                int ion_fd, struct ion_fd_data *ion_info_fd);
+ #endif /* __TEST_UTIL_MMAP_H__ */
+diff --git a/gemini/inc/gemini_lib_common.h b/gemini/inc/gemini_lib_common.h
+index d3c94fd..f85d61f 100644
+--- a/gemini/inc/gemini_lib_common.h
++++ b/gemini/inc/gemini_lib_common.h
+@@ -7,6 +7,7 @@
+ #define GEMINI_HW_COMMON_H
+ 
+ #include <unistd.h>
++#include <stdint.h>
+ #include <media/msm_gemini.h>
+ 
+ #define BOOL uint8_t
+diff --git a/gemini/src/gemini_app_util_mmap.c b/gemini/src/gemini_app_util_mmap.c
+index 67be1d0..27e1b5c 100644
+--- a/gemini/src/gemini_app_util_mmap.c
++++ b/gemini/src/gemini_app_util_mmap.c
+@@ -18,7 +18,7 @@
+  * DESCRIPTION:  This version of mmap is used for ION. The API supports
+  *               cached or uncached memory
+  *==========================================================================*/
+-void *do_mmap_ion(long size, int *p_pmem_fd,
++void *do_mmap_ion_gemini(long size, int *p_pmem_fd,
+   int *ion_fd, struct ion_allocation_data *alloc,
+   struct ion_fd_data *ion_info_fd, int8_t cached)
+ {
+@@ -105,7 +105,7 @@ ION_ALLOC_FAILED:
+  *
+  * DESCRIPTION:  retured virtual addresss
+  *==========================================================================*/
+-void *do_mmap (long size, int *p_pmem_fd, gemini_pmem_region_type type,
++void *do_mmap_gemini (long size, int *p_pmem_fd, gemini_pmem_region_type type,
+                int *ion_fd, struct ion_allocation_data *alloc,
+                struct ion_fd_data *ion_info_fd)
+ {
+@@ -223,7 +223,7 @@ ION_ALLOC_FAILED:
+  *
+  * DESCRIPTION:
+  *==========================================================================*/
+-int do_munmap (int pmem_fd, void *addr, size_t size,
++int do_munmap_gemini (int pmem_fd, void *addr, size_t size,
+                int ion_fd, struct ion_fd_data *ion_info_fd)
+ {
+ #ifdef USE_ION
+@@ -259,7 +259,7 @@ int do_munmap (int pmem_fd, void *addr, size_t size,
+  *
+  * DESCRIPTION:
+  *==========================================================================*/
+-int do_clearcache(int pmem_fd,
++int do_clearcache_gemini(int pmem_fd,
+   void *addr,
+   size_t size,
+   int ion_fd,
+diff --git a/gemini/src/gemini_dbg.h b/gemini/src/gemini_dbg.h
+index 82e270d..681de83 100644
+--- a/gemini/src/gemini_dbg.h
++++ b/gemini/src/gemini_dbg.h
+@@ -6,10 +6,10 @@
+ #ifndef __GEMINI_DBG_H__
+ #define __GEMINI_DBG_H__
+ 
+-#undef LOG_DEBUG
+-/*#define LOG_DEBUG*/
+-#define _ANDROID_
+-
++/*#undef LOG_DEBUG*/
++#define LOG_DEBUG
++/*#define _ANDROID_*/
++#include <stdio.h>
+ #undef GMN_DBG
+ #undef GMN_PR_ERR
+ 
+@@ -42,7 +42,7 @@
+ #endif
+ #else
+ /*     #define GMN_DBG(fmt, args...) do{}while(0) */
+-#define GMN_DBG(fmt, args...) fprintf(fmt, ##args)
++#define GMN_DBG(fmt, args...) fprintf(stderr, fmt, ##args)
+ #define GMN_PR_ERR(fmt, args...) fprintf(stderr, fmt, ##args)
+ #endif
+ #endif
+diff --git a/gemini/src/gemini_inline.c b/gemini/src/gemini_inline.c
+index e39fdc3..68636a0 100644
+--- a/gemini/src/gemini_inline.c
++++ b/gemini/src/gemini_inline.c
+@@ -81,7 +81,7 @@ void gemini_app_output_buf_enq (gmn_obj_t gmn_obj)
+ 	output_buf[i].alloc_ion.heap_mask = 0x1 << ION_CP_MM_HEAP_ID;
+ 	output_buf[i].alloc_ion.align = 4096;
+ 	output_buf[i].vaddr =
+-		do_mmap (output_buf[i].y_len, &output_buf[i].fd,
++		do_mmap_gemini (output_buf[i].y_len, &output_buf[i].fd,
+ 		  GEMINI_PMEM_ADSP, &output_buf[i].ion_fd_main, &output_buf[i].alloc_ion,
+ 				 &output_buf[i].fd_ion_map);
+ 
+@@ -99,7 +99,7 @@ void gemini_app_free_output_buf (void)
+   unsigned int i;
+ 
+   for (i = 0; i < sizeof (output_buf) / sizeof (output_buf[0]); i++) {
+-    do_munmap (output_buf[i].fd, output_buf[i].vaddr,
++    do_munmap_gemini (output_buf[i].fd, output_buf[i].vaddr,
+       output_buf[i].y_len, output_buf[i].ion_fd_main,
+       &output_buf[i].fd_ion_map);
+   }
+@@ -210,7 +210,7 @@ void gemini_app_free_input_buf (void)
+ 
+   for (i = 0; i < sizeof (input_buf) / sizeof (input_buf[0]); i++) {
+     if (input_buf[i].vaddr)
+-      do_munmap (input_buf[i].fd, input_buf[i].vaddr,
++      do_munmap_gemini (input_buf[i].fd, input_buf[i].vaddr,
+         input_buf[i].y_len + input_buf[i].cbcr_len,
+         input_buf[i].ion_fd_main,
+         &input_buf[i].fd_ion_map);
+@@ -229,7 +229,7 @@ int gemini_app_input_handler (gmn_obj_t gmn_obj,
+     input_p->alloc_ion.heap_mask = 0x1 << ION_CP_MM_HEAP_ID;
+     input_p->alloc_ion.align = 4096;
+     input_p->vaddr =
+-    do_mmap (input_p->y_len + input_p->cbcr_len,
++    do_mmap_gemini(input_p->y_len + input_p->cbcr_len,
+       &input_p->fd, GEMINI_PMEM_ADSP,
+       &input_p->ion_fd_main, &input_p->alloc_ion,
+       &input_p->fd_ion_map);
+diff --git a/gemini/src/gemini_lib_hw.c b/gemini/src/gemini_lib_hw.c
+index 3db1acc..7bbaa70 100644
+--- a/gemini/src/gemini_lib_hw.c
++++ b/gemini/src/gemini_lib_hw.c
+@@ -5,6 +5,7 @@
+ 
+ #include <string.h>
+ #include <stdio.h>
++#include <stdint.h>
+ #include <media/msm_gemini.h>
+ #include "gemini_lib_hw.h"
+ #include "gemini_hw_reg.h"
+@@ -217,7 +218,7 @@ struct msm_gemini_hw_cmds
+           nRegVal = (nRegVal & 0xFFFFFBFF);
+ 	}
+ 	p_hw_cmd->data = nRegVal;
+-	ALOGE("%s:%d] Gemini Cfg 0x%x", __func__, __LINE__, p_hw_cmd->data);
++	GMN_DBG("%s:%d] Gemini Cfg 0x%x", __func__, __LINE__, p_hw_cmd->data);
+ 
+ 	return p_hw_cmds;
+ }
+diff --git a/jpeg2/inc/jpegd.h b/jpeg2/inc/jpegd.h
+index 187b698..3aa0fb8 100755
+--- a/jpeg2/inc/jpegd.h
++++ b/jpeg2/inc/jpegd.h
+@@ -37,7 +37,7 @@ when       who     what, where, why
+ 
+ #include "jpeg_common.h"
+ #include "jpeg_buffer.h"
+-#include <mercury_lib.h>
++#include "../../mercury/inc/mercury_lib.h"
+ 
+ /* Opaque definition of the Jpeg Decoder */
+ struct jpeg_decoder_t;
+diff --git a/jpeg2/src/exif_defaults.c b/jpeg2/src/exif_defaults.c
+index 81cbf34..e16b71e 100644
+--- a/jpeg2/src/exif_defaults.c
++++ b/jpeg2/src/exif_defaults.c
+@@ -37,7 +37,9 @@ when       who     what, where, why
+ #undef LOG_NIDEBUG
+ #define LOG_NIDEBUG 0
+ #define LOG_TAG "mm-still"
++#ifdef ANDROID
+ #include <utils/Log.h>
++#endif
+ 
+ /* -----------------------------------------------------------------------
+ ** Type Declarations
+diff --git a/jpeg2/src/jpeg_debug.c b/jpeg2/src/jpeg_debug.c
+index 00b875c..c0bdd74 100755
+--- a/jpeg2/src/jpeg_debug.c
++++ b/jpeg2/src/jpeg_debug.c
+@@ -30,7 +30,9 @@ when       who     what, where, why
+ #include <stdlib.h>
+ #include "jpeg_common_private.h"
+ #include "jpeglog.h"
++#ifdef ANDROID
+ #include <utils/Log.h>
++#endif
+ #include <unwind.h>
+ #include <sys/types.h>
+ 
+diff --git a/jpeg2/src/jpegd_engine_hw.c b/jpeg2/src/jpegd_engine_hw.c
+index f436889..a9f63b1 100755
+--- a/jpeg2/src/jpegd_engine_hw.c
++++ b/jpeg2/src/jpegd_engine_hw.c
+@@ -3,6 +3,7 @@
+  */
+ 
+ #include <stdlib.h>
++#include <stdint.h>
+ #include <media/msm_mercury.h>
+ #include "jpeg_buffer_private.h"
+ #include "jpeg_common.h"
+@@ -93,7 +94,7 @@ int jpegd_engine_hw_free_output_buf (void)
+         }
+ 
+ 
+-        int rc = do_munmap (dec_output_buf[i].fd, dec_output_buf[i].vaddr,
++        int rc = do_munmap_gemini (dec_output_buf[i].fd, dec_output_buf[i].vaddr,
+             dec_output_buf[i].y_len,
+             dec_output_buf[i].ion_fd_main, &dec_output_buf[i].fd_ion_map);
+         if (rc) {
+@@ -1078,7 +1079,7 @@ static jpeg_event_t jpegd_engine_hw_decode_baseline(jpegd_engine_hw_t *p_engine)
+         in_buf.alloc_ion.heap_mask =
+             (0x1 << CAMERA_ION_HEAP_ID | 0x1 << ION_IOMMU_HEAP_ID);
+         in_buf.alloc_ion.align = 4096;
+-        in_buf.vaddr = do_mmap (bitstream_size, &in_buf.fd, MERCURY_PMEM_ADSP,
++        in_buf.vaddr = do_mmap_gemini (bitstream_size, &in_buf.fd, MERCURY_PMEM_ADSP,
+                                 &in_buf.ion_fd_main, &in_buf.alloc_ion,
+             &in_buf.fd_ion_map);
+         if (!in_buf.vaddr) {
+@@ -1094,7 +1095,7 @@ static jpeg_event_t jpegd_engine_hw_decode_baseline(jpegd_engine_hw_t *p_engine)
+         output_buf.alloc_ion.heap_mask =
+             (0x1 << CAMERA_ION_HEAP_ID | 0x1 << ION_IOMMU_HEAP_ID);
+         output_buf.alloc_ion.align = 4096;
+-        output_buf.vaddr = do_mmap (luma_size+chroma_size, &output_buf.fd,
++        output_buf.vaddr = do_mmap_gemini (luma_size+chroma_size, &output_buf.fd,
+                                      MERCURY_PMEM_ADSP,&output_buf.ion_fd_main,
+                                      &output_buf.alloc_ion,
+             &output_buf.fd_ion_map);
+@@ -1289,14 +1290,14 @@ static jpeg_event_t jpegd_engine_hw_decode_baseline(jpegd_engine_hw_t *p_engine)
+         jpeg_buffer_destroy(&p_out_y_buf);
+         jpeg_buffer_destroy(&p_out_uv_buf);
+ 
+-        if (do_munmap (in_buf.fd, in_buf.vaddr, in_buf.y_len,
++        if (do_munmap_gemini (in_buf.fd, in_buf.vaddr, in_buf.y_len,
+                        in_buf.ion_fd_main, &in_buf.fd_ion_map)) {
+             JPEG_DBG_ERROR ("%s:%d] fail to free PMEM for mercury output\n", __func__, __LINE__);
+             return JPEG_EVENT_ERROR;
+         }
+         in_buf.y_len = 0;
+ 
+-        if (do_munmap (output_buf.fd, output_buf.vaddr, output_buf.y_len,
++        if (do_munmap_gemini (output_buf.fd, output_buf.vaddr, output_buf.y_len,
+                         output_buf.ion_fd_main, &output_buf.fd_ion_map)) {
+             JPEG_DBG_ERROR ("%s:%d] fail to free PMEM for mercury output\n",
+                         __func__, __LINE__);
+diff --git a/jpeg2/src/jpegd_engine_hw.h b/jpeg2/src/jpegd_engine_hw.h
+index cb997b2..2b88629 100755
+--- a/jpeg2/src/jpegd_engine_hw.h
++++ b/jpeg2/src/jpegd_engine_hw.h
+@@ -10,7 +10,7 @@
+ #include "jpegd_engine.h"
+ #include "jpegd.h"
+ #include "jpegd_engine_utils.h"
+-#include <mercury_lib.h>
++#include "../../mercury/inc/mercury_lib.h"
+ 
+ #define JPEGD_MAXBLOCKSPERMCU   10
+ /** ==============================================================
+diff --git a/jpeg2/src/jpege_engine_hw.c b/jpeg2/src/jpege_engine_hw.c
+index 2347a6f..1fd4886 100644
+--- a/jpeg2/src/jpege_engine_hw.c
++++ b/jpeg2/src/jpege_engine_hw.c
+@@ -339,7 +339,7 @@ int jpege_engine_allocate_output_buf (gmn_obj_t gmn_obj,
+     max_output_size : buf_size;
+   output_buf[i].alloc_ion.len = output_buf[i].y_len;
+ 
+-  output_buf[i].vaddr = do_mmap_ion(output_buf[i].y_len, &output_buf[i].fd,
++  output_buf[i].vaddr = do_mmap_ion_gemini(output_buf[i].y_len, &output_buf[i].fd,
+     &output_buf[i].ion_fd_main, &output_buf[i].alloc_ion,
+     &output_buf[i].fd_ion_map, 1);
+ 
+@@ -495,7 +495,7 @@ int jpege_engine_hw_free_output_buf (void)
+     if (output_buf[i].fd <= 0) {
+       continue;
+     }
+-    int rc = do_munmap (output_buf[i].fd, output_buf[i].vaddr,
++    int rc = do_munmap_gemini (output_buf[i].fd, output_buf[i].vaddr,
+       output_buf[i].y_len, output_buf[i].ion_fd_main,
+ 				   &output_buf[i].fd_ion_map);
+     if (rc) {
+@@ -555,7 +555,7 @@ int jpege_engine_hw_input_buf_enq (gmn_obj_t gmn_obj,
+         __func__, __LINE__,
+         input_buf[i].y_len,input_buf[i].cbcr_len);
+       input_buf[i].vaddr =
+-        do_mmap_ion(input_buf[i].y_len + input_buf[i].cbcr_len,
++        do_mmap_ion_gemini(input_buf[i].y_len + input_buf[i].cbcr_len,
+           &input_buf[i].fd, &input_buf[i].ion_fd_main, &input_buf[i].alloc_ion,
+           &input_buf[i].fd_ion_map, 1);
+       if (!input_buf[i].vaddr) {
+@@ -587,7 +587,7 @@ int jpege_engine_hw_free_input_buf (jpege_engine_hw_t *p_engine)
+   if (!p_engine->input_pmem_flag) {
+     for (i = 0; i < sizeof (input_buf) / sizeof (input_buf[0]); i++) {
+       if (input_buf[i].vaddr) {
+-        int rc = do_munmap (input_buf[i].fd, input_buf[i].vaddr,
++        int rc = do_munmap_gemini (input_buf[i].fd, input_buf[i].vaddr,
+           input_buf[i].y_len + input_buf[i].cbcr_len, input_buf[i].ion_fd_main,
+ 				   &input_buf[i].fd_ion_map);
+         if (rc) {
+@@ -743,7 +743,7 @@ int jpege_engine_hw_output_handler (gmn_obj_t gmn_obj,
+       size);
+   for (i = 0; i < MAX_NUM_OUTPUT_BUF; i++) {
+     if (output_buf[i].vaddr == buf->vaddr) {
+-      if (do_clearcache(buf->fd, buf->vaddr, buf->y_len,
++      if (do_clearcache_gemini(buf->fd, buf->vaddr, buf->y_len,
+             output_buf[i].ion_fd_main, &output_buf[i].fd_ion_map)) {
+         JPEG_DBG_ERROR("%s:%d] fail to ClearCache for gemini output\n",
+                        __func__, __LINE__);
+diff --git a/jpeg2/src/jpege_engine_hw_10.c b/jpeg2/src/jpege_engine_hw_10.c
+index b25ca7f..2e90adf 100644
+--- a/jpeg2/src/jpege_engine_hw_10.c
++++ b/jpeg2/src/jpege_engine_hw_10.c
+@@ -274,13 +274,13 @@ int jpege_engine_allocate_output_buf (jpege_hw_obj_t gmn_obj,
+   output_buf[i].alloc_ion.flags =
+     (0x1 << CAMERA_ION_HEAP_ID | 0x1 << ION_IOMMU_HEAP_ID);
+   output_buf[i].alloc_ion.align = 4096;
+-  output_buf[i].vaddr = do_mmap (output_buf[i].y_len, &output_buf[i].fd,
++  output_buf[i].vaddr = do_mmap_gemini (output_buf[i].y_len, &output_buf[i].fd,
+     JPEG_PMEM_ADSP, &output_buf[i].ion_fd_main, &output_buf[i].alloc_ion,
+     &output_buf[i].fd_ion_map);
+   if (!output_buf[i].vaddr) {
+     /* do_mmap is half sucess. it was not complete. so we do not need to
+        call do_munmap().
+-    do_munmap (output_buf[i].fd, output_buf[i].vaddr, output_buf[i].y_len,
++    do_munmap_gemini (output_buf[i].fd, output_buf[i].vaddr, output_buf[i].y_len,
+               output_buf[i].ion_fd_main,
+                &output_buf[i].fd_ion_map);
+     */
+@@ -414,7 +414,7 @@ int jpege_engine_hw_free_output_buf (void)
+     if (output_buf[i].fd <= 0) {
+       continue;
+     }
+-    int rc = do_munmap (output_buf[i].fd, output_buf[i].vaddr,
++    int rc = do_munmap_gemini (output_buf[i].fd, output_buf[i].vaddr,
+       output_buf[i].y_len, output_buf[i].ion_fd_main,
+                             &output_buf[i].fd_ion_map);
+     if (rc) {
+@@ -474,7 +474,7 @@ int jpege_engine_hw_input_buf_enq (jpege_hw_obj_t gmn_obj,
+                 (0x1 << ION_CP_MM_HEAP_ID | 0x1 << ION_IOMMU_HEAP_ID);
+       input_buf[i].alloc_ion.align = 4096;
+       input_buf[i].vaddr =
+-        do_mmap (input_buf[i].y_len + input_buf[i].cbcr_len,
++        do_mmap_gemini (input_buf[i].y_len + input_buf[i].cbcr_len,
+           &input_buf[i].fd,
+           (smipool_available ? JPEG_PMEM_SMIPOOL : JPEG_PMEM_ADSP),
+                  &input_buf[i].ion_fd_main, &input_buf[i].alloc_ion,
+@@ -504,7 +504,7 @@ int jpege_engine_hw_free_input_buf (jpege_engine_hw_t *p_engine)
+   if (!p_engine->input_pmem_flag) {
+     for (i = 0; i < sizeof (input_buf) / sizeof (input_buf[0]); i++) {
+       if (input_buf[i].vaddr) {
+-        int rc = do_munmap (input_buf[i].fd, input_buf[i].vaddr,
++        int rc = do_munmap_gemini (input_buf[i].fd, input_buf[i].vaddr,
+           input_buf[i].y_len + input_buf[i].cbcr_len, input_buf[i].ion_fd_main,
+            &input_buf[i].fd_ion_map);
+         if (rc) {
+diff --git a/mercury/inc/mercury_lib.h b/mercury/inc/mercury_lib.h
+index 328a758..bee98c1 100755
+--- a/mercury/inc/mercury_lib.h
++++ b/mercury/inc/mercury_lib.h
+@@ -5,7 +5,7 @@
+ #ifndef MERCURY_LIB_H
+ #define MERCURY_LIB_H
+ #include <linux/msm_ion.h>
+-
++#include <stdint.h>
+ 
+ #define MSM_MERCURY_NAME "/dev/mercury0"
+ 
+diff --git a/mercury/src/mercury_dbg.h b/mercury/src/mercury_dbg.h
+index a646afd..b81e927 100755
+--- a/mercury/src/mercury_dbg.h
++++ b/mercury/src/mercury_dbg.h
+@@ -6,7 +6,8 @@
+ #define __MERCURY_DBG_H__
+ 
+ #define LOG_DEBUG
+-#define _ANDROID_
++/*#define _ANDROID_*/
++#undef ANDROID
+ 
+ #undef MCR_DBG
+ #undef MCR_PR_ERR
+@@ -40,7 +41,7 @@
+ 	#endif
+     #else
+         #define MCR_DBG(fmt, args...) do{}while(0)
+-        #define MCR_DBG(fmt, args...) fprintf(fmt, ##args)
++        #define MCR_DBG(fmt, args...) fprintf(stderr, fmt, ##args)
+         #define MCR_PR_ERR(fmt, args...) fprintf(stderr, fmt, ##args)
+     #endif
+ #endif
+diff --git a/mercury/src/mercury_lib.c b/mercury/src/mercury_lib.c
+index a3e8ad2..698f0fe 100644
+--- a/mercury/src/mercury_lib.c
++++ b/mercury/src/mercury_lib.c
+@@ -6,6 +6,7 @@
+ #include <sys/ioctl.h>
+ #include <fcntl.h>
+ #include <stdlib.h>
++#include <stdint.h>
+ #include <errno.h>
+ #include <time.h>
+ #include <pthread.h>
+diff --git a/mercury/src/mercury_lib_hw.c b/mercury/src/mercury_lib_hw.c
+index 2789efe..c7dd749 100755
+--- a/mercury/src/mercury_lib_hw.c
++++ b/mercury/src/mercury_lib_hw.c
+@@ -4,6 +4,7 @@
+ 
+ #include <string.h>
+ #include <stdio.h>
++#include <stdint.h>
+ #include <sys/ioctl.h>
+ #include <fcntl.h>
+ #include <media/msm_mercury.h>
+diff --git a/mercury/src/mercury_lib_hw.h b/mercury/src/mercury_lib_hw.h
+index 7fa6d9e..220a60d 100755
+--- a/mercury/src/mercury_lib_hw.h
++++ b/mercury/src/mercury_lib_hw.h
+@@ -6,6 +6,8 @@
+ #define MERCURY_LIB_HW_H
+ 
+ #include <unistd.h>
++#include <stdio.h>
++#include <stdint.h>
+ #include <media/msm_mercury.h>
+ #include "mercury_lib.h"
+ #include "mercury_lib_hw_reg.h"
+diff --git a/omx/inc/omx_debug.h b/omx/inc/omx_debug.h
+index 52a6231..9def2c3 100755
+--- a/omx/inc/omx_debug.h
++++ b/omx/inc/omx_debug.h
+@@ -22,6 +22,9 @@
+   #else
+     #define OMXDBG(fmt, args...) LOGI(fmt, ##args)
+   #endif
++#else
++  #include <stdio.h>
++  #define OMXDBG(fmt, args...) fprintf(stderr, fmt, ##args)
+ #endif
+ 
+ #if(OMX_DBG_ERROR_ENABLE)
+diff --git a/omx/libimage_core/omx_core.c b/omx/libimage_core/omx_core.c
+index 87edb43..6b5ccc5 100755
+--- a/omx/libimage_core/omx_core.c
++++ b/omx/libimage_core/omx_core.c
+@@ -6,7 +6,7 @@
+ #include <unistd.h>
+ #include <string.h>
+ #include <pthread.h>
+-
++#include <inttypes.h>
+ #include "omx_core.h"
+ 
+ #define BUFF_SIZE 255
+-- 
+1.8.2.1
+
