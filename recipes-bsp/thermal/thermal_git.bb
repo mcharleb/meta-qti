@@ -11,6 +11,7 @@ PR = "r0"
 SRC_URI += "file://thermald.conf"
 SRC_URI += "file://thermald-8064.conf"
 SRC_URI += "file://thermald-8064ab.conf"
+SRC_URI += "file://thermald-8064ab-lowtemp.conf"
 
 PACKAGES = "${PN}"
 
@@ -42,6 +43,7 @@ do_install_append() {
        install -m 0755 ${WORKDIR}/thermald.conf -D ${D}${sysconfdir}/init/thermald.conf
        install -m 0755 ${WORKDIR}/thermald-8064.conf -D ${D}${sysconfdir}/thermald-8064.conf
        install -m 0755 ${WORKDIR}/thermald-8064ab.conf -D ${D}${sysconfdir}/thermald-8064ab.conf
+       install -m 0755 ${WORKDIR}/thermald-8064ab-lowtemp.conf -D ${D}${sysconfdir}/thermald-8064ab-lowtemp.conf
 }
 
 pkg_prerm_thermal() {
