@@ -44,5 +44,5 @@ do_unpack_append() {
 }
 
 do_install_append() {
-       install -m 0755 ${WORKDIR}/bt.init.sh -D ${D}${sysconfdir}/bt.init.sh
+       install -m 0755 ${WORKDIR}/bt.init.sh -D ${D}/usr/bin/bt.init.sh
 }
