@@ -10,6 +10,7 @@ PR = "r0"
 
 SRC_URI = "file://Makefile.am file://configure.ac"
 SRC_URI += "file://0000-hci_qcomm_init-and-btnvtool.patch"
+SRC_URI += "file://0001-rewrite-macaddr.patch"
 SRC_URI += "file://bt.init.sh"
 PACKAGES = "${PN}"
 
