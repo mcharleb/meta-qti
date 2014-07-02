@@ -22,7 +22,7 @@ RDEPENDS_packagegroup-qrl-binaries = " \
 	hci-qcomm-init \
 	mm-camera \
 	mm-still \
-	mm-camera-lib \
+	mm-camera-lib-prebuilt \
 	camera-hal \
 "
 
