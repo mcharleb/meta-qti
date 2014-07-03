@@ -142,7 +142,7 @@ index 82e270d..681de83 100644
  #else
  /*     #define GMN_DBG(fmt, args...) do{}while(0) */
 -#define GMN_DBG(fmt, args...) fprintf(fmt, ##args)
-+#define GMN_DBG(fmt, args...) fprintf(stderr, fmt, ##args)
++#define GMN_DBG(fmt, args...) do{} while(0)
  #define GMN_PR_ERR(fmt, args...) fprintf(stderr, fmt, ##args)
  #endif
  #endif
