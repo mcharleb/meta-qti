@@ -6,11 +6,12 @@ LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PV = "1.0"
-PR = "r0"
+PR = "r1"
 
 SRC_URI = "file://Makefile.am file://configure.ac"
 SRC_URI += "file://0000-hci_qcomm_init-and-btnvtool.patch"
 SRC_URI += "file://0001-rewrite-macaddr.patch"
+SRC_URI += " file://0002-Change-persistence-path-to-mnt-persist.patch"
 SRC_URI += "file://bt.init.sh"
 PACKAGES = "${PN}"
 

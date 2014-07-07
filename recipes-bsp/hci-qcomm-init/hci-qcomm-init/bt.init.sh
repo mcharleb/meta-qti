@@ -10,6 +10,10 @@
 SCRIPT_VERSION="v0.2"
 echo "BT Init Script: $SCRIPT_VERSION"
 
+QRL_COMMON_INCS_DIR=/usr/local/qr-linux
+# Include common files
+. ${QRL_COMMON_INCS_DIR}/qrl-mac-fw-inc.sh
+
 QC_NO_HCI_INIT=0
 if [ 1 -eq $# ]
 then
@@ -30,7 +34,13 @@ QC_BT_NV_TOOL_OPTIONS="-O"
 QC_BT_HCICONFIG_TOOL=/usr/bin/hci-qcomm-init
 QC_BT_HCICONFIG_TOOL_OPTIONS="-e -v -v -v -v -v"
 
-QC_FS_PERSIST_DIR=/persist
+QC_FS_PERSIST_DIR=${QRL_DEFAULT_MOUNTROOT}/${QRL_PARTITION_NAME_PERSIST}
+
+isMounted ${QRL_DEVICE_PERSIST} ${QC_FS_PERSIST_DIR}
+if [ $? -ne 0 ]
+then
+   mountPartition ${QRL_PARTITION_NAME_PERSIST}
+fi
 
 myrandom=$(date +%S)
 
@@ -109,8 +119,9 @@ fi
 
 if [ 0 -eq $QC_NO_HCI_INIT ]
 then
-    echo "Generating BT address.."
-    ${QC_BT_NV_TOOL} ${QC_BT_NV_TOOL_OPTIONS}
+    echo "Getting BT address.."
+    # This also copies it to /lib/firmware
+    copyMACAddr
 
     echo "Downloading BT QSoC firmware.."
     ${QC_BT_HCICONFIG_TOOL} ${QC_BT_HCICONFIG_TOOL_OPTIONS}
@@ -120,7 +131,6 @@ then
     else
         echo "BT QSoC firmware download sucessful.."
     fi
-    cp /persist/.bt_nv.bin /lib/firmware/bt_nv.bin
 else
     echo "Skipping hardware init"
 fi
@@ -150,7 +160,7 @@ echo "Stopping bluetooth /etc/init.d/bluetooth service"
 /etc/init.d/bluetooth stop
 
 echo "Starting manually bluetoothd"
-${BT_DAEMON} ${BT_DAEMON_OPTIONS} &
+nohup ${BT_DAEMON} ${BT_DAEMON_OPTIONS} &
 sleep 2
 
 #${HCICONFIG} hci0 up
@@ -164,7 +174,13 @@ btname=$myhostname$myrandom
 ${HCICONFIG} hci0 name $btname
 
 #BT DUN port-bridge
-${CHMOD} 0660 /dev/smd7
-${CHOWN} bluetooth:bluetooth /dev/smd7
+${CHMOD} 0660 /dev/smd3
+${CHOWN} bluetooth:bluetooth /dev/smd3
+
+isMounted ${QRL_DEVICE_PERSIST} ${QC_FS_PERSIST_DIR}
+if [ $? -ne 0 ]
+then
+   umount ${QRL_PARTITION_NAME_PERSIST}
+fi
 
 echo "Done."
