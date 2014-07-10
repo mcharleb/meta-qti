@@ -1,0 +1,24 @@
+From 92c2823fff99d4e52445149ecc950fc92b47929e Mon Sep 17 00:00:00 2001
+From: kdlee <kdlee@qti.qualcomm.com>
+Date: Wed, 9 Jul 2014 17:18:53 -0700
+Subject: [PATCH] Add missing header to Makefile.am
+
+---
+ src/Makefile.am | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index f340161..0101804 100755
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -33,6 +33,7 @@ h_sources +=../include/msgtgt.h
+ h_sources +=../include/diagcmd.h
+ h_sources +=../src/diagdiag.h
+ h_sources +=../include/diagi.h
++h_sources +=../include/diaglogi.h
+ 
+ c_sources  =diag_lsm.c \
+ 				ts_linux.c \
+-- 
+1.7.11.4
+

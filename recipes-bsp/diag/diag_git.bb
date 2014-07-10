@@ -9,6 +9,9 @@ PV = "1.0"
 PR = "r0"
 
 SRC_URI += "file://chgrp-diag"
+SRC_URI += "file://0001-Fix-include-for-ptt_socket_app.patch"
+SRC_URI += "file://0002-Add-missing-header-to-Makefile.am.patch"
+
 PACKAGES = "${PN}"
 
 EXTRA_OECONF += "--with-glib --with-common-includes=${STAGING_INCDIR}"
@@ -33,5 +36,6 @@ do_fetch_append() {
 INSANE_SKIP_${PN} = "installed-vs-shipped"
 
 do_install_append() {
+    cp ${S}/include/diaglogi.h ${STAGING_INCDIR}/diag
     install -m 0755 ${WORKDIR}/chgrp-diag -D ${D}${sysconfdir}/init.d/chgrp-diag
 }
