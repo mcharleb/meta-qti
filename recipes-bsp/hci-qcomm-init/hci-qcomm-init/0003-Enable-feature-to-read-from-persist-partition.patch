@@ -1,0 +1,39 @@
+From c9b297f0e1f8905ef8a56f96919a4b7adb37bdb8 Mon Sep 17 00:00:00 2001
+From: kdlee <kdlee@qti.qualcomm.com>
+Date: Thu, 10 Jul 2014 14:31:44 -0700
+Subject: [PATCH] Enable-feature-to-read-from-persist-partition
+
+---
+ Makefile.am | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 8a709d7..ffe0834 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -2,12 +2,13 @@
+ 
+ bin_PROGRAMS = hci-qcomm-init btnvtool
+ 
+-btnvtool_SOURCES = btnvtool.cpp bt_nv.cpp
++btnvtool_SOURCES = bt_nv.cpp btnvtool.cpp 
+ 
+ btnvtool_CFLAGS = -static -g
+ btnvtool_LDFLAGS = -lrt
+ 
+ hci_qcomm_init_SOURCES = \
++	bt_nv.cpp \
+ 	bthci_qcomm_linux.cpp \
+ 	bthci_qcomm_linux_uart.c \
+ 	bthci_qcomm_common.c \
+@@ -69,6 +70,7 @@ hci_qcomm_init_CPPFLAGS = -I $(srcdir)/hci-qcomm-init \
+ 	-DFEATURE_BT_QSOC_BAHAMA_A0 \
+ 	-DFEATURE_BT_QSOC_BAHAMA_B0 \
+ 	-DFEATURE_BT_QSOC_BAHAMA_B1 \
++        -DBT_QSOC_GET_ITEMS_FROM_PERSIST \
+ 	-DBT_QSOC_HCI_DEVICE="/dev/ttyS0" \
+ 	-DBT_QSOC_HCI_DEVICE=115200 \
+ 	-DBT_QSOC_REF_CLOCK=32000000
+-- 
+1.7.11.4
+
