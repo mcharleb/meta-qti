@@ -73,21 +73,6 @@ checkFile $DBUS
 checkFile $BT_DAEMON
 checkFile $HCICONFIG
 
-## Create user and group bluetooth if needed
-userBT=bluetooth
-createGroup="-g $userBT"
-id $userBT > /dev/null || {
-   echo "User $userBT doesn't exist. Creating."
-   grep $userBT /etc/group || {
-      echo "Creating group $userBT"
-      createGroup="-U"
-   }
-   useradd $createGroup $userBT || {
-      echo "[ERROR] could not create user/group $userBT"
-      exit 1
-   }
-}
-
 echo -n "  Checking WiFi hardware initialization status..." 
 cfgModule=`grep cfg80211 /proc/modules`
 cfgModule=${#cfgModule}
@@ -121,6 +106,7 @@ if [ 0 -eq $QC_NO_HCI_INIT ]
 then
     echo "Getting BT address.."
     # This also copies it to /lib/firmware
+    createBluetoothUser
     copyMACAddr
 
     echo "Downloading BT QSoC firmware.."
