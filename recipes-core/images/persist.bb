@@ -46,26 +46,27 @@ do_rootfs[rdeptask] += "do_package_write_deb"
 
 # Must call real_do_rootfs() from inside here, rather than as a separate
 # task, so that we have a single fakeroot context for the whole process.
+# FIXME:ranand Disabled for now
 do_rootfs[umask] = "022"
 
-fakeroot do_rootfs() {
-        if [ -e ${IMAGE_ROOTFS} ]; then
-            rm -rf ${IMAGE_ROOTFS}
-        fi
-        install -d ${IMAGE_ROOTFS}
-
-        # Create the image directory
-        install -d ${DEPLOY_DIR_IMAGE}
-
-        ${IMAGE_PREPROCESS_COMMAND}
-
-        ${@get_imagecmds(d)}
-
-        ${IMAGE_POSTPROCESS_COMMAND}
-
-        ${MACHINE_POSTPROCESS_COMMAND}
-
-}
+#fakeroot do_rootfs() {
+#        if [ -e ${IMAGE_ROOTFS} ]; then
+#            rm -rf ${IMAGE_ROOTFS}
+#        fi
+#        install -d ${IMAGE_ROOTFS}
+#
+#        # Create the image directory
+#        install -d ${DEPLOY_DIR_IMAGE}
+#
+#        ${IMAGE_PREPROCESS_COMMAND}
+#
+#        ${@get_imagecmds(d)}
+#
+#        ${IMAGE_POSTPROCESS_COMMAND}
+#
+#        ${MACHINE_POSTPROCESS_COMMAND}
+#
+#}
 
 do_patch[noexec] = "1"
 do_configure[noexec] = "1"
