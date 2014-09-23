@@ -29,11 +29,12 @@ diff --git a/gemini/inc/gemini_app_util_mmap.h b/gemini/inc/gemini_app_util_mmap
 index 6e3e9d3..794f9ee 100644
 --- a/gemini/inc/gemini_app_util_mmap.h
 +++ b/gemini/inc/gemini_app_util_mmap.h
-@@ -15,7 +15,7 @@ typedef enum {
+@@ -15,7 +15,8 @@ typedef enum {
   *
   * DESCRIPTION:  retured virtual addresss
   *==========================================================================*/
 -void *do_mmap (long size, int *p_pmem_fd, gemini_pmem_region_type type,
++#include <stdint.h>
 +void *do_mmap_gemini (long size, int *p_pmem_fd, gemini_pmem_region_type type,
                 int *ion_fd, struct ion_allocation_data *alloc,
  		       struct ion_fd_data *ion_info_fd);
