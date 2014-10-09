@@ -14,20 +14,24 @@ do_package_write_deb_append() {
     #  - dest: directory where to output this package
     pkg = 'PKG_' + d.getVar('PN', True)
     pkgName = d.getVar(pkg, True)
-    #debFile = d.getVar('PN', True) + '_'  + d.getVar('PV', True) + '-' + d.getVar('PR', True) + '_'  + d.getVar('DPKG_ARCH',True) + '.deb' # The full name of the package
     debFile = pkgName + '_'  + d.getVar('PV', True) + '-' + d.getVar('PR', True) + '_'  + d.getVar('DPKG_ARCH',True) + '.deb' # The full name of the package
     pkgDir = d.getVar('PKGWRITEDIRDEB',True) + '/' + d.getVar('PACKAGE_ARCH', True) # Package's location
     pkgSrcPath = pkgDir + '/' + debFile
     installedPkgDir = d.getVar('DEPLOY_DIR', True) + "/deb/" + d.getVar('PACKAGE_ARCH', True) # Where stuff gets installed
     pkgDest = d.getVar('DEPLOY_DIR', True) + d.getVar('QTI_BINARY_PKG_LOC', True)
 
-    bb.debug(1, ". Copying proprietary package " + pkgSrcPath + " -> " + pkgDest)
+    bb.debug(1, "Copying proprietary package " + pkgSrcPath + " -> " + pkgDest)
     if not os.path.isdir(pkgDest):
         bb.debug(2, "Creating proprietary package directory " + pkgDest)
         try:
             os.makedirs(pkgDest)
         except Exception, e:
-            bb.fatal("Error creating package directory " + pkgDest + " : " + str(e) )
+            # There's a race condition where the dir might have gotten created
+            # between when the isdir check was made, and makedirs was called.
+            # Check if makedirs returned EEXIST or something else.
+            err = str(e)
+            if 'Errno 17' not in err:
+                bb.fatal("Error creating package directory " + pkgDest + " : " + str(e) )
     try:
         shutil.copy(pkgSrcPath, pkgDest)
     except Exception, e:
