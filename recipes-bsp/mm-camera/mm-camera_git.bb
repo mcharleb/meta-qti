@@ -12,7 +12,6 @@ SRC_URI_append_som8064 = " file://0002-som8064-baseline-to-linux-platform.patch"
 SRC_URI_append_ifc6410 = " file://0001-ifc6410-makefile-configure-scripts-for-linux-build.patch"
 SRC_URI_append_ifc6410 = " file://0002-ifc6410-baseline-to-linux-platform.patch"
 
-SRC_URI_append = " file://0003-OV5640-camera-sensor-support.patch"
 SRC_URI_append = " file://0004-enable-yuv-preview-snapshot-dump.patch"
 
 PACKAGES = "${PN}"
