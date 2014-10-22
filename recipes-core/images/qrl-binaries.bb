@@ -26,12 +26,14 @@ DEPENDS += " \
 	mm-still \
 	mm-camera-lib-prebuilt \
 	camera-hal \
+	qrl-networking \
+	ifc-6410-networking \
 "
 
 inherit base
 
 copy_packages() {
-  pkgList="libglib-2.0-0_2.38.2-r0 libz1 libgcc-s1 libconfigdb0 libdsutils1 diag mp-decision qmi qmi-framework thermal libxml0 reboot2fastboot hci-qcomm-init mm-camera-lib-prebuilt mm-camera mm-still libcamera0"
+  pkgList="libglib-2.0-0_2.38.2-r0 libz1 libgcc-s1 libconfigdb0 libdsutils1 diag mp-decision qmi qmi-framework thermal libxml0 reboot2fastboot hci-qcomm-init mm-camera-lib-prebuilt mm-camera mm-still libcamera0 ifc6410-networking qrl-networking android-tools"
 
   if [ -e ${IMAGE_ROOTFS} ]; then
     rm -rf ${IMAGE_ROOTFS}
