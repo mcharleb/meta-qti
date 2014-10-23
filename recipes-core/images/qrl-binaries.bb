@@ -27,7 +27,7 @@ DEPENDS += " \
 	mm-camera-lib-prebuilt \
 	camera-hal \
 	qrl-networking \
-	ifc-6410-networking \
+	ifc6410-networking \
 "
 
 inherit base
