@@ -1,0 +1,51 @@
+diff --git a/server/Makefile.am b/server/Makefile.am
+index 40759c8..e54bf48 100644
+--- a/server/Makefile.am
++++ b/server/Makefile.am
+@@ -63,6 +63,7 @@ libmmcamera_target_la_CFLAGS += -I hardware/sensor/ov9724
+ libmmcamera_target_la_CFLAGS += -I hardware/sensor/ov9726
+ libmmcamera_target_la_CFLAGS += -I hardware/sensor/s5k3l1yx
+ libmmcamera_target_la_CFLAGS += -I hardware/sensor/vx6953
++libmmcamera_target_la_CFLAGS += -I hardware/sensor/cust_sens
+ 
+ libmmcamera_target_la_CFLAGS += -I hardware/sensor_libs/imx091
+ libmmcamera_target_la_CFLAGS += -I hardware/camif
+@@ -225,6 +226,7 @@ libmmcamera_target_la_SOURCES += hardware/sensor/ov9724/ov9724_u.c
+ libmmcamera_target_la_SOURCES += hardware/sensor/ov9726/ov9726_u.c
+ libmmcamera_target_la_SOURCES += hardware/sensor/s5k4e1/s5k4e1_u.c
+ libmmcamera_target_la_SOURCES += hardware/sensor/vx6953/vx6953_u.c
++libmmcamera_target_la_SOURCES += hardware/sensor/cust_sens/cust_sens_u.c
+ 
+ #add vfe
+ libmmcamera_target_la_SOURCES += hardware/vfe/vfe_interface/vfe_interface.c
+@@ -369,11 +371,29 @@ libmmcamera_target_la_LIBADD += -lm
+ libmmcamera_target_la_LIBADD += -lrt
+ libmmcamera_target_la_LIBADD += -lpthread
+ libmmcamera_target_la_LIBADD += -ldl
++libmmcamera_target_la_LIBADD += -lcustcamsens_params
+ 
+ libmmcamera_target_la_DEPENDENCIES := $(call override_mem_alloc_dealloc,$(libmmcamera_target_la_OBJECTS))
+ 
++#libcustcamsens_params
++lib_LTLIBRARIES := libcustcamsens_params.la
++
++libcustcamsens_params_la_CFLAGS := $(DEBUG_CFLAGS)
++libcustcamsens_params_la_CFLAGS += -DAMSS_VERSION=$(AMSS_VERSION)
++libcustcamsens_params_la_CFLAGS += -DMSM_CAMERA_GCC
++libcustcamsens_params_la_CFLAGS += -DLINUX_ENABLED
++libcustcamsens_params_la_CFLAGS += -D_V4L2_BASED_CAM_
++libcustcamsens_params_la_CFLAGS += -DUSE_ION
++libcustcamsens_params_la_CFLAGS += -I ../common
++libcustcamsens_params_la_CFLAGS += -I include
++
++libcustcamsens_params_la_SOURCES := hardware/sensor/cust_sens/libcustcamsens_params.c
++
++libcustcamsens_params_la_LDFLAGS := $(DEBUG_LDFLAGS)
++libcustcamsens_params_la_LDFLAGS += -shared
++
+ #libmmcamera_statsproc31
+-lib_LTLIBRARIES := libmmcamera_statsproc31.la
++lib_LTLIBRARIES += libmmcamera_statsproc31.la
+ 
+ libmmcamera_statsproc31_la_CFLAGS := $(DEBUG_CFLAGS)
+ libmmcamera_statsproc31_la_CFLAGS += -DAMSS_VERSION=$(AMSS_VERSION)
