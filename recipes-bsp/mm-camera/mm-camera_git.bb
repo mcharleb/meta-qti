@@ -81,7 +81,7 @@ do_install_append() {
 }
 
 pkg_postinst_${PN}_append() {
-   install -d ${D}/data
+   install -m 0777 -d /data
 }
 
 pkg_prerm_mmcamera() {
