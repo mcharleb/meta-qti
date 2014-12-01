@@ -1,32 +1,5 @@
-From 46d3f671de61d2a1b003e46a29387e460621a1a6 Mon Sep 17 00:00:00 2001
-From: Kaustubh Gondkar <kgondkar@qti.qualcomm.com>
-Date: Fri, 20 Jun 2014 11:39:09 -0700
-Subject: [PATCH] ifc6410 baseline for linux
-
-Change-Id: I9eb17190c4eeabf7c96bb48ec714d394a687a91f
----
- gemini/inc/gemini_app_util_mmap.h |  8 ++++----
- gemini/inc/gemini_lib_common.h    |  1 +
- gemini/src/gemini_app_util_mmap.c |  8 ++++----
- gemini/src/gemini_dbg.h           | 10 +++++-----
- gemini/src/gemini_inline.c        |  8 ++++----
- gemini/src/gemini_lib_hw.c        |  1 +
- jpeg2/src/exif_defaults.c         |  2 ++
- jpeg2/src/jpeg_debug.c            |  2 ++
- jpeg2/src/jpegd_engine_hw.c       | 11 ++++++-----
- jpeg2/src/jpege_engine_hw.c       | 10 +++++-----
- jpeg2/src/jpege_engine_hw_10.c    | 10 +++++-----
- mercury/inc/mercury_lib.h         |  2 +-
- mercury/src/mercury_dbg.h         |  5 +++--
- mercury/src/mercury_lib.c         |  1 +
- mercury/src/mercury_lib_hw.c      |  1 +
- mercury/src/mercury_lib_hw.h      |  2 ++
- omx/inc/omx_debug.h               |  3 +++
- omx/libimage_core/omx_core.c      |  2 +-
- 18 files changed, 51 insertions(+), 36 deletions(-)
-
 diff --git a/gemini/inc/gemini_app_util_mmap.h b/gemini/inc/gemini_app_util_mmap.h
-index 6e3e9d3..794f9ee 100644
+index 6e3e9d3..4e046e2 100644
 --- a/gemini/inc/gemini_app_util_mmap.h
 +++ b/gemini/inc/gemini_app_util_mmap.h
 @@ -15,7 +15,8 @@ typedef enum {
@@ -39,7 +12,7 @@ index 6e3e9d3..794f9ee 100644
                 int *ion_fd, struct ion_allocation_data *alloc,
  		       struct ion_fd_data *ion_info_fd);
  
-@@ -24,7 +24,7 @@ void *do_mmap (long size, int *p_pmem_fd, gemini_pmem_region_type type,
+@@ -24,7 +25,7 @@ void *do_mmap (long size, int *p_pmem_fd, gemini_pmem_region_type type,
   *
   * DESCRIPTION:
   *==========================================================================*/
@@ -48,7 +21,7 @@ index 6e3e9d3..794f9ee 100644
                 int ion_fd, struct ion_fd_data *ion_info_fd);
  
  /*===========================================================================
-@@ -33,7 +33,7 @@ int do_munmap (int pmem_fd, void *addr, size_t size,
+@@ -33,7 +34,7 @@ int do_munmap (int pmem_fd, void *addr, size_t size,
   * DESCRIPTION:  This version of mmap is used for ION. The API supports
   *               cached or uncached memory
   *==========================================================================*/
@@ -57,7 +30,7 @@ index 6e3e9d3..794f9ee 100644
    int *ion_fd, struct ion_allocation_data *alloc,
    struct ion_fd_data *ion_info_fd, int8_t cached);
  
-@@ -42,6 +42,6 @@ void *do_mmap_ion(long size, int *p_pmem_fd,
+@@ -42,6 +43,6 @@ void *do_mmap_ion(long size, int *p_pmem_fd,
   *
   * DESCRIPTION:
   *==========================================================================*/
@@ -118,25 +91,22 @@ index 67be1d0..27e1b5c 100644
    size_t size,
    int ion_fd,
 diff --git a/gemini/src/gemini_dbg.h b/gemini/src/gemini_dbg.h
-index 82e270d..681de83 100644
+index 82e270d..e119d37 100644
 --- a/gemini/src/gemini_dbg.h
 +++ b/gemini/src/gemini_dbg.h
-@@ -6,10 +6,10 @@
- #ifndef __GEMINI_DBG_H__
+@@ -7,9 +7,8 @@
  #define __GEMINI_DBG_H__
  
--#undef LOG_DEBUG
+ #undef LOG_DEBUG
 -/*#define LOG_DEBUG*/
 -#define _ANDROID_
 -
-+/*#undef LOG_DEBUG*/
-+#define LOG_DEBUG
 +/*#define _ANDROID_*/
 +#include <stdio.h>
  #undef GMN_DBG
  #undef GMN_PR_ERR
  
-@@ -42,7 +42,7 @@
+@@ -42,7 +41,7 @@
  #endif
  #else
  /*     #define GMN_DBG(fmt, args...) do{}while(0) */
@@ -391,14 +361,16 @@ index 328a758..bee98c1 100755
  #define MSM_MERCURY_NAME "/dev/mercury0"
  
 diff --git a/mercury/src/mercury_dbg.h b/mercury/src/mercury_dbg.h
-index a646afd..b81e927 100755
+index a646afd..8d67adc 100755
 --- a/mercury/src/mercury_dbg.h
 +++ b/mercury/src/mercury_dbg.h
-@@ -6,7 +6,8 @@
+@@ -5,8 +5,9 @@
+ #ifndef __MERCURY_DBG_H__
  #define __MERCURY_DBG_H__
  
- #define LOG_DEBUG
+-#define LOG_DEBUG
 -#define _ANDROID_
++#undef LOG_DEBUG
 +/*#define _ANDROID_*/
 +#undef ANDROID
  
@@ -477,6 +449,3 @@ index 87edb43..6b5ccc5 100755
  #include "omx_core.h"
  
  #define BUFF_SIZE 255
--- 
-1.8.2.1
-
