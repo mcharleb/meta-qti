@@ -273,7 +273,7 @@ configureLayers () {
    grep "${commentString}" ${bblayersFile} > /dev/null 2>&1 || {
 
       echo ${commentString} >> ${bblayersFile}
-      for layer in meta-qti meta-qti-prebuilt 
+      for layer in meta-qti 
       do
          echo "BBLAYERS += \"\${TOPDIR}/../${layer}\"" >> ${bblayersFile}
       done
