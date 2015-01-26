@@ -15,6 +15,9 @@ DEPENDS_append_som8064 = "som8064-networking"
 DEPENDS_append_som8064-revB = "som8064-networking"
 DEPENDS_append_som8064-const = "som8064-networking"
 
+APQ8064_PARTITION_PERSIST_SIZE = "8M"
+APQ8064_PARTITION_SYSTEM_SIZE = "512M"
+APQ8064_PARTITION_CACHE_SIZE = "64M"
 
 DEPENDS += " \
    kernel-module-wlan \
@@ -37,11 +40,13 @@ DEPENDS += " \
    qrl-networking \
    adsprpc \
    q6-admin \
+   flight-dsp-image \
+   paramgen \
+   muorb \
+   imu \
+   libimufastrpc \
+   pixhawk \
 "
-#   paramgen 
-#   imu 
-#   pixhawk 
-
 inherit base
 
 copy_packages() {
@@ -89,11 +94,13 @@ copy_packages() {
 		mm-still \
 		libcamera0 \
 		adsprpc \
+		flight-dsp-image \
+                paramgen \
+                imu \
+                muorb \
+		libimufastrpc \                
+                pixhawk \
 "
-#	    paramgen 
-#		imu 
-#		pixhawk 
-
 
   #
   # For each of them, copy the packages to a temp directory, and create
@@ -129,7 +136,7 @@ copy_packages() {
 # It expects QRL_BINARIES_FW_LOCATION to contain the filesystem from which
 # the image is built and placed in the out dir.
 create_cache_image() {
-  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l 64M  -L qcom-firmware ${DEPLOY_DIR_IMAGE}/out/cache.img ${QRL_BINARIES_FW_LOCATION}
+  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${APQ8064_PARTITION_CACHE_SIZE} -L qcom-firmware ${DEPLOY_DIR_IMAGE}/out/cache.img ${QRL_BINARIES_FW_LOCATION}
 }
 
 # System image is created by take all the qrlPackage*tgz files from the out directory,
@@ -144,9 +151,20 @@ create_system_image() {
   done
 
   # Add the Blur meta package
-  cp ${BLUR_META_PKG_LOCATION}/blur-meta-pkg_0.1_all.deb ${IMAGE_ROOTFS}/system_rootfs/qrlPackages
+  #cp ${BLUR_META_PKG_LOCATION}/blur-meta-pkg_0.1_all.deb ${IMAGE_ROOTFS}/system_rootfs/qrlPackages
 
-  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l 512M   ${DEPLOY_DIR_IMAGE}/out/system.img ${IMAGE_ROOTFS}/system_rootfs
+  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${APQ8064_PARTITION_SYSTEM_SIZE} ${DEPLOY_DIR_IMAGE}/out/system.img ${IMAGE_ROOTFS}/system_rootfs
+}
+
+# Persist image contains NV items.
+create_persist_image() {
+  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${APQ8064_PARTITION_PERSIST_SIZE} ${DEPLOY_DIR_IMAGE}/out/persist.img ${DEPLOY_DIR}/persist/${MACHINE}
+}
+
+# Create the release structure required for metabuild
+create_release_structure() {
+  mkdir -p ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8960
+  cp ${DEPLOY_DIR_IMAGE}/out/*.img ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8960/
 }
 
 do_copy_packages() {
@@ -157,6 +175,8 @@ do_image() {
   copy_packages
   create_system_image
   create_cache_image
+  create_persist_image
+  create_release_structure
 }
 
 do_patch[noexec] = "1"

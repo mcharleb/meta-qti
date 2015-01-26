@@ -49,6 +49,7 @@ SRC_URI_append_som8064-const = " file://0014-stereo-autofocus-mode-api.patch"
 SRC_URI_append_som8064-const = " file://0015-stereo-resolution-generic-dimensions-api.patch"
 SRC_URI_append_som8064-const = " file://0016-stereo-auto-exposure-on-off-api.patch"
 SRC_URI_append_som8064-const = " file://0017-stereo-camera-bykugan-wideeye-selction-api.patch"
+SRC_URI_append_som8064-const = " file://0018-stereo-cam-mode-3d.patch"
 
 SRC_URI_append_ifc6410 = " file://0001-ifc6410-makefile-configure-scripts-for-linux-build.patch"
 SRC_URI_append_ifc6410 = " file://0002-ifc6410-baseline-to-linux-platform.patch"

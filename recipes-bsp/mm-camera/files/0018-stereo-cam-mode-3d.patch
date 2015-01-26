@@ -1,0 +1,26 @@
+From 014a7bc76223c653e3fb833b855b7e568a23d9a5 Mon Sep 17 00:00:00 2001
+From: Kaustubh Gondkar <kgondkar@qti.qualcomm.com>
+Date: Mon, 23 Mar 2015 16:48:54 -0700
+Subject: [PATCH] stereo cam mode 3d
+
+Change-Id: If3b5dd736f9b047bb7c4044175906e8af9d0cff3
+---
+ server/hardware/sensor/qs_imx111/qs_imx111_u.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/server/hardware/sensor/qs_imx111/qs_imx111_u.c b/server/hardware/sensor/qs_imx111/qs_imx111_u.c
+index 164761b..7a73354 100644
+--- a/server/hardware/sensor/qs_imx111/qs_imx111_u.c
++++ b/server/hardware/sensor/qs_imx111/qs_imx111_u.c
+@@ -560,6 +560,8 @@ int8_t qs_imx111_process_start(void *ctrl)
+   sctrl->sensor.inputformat = qs_imx111_inputformat;
+   sctrl->sensor.crop_info = qs_imx111_cropinfo;
+   sctrl->sensor.mode_3d = 1;
++  sctrl->sensor.cam_mode = 2; /*MSM_SENSOR_MODE_3D;*/
++
+   if (sctrl->sensor.mode_3d == 1 )
+     sctrl->sensor.mode_res = qs_imx111_mode_3d_res;
+   else
+-- 
+1.8.2.1
+

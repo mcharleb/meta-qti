@@ -1,6 +1,6 @@
 DESCRIPTION = "Networking configuration for som8064"
-LICENSE = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qr-linux/COPYING;md5=7b4fa59a65c2beb4b3795e2b3fbb8551"
+LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
 PR = "r0"
 PV = "1.0"
