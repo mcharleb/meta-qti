@@ -1,0 +1,22 @@
+diff --git a/server/hardware/sensor/sensor_interface.c b/server/hardware/sensor/sensor_interface.c
+index 655893c..7e37dd0 100644
+--- a/server/hardware/sensor/sensor_interface.c
++++ b/server/hardware/sensor/sensor_interface.c
+@@ -168,7 +168,7 @@ static int  sensor_client_set_params(uint32_t handle, int type,
+ 
+       /*CDBG_ERROR("%s:%d] SENSOR_SET_EXPOSURE thru aec skipping \n",
+ 			 __func__, __LINE__);*/
+-      return 1;
++      /*return 1;*/
+ 	
+       stats_proc_get_t stats_proc_get;
+       stats_proc_get.d.get_aec.type = AEC_EXPOSURE_PARAMS;
+@@ -188,7 +188,7 @@ static int  sensor_client_set_params(uint32_t handle, int type,
+       aec_data.luma_target =
+         stats_proc_get.d.get_aec.d.exp_params.luma_target;
+       aec_data.skip_snap_wait = 0;
+-      CDBG("%s:%d] SENSOR_SET_EXPOSURE snap %d lum %d gain %f linecnt %u"
++      CDBG_ERROR("%s:%d] SENSOR_SET_EXPOSURE AEC snap %d lum %d gain %f linecnt %u"
+         " luma target %d \n", __func__, __LINE__,
+         stats_proc_get.d.get_aec.d.exp_params.is_snapshot,
+         aec_data.current_luma,

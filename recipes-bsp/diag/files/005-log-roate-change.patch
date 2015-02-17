@@ -1,0 +1,325 @@
+diff --git a/include/diag_lsm.h b/include/diag_lsm.h
+index 3bfa7b8..24b4425 100755
+--- a/include/diag_lsm.h
++++ b/include/diag_lsm.h
+@@ -166,6 +166,20 @@ DEPENDENCIES
+ ===========================================================================*/
+ void enable_write_to_terminal( int terminalFlag );
+ 
++
++/*===========================================================================
++FUNCTION enable_write_to_terminal
++
++DESCRIPTION
++   When this flag is set, diag_mdlog collect logs in rotation at /sdcard/diag_logs/rotate
++   
++   
++DEPENDENCIES
++   In the current code, we can write to terminal only if write to text file is enabled. 
++   
++===========================================================================*/
++void enable_log_rotation( int enablelFlag );
++
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/mdlog/diag_mdlog.c b/mdlog/diag_mdlog.c
+index befcc96..34a53d9 100755
+--- a/mdlog/diag_mdlog.c
++++ b/mdlog/diag_mdlog.c
+@@ -75,6 +75,7 @@ when       who    what, where, why
+ 
+ /* static data */
+ static int dir_set = 0;
++static int rotate_set = 0;
+ static int kill_mdlog = 0;
+ 
+ extern unsigned long max_file_size;
+@@ -96,7 +97,8 @@ static void usage(char *progname)
+ 	printf("\n-o, --output:\t output directory name\n");
+ 	printf("\n-s, --size:\t maximum file size in MB\n");
+ 	printf("\n-t, --text:\t print logging to text file\n");
+-	printf("\n-x, --terminal:\t print logging to terminal\n");	
++	printf("\n-x, --terminal:\t print logging to terminal\n");
++	printf("\n-r, --rotate:\t collect log  in rotation at \sdcard\diag_logs\rotate\diag_logs.qmdl \n");	
+ 	printf("\n-k, --kill:\t kill existing instance of diag_mdlog\n");
+ 	printf("\n-c  --cleanmask:\t Send mask cleanup to modem at exit\n");
+ 	printf("\n-h, --help:\t usage help\n");
+@@ -109,18 +111,20 @@ static void parse_args(int argc, char **argv)
+ {
+ 	int command;
+ 	struct option longopts[] =
+-	{
++	{   
++		{ "terminal",	0,	NULL,'x'}, 
+ 		{ "file",	1,	NULL,	'f'},
+ 		{ "output",	1,	NULL,	'o'},
+ 		{ "size",	1,	NULL,	's'},
+ 		{ "text",	0,	NULL,	't'},
+ 		{ "terminal",	0,	NULL,'x'},
++		{ "rotate",	0,	NULL,	'r'},
+ 		{ "kill",	0,	NULL,	'k'},
+ 		{ "cleanmask",	0,	NULL,	'c'},
+ 		{ "help",	0,	NULL,	'h'},
+ 	};
+ 
+-	while ((command = getopt_long(argc, argv, "f:o:s:ckhxt", longopts, NULL))
++	while ((command = getopt_long(argc, argv, "f:o:s:ckhxtr", longopts, NULL))
+ 			!= -1) {
+ 		switch (command) {
+ 			case 'f':
+@@ -136,16 +140,21 @@ static void parse_args(int argc, char **argv)
+ 					max_file_size = 100000000;
+ 				else
+ 					max_file_size *= 1024 * 1024;
+-				min_file_size = ((max_file_size / 100) * 80);
++				    min_file_size = ((max_file_size / 100) * 80);
+ 				break;
+ 			case 't':
+ 					enable_write_to_txt_file(TRUE);
+-					DIAG_LOGE("Enable writing to text file \n");
++					DIAG_LOGE("diag_mdlog: Enable writing to text file\n");
+ 					break;
+ 			case 'x':
+ 					enable_write_to_terminal(TRUE);
+-					DIAG_LOGE("Enable logging to terminal \n");
++					DIAG_LOGE("diag_mdlog: Enable logging to terminal\n");
+ 					break;
++			case 'r':
++					enable_log_rotation(TRUE);
++					rotate_set = 1;	
++									
++					break;		
+ 			case 'k':
+ 				kill_mdlog = 1;
+ 				break;
+@@ -280,6 +289,7 @@ int main(int argc, char *argv[])
+ 	struct itimerval value, ovalue, pvalue;
+ 	struct sigaction sact;
+ 	int pid_fd;
++	int err_mdkir;
+ 
+ 	adjust_permissions();
+ 
+@@ -298,28 +308,51 @@ int main(int argc, char *argv[])
+ 		DIAG_LOGE("\ndiag_mdlog: Diag_LSM_Init() failed. Exiting...\n");
+ 		return -1;
+ 	}
+-	DIAG_LOGE("\ndiag_mdlog: Diag_LSM_Init succeeded.\n");
++	DIAG_LOGE("\ndiag_mdlog: Diag_LSM_Init succeeded. \n\n");
+ 
+ 	/* Make sure the default directory exists so the diag_pid file can be placed there */
+ 	//mkdir("/sdcard/diag_logs", 0770);
+ 
+-    DIAG_LOGE("Debug : dir_set = %d Output dir = %s ", dir_set, output_dir);
++    //DIAG_LOGE("Debug : dir_set = %d Output dir = %s ", dir_set, output_dir);
++    
+     
+ 	/* Setup the directory that we will be logging to */
+-	if (dir_set && (mkdir(output_dir, 0770) == 0)) {
+-		DIAG_LOGE("diag_mdlog: Created logging directory %s\n", output_dir);
+-	} else {
+-		gettimeofday(&tv, NULL);
+-		curtime=tv.tv_sec;
+-		strftime(buffer, 30, "%Y%m%d_%H%M%S", localtime(&curtime));
+-		strlcpy(output_dir, "/sdcard/diag_logs/", FILE_NAME_LEN);
+-		(void)strlcat(output_dir, buffer, FILE_NAME_LEN);
+-		DIAG_LOGE("\ndiag_mdlog: Continuing with default directory path %s\n", output_dir);
+-		if (mkdir(output_dir, 0770)){
+-			DIAG_LOGE("diag_mdlog: Unable to create directory, errno: %d Exiting....\n", errno);
+-			exit(0);
++	if ( rotate_set == 1 ){
++		DIAG_LOGE("Collecting logs at /sdcard/diag_logs/rotate/diag_logs.xxx \n");
++		strlcpy(output_dir, "/sdcard/diag_logs/rotate", FILE_NAME_LEN);
++    }else 	
++	{
++		if (!dir_set)			
++		{
++			DIAG_LOGE("\ndiag_mdlog: Continuing with default directory path %s\n", output_dir);
++			gettimeofday(&tv, NULL);
++			curtime=tv.tv_sec;
++			strftime(buffer, 30, "%Y%m%d_%H%M%S", localtime(&curtime));
++			//strlcpy(output_dir, "/sdcard/diag_logs/", FILE_NAME_LEN);
++			(void)strlcat(output_dir, buffer, FILE_NAME_LEN);	
+ 		}
+-	}
++		
++		mkdir(output_dir, 0770);		    
++		if ( errno == 0 || errno == EEXIST)
++		{
++		  DIAG_LOGE("diag_mdlog: logging in directory %s\n", output_dir);
++		}else{			
++			DIAG_LOGE("diag_mdlog: Unable to create directory,");		
++			
++					
++			if ( errno == EACCES )
++			{
++				DIAG_LOGE(" not enough permission (diag:user and group)- errno: %d \nTry $chown -R diag:diag PATH_TO_FOLDER  \nExiting....\n", errno);
++				
++			}else
++			{
++				DIAG_LOGE(" errno: %d Exiting....\n", errno);
++			}
++			
++			exit(0);
++		}        
++	}      
++	
+ 
+ 	/*
+ 	 * Determine our process id and write it to the file so that
+diff --git a/src/diag_lsm.c b/src/diag_lsm.c
+index a3e3a13..52255ad 100755
+--- a/src/diag_lsm.c
++++ b/src/diag_lsm.c
+@@ -702,6 +702,7 @@ char WritetoFileBuffer[66560];
+ /* Default printToTerminal set to FALSE. */
+ int printToTerminalFlag = FALSE;
+ int printToTxtFileFlag = FALSE;
++int enableLogRotationFlag = FALSE;
+ 
+ /*===========================================================================
+ FUNCTION   record_and_print_time
+@@ -1266,6 +1267,24 @@ void enable_write_to_terminal( int terminalFlag )
+ 	
+ }
+ 
++/*===========================================================================
++FUNCTION enable_write_to_terminal
++
++DESCRIPTION
++   When this flag is set, diag_mdlog collect logs in rotation at /sdcard/diag_logs/rotate
++   
++   
++DEPENDENCIES
++   In the current code, we can write to terminal only if write to text file is enabled. 
++   
++===========================================================================*/
++void enable_log_rotation( int enablelFlag )
++{
++	 
++	enableLogRotationFlag = enablelFlag;
++	
++}
++
+ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ {
+ 	unsigned long count_received_bytes;
+@@ -1287,44 +1306,90 @@ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ 
+ 	ptr += 4;
+ 	if (fd_dev < 0) {
++		
++		
+ 		if(logging_mode == MEMORY_DEVICE_MODE) {
+-			/* Construct the file name using the current time stamp */
+-			gettimeofday(&tv, NULL);
+-			curtime=tv.tv_sec;
+-			strftime(timestamp_buf,30,"%Y%m%d_%H%M%S",localtime(&curtime));
+-			(void)std_strlprintf(file_name, FILE_NAME_LEN,
+-				"%s%s%s%s",output_dir, "/diag_log_",
+-				timestamp_buf, ".qmdl");
++			
++			if ( enableLogRotationFlag == TRUE)
++			{
++				(void)std_strlprintf(file_name, FILE_NAME_LEN,
++				"%s%s%s",output_dir, "/diag_log",".qmdl");
++			
++			}else{
++			
++				/* Construct the file name using the current time stamp */
++				gettimeofday(&tv, NULL);
++				curtime=tv.tv_sec;
++				strftime(timestamp_buf,30,"%Y%m%d_%H%M%S",localtime(&curtime));
++				(void)std_strlprintf(file_name, FILE_NAME_LEN,
++					"%s%s%s%s",output_dir, "/diag_log_",
++					timestamp_buf, ".qmdl");	
++				
++			}
++			
+ 				
+ 						
+ 			fd_md = open(file_name, O_CREAT | O_RDWR | O_SYNC | O_APPEND, 0644);
+ 			fd_dev = fd_md;
+ 			if (fd_md < 0) {
+-				DIAG_LOGE(" File open error, please check");
+-				DIAG_LOGE(" memory device %d, errno: %d \n", fd_md, errno);
++				DIAG_LOGE(" File open error, please check %s ", file_name);
++				DIAG_LOGE(" memory device %d, ", fd_md_txt);
++					
++				if ( errno == EACCES )
++				{
++					DIAG_LOGE("\n Not enough permission (diag:user and group)- errno: %d \n Try $chown -R diag:diag PATH_TO_FOLDER \n Exiting...\n", errno);
++					
++				}else
++				{
++					DIAG_LOGE(" errno: %d Exiting....\n", errno);
++				}
++				exit(0);
+ 			}
+ 			else
+-				DIAG_LOGE(" creating new file %s \n",
+-								file_name);
++				DIAG_LOGE(" creating new file %s \n",file_name);
++			
+ 			
+ 			if ( printToTxtFileFlag  == TRUE )					
+-			{					
+-				(void)std_strlprintf(file_name_txt, FILE_NAME_LEN,
+-					"%s%s%s%s",output_dir, "/diag_log_",
+-					 timestamp_buf, ".txt");
++			{	
++				if ( enableLogRotationFlag == TRUE)
++				{
++					(void)std_strlprintf(file_name_txt, FILE_NAME_LEN, "%s%s%s",output_dir, "/diag_log",".txt");
+ 				
++				}else
++				{
++					/* Construct the file name using the current time stamp */
++					gettimeofday(&tv, NULL);
++					curtime=tv.tv_sec;
++					strftime(timestamp_buf,30,"%Y%m%d_%H%M%S",localtime(&curtime));				
++					(void)std_strlprintf(file_name_txt, FILE_NAME_LEN,
++						"%s%s%s%s",output_dir, "/diag_log_",
++						 timestamp_buf, ".txt");
++				}
++					
+ 				fd_md_txt = open(file_name_txt, O_CREAT | O_RDWR | O_SYNC | O_APPEND, 0644);
+ 				fd_dev_txt = fd_md_txt;
+ 				if (fd_md_txt < 0) {
+ 					DIAG_LOGE(" File open error, please check");
+-					DIAG_LOGE(" memory device %d, errno: %d \n", fd_md_txt, errno);
++					DIAG_LOGE(" memory device %d, ", fd_md_txt);
++					
++					if ( errno == EACCES )
++					{
++						DIAG_LOGE("\n Not enough permission (diag:user and group) - errno: %d \n Try $chown -R diag:diag PATH_TO_FOLDER \n Exiting...\n", errno);
++						
++					}else
++					{
++						DIAG_LOGE(" errno: %d \n", errno);
++					}
++					exit(0);
++						
+ 				}
+-				else
++				else{
+ 					DIAG_LOGE(" creating new file %s \n",
+ 									file_name_txt);
++				}
+ 			}										
+ 		} else
+-			DIAG_LOGE(" Incorrect logging mode\n");
++				DIAG_LOGE(" Incorrect logging mode\n");
+ 	}
+ 
+ 	if (fd_dev != -1) {
+@@ -1454,7 +1519,7 @@ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ 		}
+ 
+ 		if ((logging_mode == MEMORY_DEVICE_MODE) &&
+-				(count_written_bytes >= max_file_size)) {
++				(count_written_bytes >= max_file_size) && (enableLogRotationFlag != TRUE) ) {
+ 			close(fd_md);
+ 			fd_md = -1;
+ 			fd_dev = fd_md;

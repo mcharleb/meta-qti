@@ -3,11 +3,18 @@ SECTION = "base"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
-PV = "1.1"
-PR = "r10"
+PV = "1.0"
+PR = "r0"
 
 SRC_URI_append_som8064 = " file://0001-som8064-makefiles-for-linux.patch"
 SRC_URI_append_som8064 = " file://0002-som8064-baseline-for-linux.patch"
+SRC_URI_append_som8064 = " file://0003-som8064-include-stdint-h.patch"
+SRC_URI_append_som8064-revB = " file://0001-som8064-makefiles-for-linux.patch"
+SRC_URI_append_som8064-revB = " file://0002-som8064-baseline-for-linux.patch"
+SRC_URI_append_som8064-revB = " file://0003-som8064-include-stdint-h.patch"
+SRC_URI_append_som8064-const = " file://0001-som8064-makefiles-for-linux.patch"
+SRC_URI_append_som8064-const = " file://0002-som8064-baseline-for-linux.patch"
+SRC_URI_append_som8064-const = " file://0003-som8064-include-stdint-h.patch"
 
 SRC_URI_append_ifc6410 = " file://0001-ifc6410-makefiles-for-linux.patch"
 SRC_URI_append_ifc6410 = " file://0002-ifc6410-baseline-for-linux.patch"
@@ -37,13 +44,24 @@ EXTRA_OECONF_append = " --enable-target=${CAMERA_TARGET}"
 FILES_${PN} += "\
     /usr/lib/* "
 
-# The mm-still package contains symlinks that trip up insane
-INSANE_SKIP_${PN} = "dev-so"
+INSANE_SKIP_${PN} += "dev-so"
+INSANE_SKIP_${PN} += "installed-vs-shipped"
+INSANE_SKIP_${PN} += "staticdev"
+INSANE_SKIP_${PN} += "textrel"
 
 do_fetch_append() {
     import shutil
     import os
-    src = d.getVar('COREBASE', True)+'/../'+d.getVar('MACHINE', True)+'/mm-still'
+    mach = d.getVar('MACHINE', True)
+    dirToUse = ""
+    src = ""
+    if mach.find('som8064') != -1:
+        dirToUse = "som8064"
+    else:
+        dirToUse = mach
+
+    src = d.getVar('COREBASE', True)+'/../'+dirToUse+'/mm-still'
+
     s = d.getVar('S', True)
     if os.path.exists(s):
         shutil.rmtree(s)

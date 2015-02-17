@@ -10,36 +10,25 @@
 
 MACHINE_IFC6410=ifc6410
 MACHINE_SOM8064=som8064
-MACHINES="${MACHINE_IFC6410} ${MACHINE_SOM8064}"
 DEFAULT_MACHINE=${MACHINE_IFC6410}
 
-IMAGE_QRL_BINARIES=qrl-binaries
-IMAGE_PERSIST=persist
-IMAGES="${IMAGE_QRL_BINARIES} ${IMAGE_PERSIST}"
-DEFAULT_IMAGE=${IMAGE_QRL_BINARIES}
+TOOLCHAIN_NAME=gcc-linaro-arm-linux-gnueabihf-4.7-2013.04-20130415_linux
 
 DPKG_CMD="dpkg-query"
 
 optMachine=${DEFAULT_MACHINE}
-optImage=
-
 do_buildBootloader=1
-imagesToBuild=
+use_local=0
 
-
-# Exit on error
-set -e
-
-
-################################################################################
+#################################################################################################
 ## usage
-################################################################################
+#################################################################################################
 usage ()
 {
     cat << EOF
 This script builds the QR-Linux kernel and proprietary binaries, generating the
 necessary images for fastboot.
-INSTRUCTIONS TO BUILD:
+Instructions to build:
 ----------------------
 If you are looking at these instructions, you have already completed the 
 steps to download the code from the appropriate site. 
@@ -53,36 +42,21 @@ $ cd oe-core
 Sync repo from CAF
 $ repo init -u git://codeaurora.org/quic/lx/qr-linux/manifest -b release -m xxx.xml
 $ repo sync
-$ ./meta-qti/qrlbuild-oem.sh <options>
+$ ./meta-qti/qrlbuild.sh <options>
 
 USAGE: $0 options
 OPTIONS:
    -h      Show this message
    -b      Skip building the bootloader
    -m      The machine to build (default: ${DEFAULT_MACHINE})
-   -i      The image to build (default: ${DEFAULT_IMAGE})
 EOF
-
-      echo
-      echo "Valid machine values are:"
-      for machine in ${MACHINES}
-      do
-            echo "    $machine"
-      done
-      echo
-      echo
-      echo "Valid image values are:"
-      for image in ${IMAGES}
-      do
-            echo "    $image"
-      done
 }
 
 ################################################################################
 ## handleCommandLine
 ################################################################################
 handleCommandLine () {
-   while getopts "bhm:i:" o
+   while getopts "bhlm:" o
    do
       case $o in
          h)
@@ -95,9 +69,6 @@ handleCommandLine () {
           m)
               optMachine=$OPTARG
               ;;
-          i)
-              optImage=$OPTARG
-              ;;
           ?)
               echo "Unknown arg $o"
               usage
@@ -105,65 +76,12 @@ handleCommandLine () {
               ;;
       esac
    done
-
-   
-   foundMachine=0
-   for machine in ${MACHINES}
-   do
-      if [[ ${optMachine} = ${machine} ]]
-      then
-         foundMachine=1
-      fi
-   done
-
-   if [[ $foundMachine -eq 0 ]]
+   if [[ ${optMachine} != ${MACHINE_IFC6410} && ${optMachine} != ${MACHINE_SOM8064} ]]
    then
       echo "[ERROR] Unsupported machine: ${optMachine}"
-      echo
-      echo "Valid machine values are:"
-      for machine in ${MACHINES}
-      do
-            echo "    $machine"
-      done
       exit 1
    fi
-
-   if [[ -z ${optImage} ]]
-   then
-      if [[ ${optMachine} = ${MACHINE_IFC6410} ]]
-      then
-         x="${IMAGE_QRL_BINARIES} -c image"
-         imagesToBuild=("$x")
-      elif [[ ${optMachine} = ${MACHINE_SOM8064} ]] 
-      then
-         x="${IMAGE_QRL_BINARIES} -c image"
-         imagesToBuild=("$x")
-      fi
-   else
-      foundImage=0
-      for image in ${IMAGES}
-      do
-         if [[ ${optImage} = ${image} ]]
-         then
-            foundImage=1
-            imagesToBuild=(${optImage})
-         fi
-      done
-
-      if [[ $foundImage -eq 0 ]]
-      then
-         echo "[ERROR] Unsupported image: ${optImage}"
-         echo
-         echo "Valid image values are:"
-         for image in ${IMAGES}
-         do
-               echo "    $image"
-         done
-         exit 1
-      fi
-   fi
 }
-
 
 ################################################################################
 ## buildBootloader
@@ -172,16 +90,16 @@ buildBootloader () {
   echo "***** Starting to build the LK bootloader *****"
 
   # Set up the bitbake environment
-  if [ ! -d buildlk.${optMachine} ]; then
-    source oe-init-build-env buildlk.${optMachine}
+  if [ ! -d buildlk ]; then
+    source oe-init-build-env buildlk
     grep -vEe "EXTERNAL_TOOLCHAIN|TCMODE" ../build/conf/local.conf > conf/local.conf
     cp  ../build/conf/bblayers.conf conf/bblayers.conf
   else
-    source oe-init-build-env buildlk.${optMachine}
+    source oe-init-build-env buildlk
   fi
 
   # Compile the cross compiler
-  MACHINE=${optMachine} bitbake gcc-cross 
+  bitbake gcc-cross 
 
   # Compile the libgcc.a
   # Note there is an error during this phase, but the libgcc.a is copmiled and seems to work
@@ -190,7 +108,7 @@ buildBootloader () {
 
   if [ ! -f $LIBGCCFILE ]; then
     set +e
-    MACHINE=${optMachine} bitbake libgcc
+    bitbake libgcc
     set -e
   fi
 
@@ -200,7 +118,7 @@ buildBootloader () {
   fi
 
   # Update the lk sources
-  MACHINE=${optMachine} bitbake -c patch lk
+  bitbake -c patch lk
 
   LKBOOTLOADERFILE=$BUILDDIR/tmp-eglibc/work/arm-linux-gnueabi/lk/1.0-r9/lk-1.0/build-msm8960/emmc_appsboot.mbn
 
@@ -234,7 +152,7 @@ checkRequiredPkgs () {
 
    pkgMissing=0
    pkgsMissing="Packages missing: "
-   for pkg in diffstat texinfo gawk chrpath multistrap
+   for pkg in diffstat texinfo gawk chrpath 
    do
       ${DPKG_CMD} --status ${pkg} > /dev/null 2>&1
       if [ $? -ne 0 ]
@@ -254,11 +172,7 @@ checkRequiredPkgs () {
 
 ################################################################################
 ## configureLayers
-##    This is slightly tricky.
-##    We add additional layers to the bblayers.conf file. We also add
-##    a comment string to that file. When the script is re-run, it
-##    checks for the existence of the comment line, and skips adding
-##    the layers all over again.
+##    Add meta-qti layer
 ################################################################################
 configureLayers () {
    bblayersFile=build/conf/bblayers.conf
@@ -273,7 +187,7 @@ configureLayers () {
    grep "${commentString}" ${bblayersFile} > /dev/null 2>&1 || {
 
       echo ${commentString} >> ${bblayersFile}
-      for layer in meta-qti 
+      for layer in meta-qti
       do
          echo "BBLAYERS += \"\${TOPDIR}/../${layer}\"" >> ${bblayersFile}
       done
@@ -293,16 +207,19 @@ checkRequiredPkgs || {
    exit 1
 }
 
+if [ ! -d  ${TOOLCHAIN_NAME} ]
+then
+   echo "[INFO] Fetching toolchain"
+   meta-qr-linux/scripts/linaro-fetch.sh
+fi
 
-echo "[INFO] Fetching toolchain"
-meta-qr-linux/scripts/linaro-fetch.sh
-
+if [[ ${optMachine} = ${MACHINE_SOM8064} && ${do_buildBootloader} = 1 ]]
+then
+   buildBootloader
+fi
 configureLayers
-
 source ./oe-init-build-env build
-for ((i=0; i < ${#imagesToBuild[@]}; i++))
-do
-   echo "[INFO] Building ${imagesToBuild[$i]}"
-   MACHINE=${optMachine} bitbake ${imagesToBuild[$i]} || true
+MACHINE=${optMachine} bitbake core-image-qrl
+MACHINE=${optMachine} bitbake qrl-binaries
+MACHINE=${optMachine} bitbake persist
 
-done

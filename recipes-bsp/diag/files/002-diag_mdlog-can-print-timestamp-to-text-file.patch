@@ -1,0 +1,408 @@
+diff --git a/include/diag_lsm.h b/include/diag_lsm.h
+index bba5794..3bfa7b8 100755
+--- a/include/diag_lsm.h
++++ b/include/diag_lsm.h
+@@ -140,7 +140,30 @@ SIDE EFFECTS
+ ===========================================================================*/
+ boolean Diag_LSM_DeInit(void);
+ 
+-void enable_write_to_txt_file(int txtFileFlag);
++
++/*===========================================================================
++FUNCTION enable_write_to_txt_file
++
++DESCRIPTION
++   When this flag is set, diag_mdlog also writes to txt in the same location as .qmdl file. 
++   
++DEPENDENCIES
++   
++===========================================================================*/
++void enable_write_to_txt_file(int txtFileFlag );
++
++
++/*===========================================================================
++FUNCTION enable_write_to_terminal
++
++DESCRIPTION
++   When this flag is set, diag_mdlog also writes to txt in the same location as .qmdl file.
++   
++   
++DEPENDENCIES
++   In the current code, we can write to terminal only if write to text file is enabled. 
++   
++===========================================================================*/
+ void enable_write_to_terminal( int terminalFlag );
+ 
+ #ifdef __cplusplus
+diff --git a/src/diag_lsm.c b/src/diag_lsm.c
+index 2af0f85..fa8bf46 100755
+--- a/src/diag_lsm.c
++++ b/src/diag_lsm.c
+@@ -72,13 +72,14 @@ and made common later. */
+ #include <eventi.h>
+ #include <msgi.h>
+ #include <signal.h>
+-#include<sys/time.h>
++#include <sys/time.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <dirent.h>
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ 
++
+ #define std_strlprintf     snprintf
+ /* strlcpy is from OpenBSD and not supported by Linux Embedded.
+  * GNU has an equivalent g_strlcpy implementation into glib.
+@@ -595,6 +596,16 @@ int true = 1;
+ int printToTerminalFlag = FALSE;
+ int printToTxtFileFlag = FALSE;
+ 
++/*===========================================================================
++FUNCTION DumpFrame
++
++DESCRIPTION
++   Print hex and value from the mentioned memory location and mentioned length.
++   Used only for debugging purposes and in the main call flow.
++   
++DEPENDENCIES
++   
++===========================================================================*/
+ void DumpFrame( unsigned char* ptr, int len )
+ {
+ 	int i;
+@@ -626,7 +637,15 @@ void DumpFrame( unsigned char* ptr, int len )
+ }
+ 
+ 
++/*===========================================================================
++FUNCTION DecodePayload
+ 
++DESCRIPTION
++   Extracts argument values from the packet header to input array location. 
++   
++DEPENDENCIES
++   
++===========================================================================*/
+ void DecodePayload( unsigned char* payload, int payLoadValues[], int numArgs )
+ {
+ 	int i = 0, j  = 0;
+@@ -660,7 +679,15 @@ void DecodePayload( unsigned char* payload, int payLoadValues[], int numArgs )
+ 	}	
+ }
+ 
++/*===========================================================================
++FUNCTION HDLCDecoder
+ 
++DESCRIPTION
++   Extract data from HDLC decoded raw data
++   
++DEPENDENCIES
++   
++===========================================================================*/
+ void HDLCDecoder( unsigned char* ptr, int len )
+ {
+ 	int i = 0;
+@@ -685,8 +712,16 @@ void HDLCDecoder( unsigned char* ptr, int len )
+ 	}
+ }
+ 
+-     
+-void GenerateWrite2FileBuf(unsigned char *result_ptr, unsigned char *fileName_ptr , int lineNumber , unsigned char *fmtString_ptr , int payLoadValues[] , int numArgs , unsigned char *header_ptr )
++/*===========================================================================
++FUNCTION GenerateWrite2FileBuf
++
++DESCRIPTION
++   The function generates the string(buffer) to be written to file or print on terminal. 
++   
++DEPENDENCIES
++   
++===========================================================================*/
++void GenerateWrite2FileBuf(unsigned char *result_ptr, unsigned char *timestampString_ptr, unsigned char *fileName_ptr , int lineNumber , unsigned char *fmtString_ptr , int payLoadValues[] , int numArgs , unsigned char *header_ptr )
+ {
+ 	char missed_packet_string[10];
+ 	char lineNumberString[20];
+@@ -734,7 +769,8 @@ void GenerateWrite2FileBuf(unsigned char *result_ptr, unsigned char *fileName_pt
+     
+     strcpy( result_ptr , "");   /* Initialize empty string */ 
+     
+-    
++    strcat( result_ptr , timestampString_ptr );
++    strcat(result_ptr , "\t");
+ 	strcat( result_ptr , fileName_ptr ); /* Write file name to buffer */
+ 	
+ 	
+@@ -753,12 +789,14 @@ void GenerateWrite2FileBuf(unsigned char *result_ptr, unsigned char *fileName_pt
+     return;
+ }
+ 
+-/* 
+- * FUNCTION : PrintToTxtFile
+- * DESCRIPTION : Prints the input buffer to a file using linux system call write.           
+- *               
+- */
+-
++/*===========================================================================
++FUNCTION PrintToTxtFile
++DESCRIPTION
++   Prints the input buffer to a file using linux system call write.
++   
++DEPENDENCIES
++   
++===========================================================================*/
+ int PrintToTxtFile( const char *write2FileBuf )
+ {
+ 	size_t nbytes =0,bytes_written = 0;
+@@ -766,7 +804,7 @@ int PrintToTxtFile( const char *write2FileBuf )
+ 	
+ 	if ( write2FileBuf == NULL )
+ 	{
+-		DIAG_LOGE(" Error : Cannot write empty buffer to file", nbytes - bytes_written );
++		DIAG_LOGE("Error : Cannot write empty buffer to file");
+ 		return -1;
+ 	}	
+ 	nbytes = strlen(write2FileBuf);
+@@ -784,33 +822,53 @@ int PrintToTxtFile( const char *write2FileBuf )
+ 		DIAG_LOGE(write2FileBuf);
+ 	}
+ 
+-	return 0;	
++	return return_value ;	
+ }
+ 
++int round(float x)
++{
++    return (int)(x + 0.5);
++}
+ 
+-/* 
+- * FUNCTION : WriteToTextFile
+- * DESCRIPTION : Parses diag data and writes to a file.            
+- *               
+- */
++/*===========================================================================
++FUNCTION WriteToTextFile
++
++DESCRIPTION
++   Parses diag data and writes to a file.  
++   
++DEPENDENCIES
++   
++===========================================================================*/
+ int WriteToTextFile( unsigned char* ptr, int len )
+ {
+-	int i , j = 0;
+-	unsigned char* header;
+-	unsigned char* payload;
+-	unsigned char* fmtString;
+-	unsigned char* fileName;
+-    unsigned char* frameCRC;
+-    unsigned int lineNumber;
++	int i = 0;
++	int indexDF =0 ;  /* index to traverse through decodedFrame and search for 0x79 ( exteneded message) */  
++	int indexExtraByte =0;	 /* index to save extra/incomplete bytes of last frames*/
++	
++	
++	unsigned char* header;  /* starting address of valid packet */
+ 	int numArgs;
+-	int pktLen;
+-	unsigned int ts;
+-	int x, y, z;
+-	int foundFrame = false;
+-		
++	
++	char       timestampString[120];   /* buffer tos save the sting in 1980-01-06 00:58:56.478 format */
++	long long int msCounter;         
++    int chipCounter , chipCounterMicroSeconds;
++    long long int seconds, microSeconds;
++	time_t     timestamp_time_t;
++    struct tm  timestamp_tm;    
++    char temp_char_buf[20];
++    strcpy(timestampString,"");
++	
++	unsigned int lineNumber;
++	
++	unsigned char* payload;  /* starting address of Args */
++	unsigned char* fmtString;  /* starting address of formated string */
++	unsigned char* fileName; 
++    unsigned char* frameCRC;        	
++	
++	
++	int pktLen;    		
+ 	const char write2FileBuf[1000];
+-    strcpy(write2FileBuf, "");
+-    
++    strcpy(write2FileBuf, "");    
+     int payLoadValues[MAX_MESSAGE_ARGUMENTS], payLoadNumValues = 0;
+      
+     
+@@ -823,36 +881,73 @@ int WriteToTextFile( unsigned char* ptr, int len )
+ 	/* traverse through hdlc decoded buffer to find 0x79 which extended debug message of QXDM
+ 	 * After which extract information from the buffer
+ 	*/
+-	i = 0; 
+-	while( i < decodedLen )
++	indexDF = 0; 
++	while( indexDF < decodedLen )
+ 	{
+-		if( DecodedFrame[i] != 0x79 ) 
++		if( DecodedFrame[indexDF] != 0x79 ) 
+ 		{
+-			i++;
++			indexDF++;
+ 			continue;
+ 		}
+ 	
+-		if( i + 20 > decodedLen ) break; // not enough header.
++		if( indexDF + 20 > decodedLen ) break; // not enough header.
+ 		
+ 		/*Extract message */
+-		header = &DecodedFrame[i];
++		header = &DecodedFrame[indexDF];
+ 		numArgs = header[2]; // the 3rd byte is the count of args.			
+ 		payload = header + 20;
+ 		fmtString = payload + numArgs*4;
+ 		fileName = fmtString + strlen( (char*)fmtString ) + 1;
+ 		
+ 		lineNumber  = 0;
+-		lineNumber =  header[12]; /* Line number is 2 byte and is stored at 13 and 14th bytes */
++		lineNumber  =  header[12]; /* Line number is 2 byte and is stored at 13 and 14th bytes */
+ 		lineNumber |= header[13] << 8 ;
+ 		
+-		//DIAG_LOGE("DEBUG : Line Number = %d \n",lineNumber ); 
++		
++		/*
++		  chip counter                     ms counter
++		   LSB	  USB		LSB                                   USB
+ 		 
++		  --0--  --0--     --b1--  --e3--  --3a--  --0--  --0--  --0--		
++		  header[4]       header[6]                             header[11]  
++		*/
++		msCounter = 0;		
++		chipCounter = 0;
++			chipCounter = header[4] ;               /* I got all chipCounter value = 0 in my testing. But still using it to actual time calculation */
++			chipCounter |= header[5] << 8 ;
++		
++		/* The 1/32 chip counter has 1.25 ms dynamic range. It rolls over at count 49152. Each tick  1.25 / 49152 =  0.000025431 ms */
++		chipCounterMicroSeconds = 	round(chipCounter * 0.000025431);
++			
++		for (   i =0 ;  i < 6 ; i++){
++			
++			    msCounter |= header[6 +i] << 8 * i;					
++		}
++		
++		/* mscounter ticks every 1.25 ms */
++		microSeconds = round( msCounter * 1.25);		
++		microSeconds = microSeconds + chipCounterMicroSeconds; /*Total microseconds */		
++		
++		seconds = microSeconds / 1000 ;  /* total seconds since Jan 6, 1980 */
++		microSeconds = microSeconds % 1000;  
++		
++			
++	    
++		seconds = seconds + (10*365+5+2)*24*60*60; /*total seconds since epoch after adding offset of Jan 6, 1980 */
++
++		timestamp_tm = *localtime(&seconds);   /* Convert from seconds to 1980-01-06 00:58:56.478 format */ 
++		strcpy(timestampString,"");		
++		strftime(timestampString, sizeof(timestampString), " %Y-%m-%d %H:%M:%S", &timestamp_tm);
++		sprintf(temp_char_buf,".%03d",microSeconds);
++        strcat( timestampString,temp_char_buf);
++        //printf("time = %s\n", timestampString);
++
++		
+ 		frameCRC = fileName + strlen( (char*)fileName ) + 1;
+ 		pktLen = 20 + numArgs*4 + strlen( (char*)fmtString ) + 1 + strlen( fileName ) + 1 + 3;
+-        
+-        
+-        
+-		if( header[3] != 0 ) // the 4rd byte is the count of missed packets
++		
++            
++        if( header[3] != 0 ) // the 4rd byte is the count of missed packets
+ 		{			
+ 			DIAG_LOGE("Warning! [%d] qxdm packets dropped\n", header[3] );
+ 			sprintf(write2FileBuf, "Warning! [%d] qxdm packets dropped \n", header[3] );
+@@ -862,16 +957,16 @@ int WriteToTextFile( unsigned char* ptr, int len )
+ 		if (fmtString != NULL )		
+ 		{								
+ 			/* Check if the complete packet is in the current frame else save bytes to be concatenate with the start of next frame */	
+-			if ( pktLen > ( decodedLen - i ) )
++			if ( pktLen > ( decodedLen - indexDF ) )
+ 			{	
+ 				
+ 				//DIAG_LOGE(" Saving bytes for next frame :i = %d , decodedLen =%d , len = %d , pktLen = %d \n",i, decodedLen, len, pktLen );
+-				j = 0 ; /* j traverse from start of DecodedFrame to save pending bytes */
+-				while( i < decodedLen )
++				indexExtraByte = 0 ; /* j traverse from start of DecodedFrame to save pending bytes */
++				while( indexDF < decodedLen )
+ 				{
+-					DecodedFrame[j++] = DecodedFrame[i++]; 
++					DecodedFrame[indexExtraByte++] = DecodedFrame[indexDF++]; 
+ 				}
+-				decodedLen = j ; 
++				decodedLen = indexExtraByte ; 
+ 				break;										
+ 				
+ 				
+@@ -879,18 +974,18 @@ int WriteToTextFile( unsigned char* ptr, int len )
+ 			else 
+ 			{	
+ 				DecodePayload( payload, payLoadValues , numArgs );
+-				GenerateWrite2FileBuf( write2FileBuf , fileName , lineNumber , fmtString , payLoadValues , numArgs , header ); 
++				GenerateWrite2FileBuf( write2FileBuf , timestampString , fileName , lineNumber , fmtString , payLoadValues , numArgs , header ); 
+ 				PrintToTxtFile( write2FileBuf ); 				              				
+ 			}
+-			//printf( "DecodedFrame: pktLen[%d] args[%d] fmtStr[%s] fileName[%s]\n", pktLen, numArgs, fmtString, fileName );
++			//DIAG_LOGE( "DecodedFrame: pktLen[%d] args[%d] fmtStr[%s] fileName[%s]\n", pktLen, numArgs, fmtString, fileName );
+ 		}
+-		i += pktLen;
++		indexDF += pktLen;
+ 	}
+ 	
+ 	//DIAG_LOGE(" Debug End of buffer :i = %d , decodedLen =%d , len = %d , pktLen = %d  j = %d\n",i, decodedLen, len, pktLen , j );
+ 		
+ 	/* No bytes will be reused in the next frame if j = 0 */
+-	if ( j == 0 )
++	if ( indexExtraByte == 0 )
+ 	{
+ 	   decodedLen = 0 ;		 	
+ 	}
+@@ -898,17 +993,38 @@ int WriteToTextFile( unsigned char* ptr, int len )
+ 	return 0;
+ }
+ 
++/*===========================================================================
++FUNCTION enable_write_to_txt_file
++
++DESCRIPTION
++   When this flag is set, diag_mdlog also writes to txt in the same location as .qmdl file. 
++   
++DEPENDENCIES
++   
++===========================================================================*/
+ void enable_write_to_txt_file(int txtFileFlag )
+ {
+ 	printToTxtFileFlag = txtFileFlag;			
+ }
+ 
++/*===========================================================================
++FUNCTION enable_write_to_terminal
++
++DESCRIPTION
++   When this flag is set, diag_mdlog also writes to txt in the same location as .qmdl file.
++   
++   
++DEPENDENCIES
++   In the current code, we can write to terminal only if write to text file is enabled. 
++   
++===========================================================================*/
+ void enable_write_to_terminal( int terminalFlag )
+ {
+ 	 
+ 	printToTerminalFlag = terminalFlag;
+ 	
+ }
++
+ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ {
+ 	unsigned long count_received_bytes;

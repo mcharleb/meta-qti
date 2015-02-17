@@ -1,0 +1,13 @@
+diff --git a/src/diag_lsm.c b/src/diag_lsm.c
+index fa8bf46..9cdce84 100755
+--- a/src/diag_lsm.c
++++ b/src/diag_lsm.c
+@@ -949,7 +949,7 @@ int WriteToTextFile( unsigned char* ptr, int len )
+             
+         if( header[3] != 0 ) // the 4rd byte is the count of missed packets
+ 		{			
+-			DIAG_LOGE("Warning! [%d] qxdm packets dropped\n", header[3] );
++			//DIAG_LOGE("Warning! [%d] qxdm packets dropped\n", header[3] );
+ 			sprintf(write2FileBuf, "Warning! [%d] qxdm packets dropped \n", header[3] );
+ 			PrintToTxtFile( write2FileBuf );			
+ 		}

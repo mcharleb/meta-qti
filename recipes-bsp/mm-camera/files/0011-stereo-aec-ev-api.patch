@@ -1,0 +1,149 @@
+diff --git a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c
+index 54221fd..021fbc2 100644
+--- a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c
++++ b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c
+@@ -2890,8 +2890,8 @@ int set_exp_metering (int exp_metering_action_param) {
+ 
+   return rc;
+ }
+-
+-int get_ctrl_value (int ctrl_value_mode_param){
++#endif
++int get_ctrl_value (int ctrl_value_mode_param, int32_t* pval){
+ 
+     int rc = 0;
+     struct v4l2_control ctrl;
+@@ -2925,11 +2925,12 @@ int get_ctrl_value (int ctrl_value_mode_param){
+     }
+ 
+     rc = ioctl(camfd, VIDIOC_G_CTRL, &ctrl);
++	*pval = ctrl.value;
+     printf("The chosen control feature's value is %d\n", ctrl.value);
+ 
+     return rc;
+ }
+-
++#if 0
+ /*===========================================================================
+  * FUNCTION     - toggle_afr -
+  *
+@@ -3131,6 +3132,62 @@ int decrease_sharpness () {
+ }
+ #endif
+ 
++/*===========================================================================
++ * FUNCTION     - set_EV -
++ *
++ * DESCRIPTION:
++ * ===========================================================================*/
++int set_EV (int32_t ev_inp) {
++  int32_t ev = 0;
++
++  if (ev_inp < -12) {
++	ev_inp = -12;
++    printf("WARNING max EV range: -12 to 12. Switching to %d \n", ev_inp);
++  } else if (ev_inp > 12) {
++	ev_inp = 12;
++    printf("WARNING max EV range: -12 to 12. Switching to %d \n", ev_inp);
++  } 
++
++  ev = (ev_inp << 16) | 6;
++  printf("EV from usr: %d, EV calc: %d", ev_inp, ev);
++
++  struct v4l2_queryctrl queryctrl;
++  struct v4l2_control control;
++
++  memset (&queryctrl, 0, sizeof (queryctrl));
++  queryctrl.id = V4L2_CID_EXPOSURE;
++
++  if (-1 == ioctl (camfd, VIDIOC_QUERYCTRL, &queryctrl)) {
++    if (errno != EINVAL) {
++      perror ("VIDIOC_QUERYCTRL");
++      exit (EXIT_FAILURE);
++    } else {
++      printf ("V4L2_CID_EXPOSURE is not supported\n");
++    }
++  } else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
++    printf ("V4L2_CID_EXPOSURE is not supported\n");
++  } else {
++    memset (&control, 0, sizeof (control));
++    control.id = V4L2_CID_EXPOSURE;
++    /* Increasing the EV*/
++    control.value = ev;
++
++    if (-1 == ioctl (camfd, VIDIOC_S_CTRL, &control)) {
++      perror ("VIDIOC_S_CTRL");
++      return -1;
++    }
++  }
++  return 0;
++}
++
++int v4l2_qcamlib_get_exposure_value(int32_t* p_ev) {
++	return get_ctrl_value(EV, p_ev); 
++}
++
++int v4l2_qcamlib_set_exposure_value(int32_t ev_abs) {
++	return set_EV(ev_abs); 
++}
++
+ int v4l2_qcamlib_register_preview_frame_callback(v4l2_preview_camframe_cb_t cb_ptr) {
+ 	return register_v4l2_camframe_preview_callback(cb_ptr);
+ }
+diff --git a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h
+index e9145d4..9ae913e 100644
+--- a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h
++++ b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h
+@@ -17,3 +17,7 @@ int v4l2_qcamlib_deregister_preview_frame_callback();
+ uint32_t v4l2_qcamlib_get_preview_frame_buffer_size();
+ int v4l2_qcamlib_copy_preview_frame(uint8_t* dest_buf, void* src_vfb);
+ void v4l2_qcamlib_enable_display_overlay();
++
++int v4l2_qcamlib_get_exposure_value(int32_t* p_ev);
++int v4l2_qcamlib_set_exposure_value(int32_t ev_abs);
++
+diff --git a/apps/v4l2-qcamera-app/v4l2-qcamera-app.c b/apps/v4l2-qcamera-app/v4l2-qcamera-app.c
+index 2901829..bf66249 100644
+--- a/apps/v4l2-qcamera-app/v4l2-qcamera-app.c
++++ b/apps/v4l2-qcamera-app/v4l2-qcamera-app.c
+@@ -1771,7 +1771,7 @@ int main(int argc, char **argv)
+ #endif
+ 
+   /* get v4l2 params - memory type etc */
+-  while ((c = getopt(argc, argv, "mouhsfd:")) != -1) {
++  while ((c = getopt(argc, argv, "mouhsfd:e:")) != -1) {
+     switch (c) {
+       case 'd':
+         yuvFrameDumpFactor = atoi(optarg);
+@@ -1781,6 +1781,10 @@ int main(int argc, char **argv)
+         v4l2_qcamlib_enable_display_overlay(); 
+         /*use_overlay_fb_display_driver();*/
+         break;
++      case 'e':
++        v4l2_qcamlib_set_exposure_value(atoi(optarg)); 
++        /*use_overlay_fb_display_driver();*/
++        break;
+     #if 0
+       case 'm':
+         v4l2_qcamlib_preinit_set_memorytype(V4L2_MEMORY_MMAP);
+@@ -1818,6 +1822,7 @@ int main(int argc, char **argv)
+       default:
+         printf("usage: %s [-o] [-d dumpFrameFactor] \n", argv[0]);
+         printf("-o          :   Enable display overlay \n");
++        printf("-e <factor> :   Set Exposure Value < -12 to 12 >  \n");
+         printf("-d <factor> :   Dump Frames with factor  \n");
+         printf("            :   <n>: Dump mod(n) frames  \n");
+         printf("            :   <1>: Dump all frames  \n");
+diff --git a/apps/v4l2-qcamera-app/v4l2_cam.h b/apps/v4l2-qcamera-app/v4l2_cam.h
+index 95f00b6..162f94b 100644
+--- a/apps/v4l2-qcamera-app/v4l2_cam.h
++++ b/apps/v4l2-qcamera-app/v4l2_cam.h
+@@ -371,7 +371,7 @@ int set_af_step();
+ int enable_afd();
+ int prepare_snapshot();
+ int set_fps_mode(void);
+-int get_ctrl_value (int ctrl_value_mode_param);
++int get_ctrl_value (int ctrl_value_mode_param, int32_t* pval);
+ int toggle_afr ();
+ int take_yuv_snapshot();
+ int set_bestshot_mode(int bs_param);

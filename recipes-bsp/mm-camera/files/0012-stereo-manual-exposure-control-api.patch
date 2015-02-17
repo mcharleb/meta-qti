@@ -1,0 +1,406 @@
+diff --git a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c
+index 021fbc2..217c984 100644
+--- a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c
++++ b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.c
+@@ -3180,14 +3180,74 @@ int set_EV (int32_t ev_inp) {
+   return 0;
+ }
+ 
+-int v4l2_qcamlib_get_exposure_value(int32_t* p_ev) {
++int v4l2_qcamlib_get_aec_exposure_value(int32_t* p_ev) {
+ 	return get_ctrl_value(EV, p_ev); 
+ }
+ 
+-int v4l2_qcamlib_set_exposure_value(int32_t ev_abs) {
++int v4l2_qcamlib_set_aec_exposure_value(int32_t ev_abs) {
+ 	return set_EV(ev_abs); 
+ }
+ 
++int v4l2_qcamlib_set_exposure_manual(v4l2_qcamlib_sensor_aec_t* aec_data) {
++  struct v4l2_queryctrl queryctrl;
++  struct v4l2_control control;
++
++  memset (&queryctrl, 0, sizeof (queryctrl));
++  queryctrl.id = MSM_V4L2_PID_BL_DETECTION;
++
++  if (-1 == ioctl (camfd, VIDIOC_QUERYCTRL, &queryctrl)) {
++    if (errno != EINVAL) {
++      perror ("VIDIOC_QUERYCTRL");
++	  return -1;
++    } else {
++      printf ("V4L2_CID_EXPOSURE is not supported\n");
++	  return -1;
++    }
++  } else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
++    printf ("V4L2_CID_EXPOSURE is Disabled \n");
++	  return -1;
++  } else {
++
++    memset (&control, 0, sizeof (control));
++    control.id = MSM_V4L2_PID_BL_DETECTION;
++    control.value = aec_data->gain;
++    if (-1 == ioctl (camfd, VIDIOC_S_CTRL, &control)) {
++      perror ("VIDIOC_S_CTRL");
++      return -1;
++    }
++
++    memset (&control, 0, sizeof (control));
++    control.id = MSM_V4L2_PID_MOTION_ISO;
++    control.value = aec_data->current_luma;
++    if (-1 == ioctl (camfd, VIDIOC_S_CTRL, &control)) {
++      perror ("VIDIOC_S_CTRL");
++      return -1;
++    }
++    memset (&control, 0, sizeof (control));
++    control.id = MSM_V4L2_PID_ISO;
++    control.value = aec_data->luma_target;
++    if (-1 == ioctl (camfd, VIDIOC_S_CTRL, &control)) {
++      perror ("VIDIOC_S_CTRL");
++      return -1;
++    }
++    memset (&control, 0, sizeof (control));
++    control.id = MSM_V4L2_PID_EXP_METERING;
++    control.value = aec_data->linecount;
++    if (-1 == ioctl (camfd, VIDIOC_S_CTRL, &control)) {
++      perror ("VIDIOC_S_CTRL");
++      return -1;
++    }
++    memset (&control, 0, sizeof (control));
++    control.id = V4L2_CID_EXPOSURE;
++    control.value = 0x0101;
++    if (-1 == ioctl (camfd, VIDIOC_S_CTRL, &control)) {
++      perror ("VIDIOC_S_CTRL");
++      return -1;
++    }
++  }
++  return 0;
++}
++
+ int v4l2_qcamlib_register_preview_frame_callback(v4l2_preview_camframe_cb_t cb_ptr) {
+ 	return register_v4l2_camframe_preview_callback(cb_ptr);
+ }
+diff --git a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h
+index 9ae913e..8861be0 100644
+--- a/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h
++++ b/apps/v4l2-qcamera-app/v4l2-qcamera-app-lib.h
+@@ -18,6 +18,16 @@ uint32_t v4l2_qcamlib_get_preview_frame_buffer_size();
+ int v4l2_qcamlib_copy_preview_frame(uint8_t* dest_buf, void* src_vfb);
+ void v4l2_qcamlib_enable_display_overlay();
+ 
+-int v4l2_qcamlib_get_exposure_value(int32_t* p_ev);
+-int v4l2_qcamlib_set_exposure_value(int32_t ev_abs);
++int v4l2_qcamlib_get_aec_exposure_value(int32_t* p_ev);
++int v4l2_qcamlib_set_aec_exposure_value(int32_t ev_abs);
++
++typedef struct {
++  int luma_target;
++  int current_luma;
++  float gain;
++  float digital_gain;
++  uint32_t linecount;
++  uint32_t fps;
++} v4l2_qcamlib_sensor_aec_t;
++int v4l2_qcamlib_set_exposure_manual(v4l2_qcamlib_sensor_aec_t* aec_data); 
+ 
+diff --git a/apps/v4l2-qcamera-app/v4l2-qcamera-app.c b/apps/v4l2-qcamera-app/v4l2-qcamera-app.c
+index bf66249..7dd56c4 100644
+--- a/apps/v4l2-qcamera-app/v4l2-qcamera-app.c
++++ b/apps/v4l2-qcamera-app/v4l2-qcamera-app.c
+@@ -1782,7 +1782,7 @@ int main(int argc, char **argv)
+         /*use_overlay_fb_display_driver();*/
+         break;
+       case 'e':
+-        v4l2_qcamlib_set_exposure_value(atoi(optarg)); 
++        /*v4l2_qcamlib_set_exposure_value(atoi(optarg)); */
+         /*use_overlay_fb_display_driver();*/
+         break;
+     #if 0
+@@ -1822,7 +1822,7 @@ int main(int argc, char **argv)
+       default:
+         printf("usage: %s [-o] [-d dumpFrameFactor] \n", argv[0]);
+         printf("-o          :   Enable display overlay \n");
+-        printf("-e <factor> :   Set Exposure Value < -12 to 12 >  \n");
++        /*printf("-e <factor> :   Set Exposure Value < -12 to 12 >  \n");*/
+         printf("-d <factor> :   Dump Frames with factor  \n");
+         printf("            :   <n>: Dump mod(n) frames  \n");
+         printf("            :   <1>: Dump all frames  \n");
+@@ -2193,26 +2193,50 @@ int print_current_menu (menu_id_change_t current_menu_id) {
+ /********* Test preview callback **********/
+ uint8_t* test_buf = NULL;
+ int yuvFrameDumpFactor = 10;
++uint32_t frameCntp = 0;
++int num_frames = 5000;
++
++void dummy_exposure_control() {
++	v4l2_qcamlib_sensor_aec_t aec_data;
++	int8_t rc = -1;
++	aec_data.gain = 0;
++	aec_data.current_luma = 47;
++	aec_data.luma_target = 48;
++	aec_data.linecount = 1300;
++
++	if (frameCntp % 100 == 0) {
++		/*aec_data.gain =(float) ( 1 + (frameCntp * 0.0001));*/
++		aec_data.gain = 1000000+frameCntp;
++    	CDBG_ERROR("%s: set exposure gain (%f) from frame (%d) \n", __func__, aec_data.gain, frameCntp);
++		rc = v4l2_qcamlib_set_exposure_manual(&aec_data);
++		if (rc < 0)
++    	CDBG_ERROR("%s: set exposure gain FAILED \n", __func__);
++	}
++}
+ 
+ void test_v4l2_preview_cb_fn(void* src_vb) {
+-	static uint32_t frameCntp = 0;
+-	int num_frames = 5000;
+ 	struct v4l2_frame_buffer* vb = src_vb;
+ 
++    frameCntp++;
++
++	/* Test exposure control api */
++	dummy_exposure_control(frameCntp);
++
++	/* Dump selected frames */
++
+ 		/*v4l2_qcamlib_copy_preview_frame(test_buf, vb); */
+         if (frameCntp % yuvFrameDumpFactor == 0 && frameCntp <= num_frames ) {
+           char bufp[128];
+           snprintf(bufp, 128, "/data/frame_p_%d.yuv", frameCntp);
+           dump_v4l2_yuv_frame_p(vb, bufp);
+         }
+-        frameCntp++;
+ }
+ 
+ int test_v4l2_preview_callback_init() {
+ 	cam_format_t p_fmt = v4l2_qcamlib_get_preview_frame_format();
+ 	uint32_t p_size = v4l2_qcamlib_get_preview_frame_buffer_size();
+ 
+-    CDBG("%s: preview callback init \n", __func__);
++    CDBG_ERROR("%s: preview callback init \n", __func__);
+ 	test_buf = (uint8_t *)malloc(sizeof(uint8_t) * p_size);
+ 
+ 	v4l2_qcamlib_register_preview_frame_callback(&test_v4l2_preview_cb_fn);
+@@ -2220,7 +2244,7 @@ int test_v4l2_preview_callback_init() {
+ 
+ int test_v4l2_preview_callback_exit() {
+ 
+-    CDBG("%s: preview callback exit \n", __func__);
++    CDBG_ERROR("%s: preview callback exit \n", __func__);
+ 	free(test_buf);
+ 	test_buf=NULL;
+ 
+diff --git a/server/core/config/config_proc_ctrlcmd.c b/server/core/config/config_proc_ctrlcmd.c
+index 06d442d..dfd6e45 100644
+--- a/server/core/config/config_proc_ctrlcmd.c
++++ b/server/core/config/config_proc_ctrlcmd.c
+@@ -757,6 +757,109 @@ static int8_t config_proc_CAMERA_SET_PARM_SATURATION(void *parm1, void *parm2)
+   return TRUE;
+ }
+ 
++sensor_set_aec_data_t aec_data;
++
++/*===========================================================================
++ * FUNCTION    - config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_GAIN -
++ *
++ * DESCRIPTION:
++ *==========================================================================*/
++static int8_t config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_GAIN(void *parm1, void *parm2)
++{
++  int8_t rc = FALSE;
++  mctl_config_ctrl_t *ctrl = (mctl_config_ctrl_t *)parm1;
++  struct msm_ctrl_cmd *ccmd = (struct msm_ctrl_cmd *)parm2;
++  uint32_t value = *(uint32_t *)ccmd->value;
++  aec_data.gain = value * 0.000001; 
++  CDBG("%s gain(%f) \n", __func__, aec_data.gain);
++  return TRUE;
++}
++/*===========================================================================
++ * FUNCTION    - config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_CURRENT_LUMA -
++ *
++ * DESCRIPTION:
++ *==========================================================================*/
++static int8_t config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_CURRENT_LUMA(void *parm1, void *parm2)
++{
++  int8_t rc = FALSE;
++  mctl_config_ctrl_t *ctrl = (mctl_config_ctrl_t *)parm1;
++  struct msm_ctrl_cmd *ccmd = (struct msm_ctrl_cmd *)parm2;
++  uint32_t value = *(uint32_t *)ccmd->value;
++  aec_data.current_luma = value; 
++  CDBG("%s current_luma(%d) \n", __func__, aec_data.current_luma);
++  return TRUE;
++}
++/*===========================================================================
++ * FUNCTION    - config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_TARGET_LUMA -
++ *
++ * DESCRIPTION:
++ *==========================================================================*/
++static int8_t config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_TARGET_LUMA(void *parm1, void *parm2)
++{
++  int8_t rc = FALSE;
++  mctl_config_ctrl_t *ctrl = (mctl_config_ctrl_t *)parm1;
++  struct msm_ctrl_cmd *ccmd = (struct msm_ctrl_cmd *)parm2;
++  uint32_t value = *(uint32_t *)ccmd->value;
++  aec_data.luma_target = value; 
++  CDBG("%s luma_target(%d) \n", __func__, aec_data.luma_target);
++  return TRUE;
++}
++/*===========================================================================
++ * FUNCTION    - config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_LINECOUNT -
++ *
++ * DESCRIPTION:
++ *==========================================================================*/
++static int8_t config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_LINECOUNT(void *parm1, void *parm2)
++{
++  int8_t rc = FALSE;
++  mctl_config_ctrl_t *ctrl = (mctl_config_ctrl_t *)parm1;
++  struct msm_ctrl_cmd *ccmd = (struct msm_ctrl_cmd *)parm2;
++  uint32_t value = *(uint32_t *)ccmd->value;
++  aec_data.linecount = value; 
++  CDBG("%s linecount(%d) \n", __func__, aec_data.linecount);
++  return TRUE;
++}
++
++/*===========================================================================
++ * FUNCTION    - config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL -
++ *
++ * DESCRIPTION:
++ *==========================================================================*/
++static int8_t config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL(void *parm1, void *parm2)
++{
++  int8_t rc = FALSE;
++  CDBG("%s Exposure values manually\n", __func__);
++
++  mctl_config_ctrl_t *ctrl = (mctl_config_ctrl_t *)parm1;
++  /*stats_proc_ctrl_t *sp_ctrl = &(ctrl->stats_proc_ctrl);*/
++  struct msm_ctrl_cmd *ccmd = (struct msm_ctrl_cmd *)parm2;
++  uint32_t value = *(uint32_t *)ccmd->value;
++  if(value != 0x0101) {
++  	CDBG_ERROR("%s Skipping.. \n", __func__);
++	return TRUE;
++  }
++	
++  CDBG("%s:%d] manual lum %d gain %f linecnt %u"
++        " luma target %d ", __func__, __LINE__,
++        aec_data.current_luma,
++        aec_data.gain,
++        aec_data.linecount,
++        aec_data.luma_target);
++
++  sensor_set_t set_param;
++  set_param.type = SENSOR_SET_EXPOSURE;
++  set_param.data.aec_data = aec_data;
++
++  rc = ctrl->comp_ops[MCTL_COMPID_SENSOR].set_params(
++         ctrl->comp_ops[MCTL_COMPID_SENSOR].handle,
++         SENSOR_SET_EXPOSURE, (void *)&set_param, NULL);
++
++  ccmd->status = rc ? CAM_CTRL_SUCCESS : CAM_CTRL_FAILED;
++  if (rc < 0)
++        CDBG_ERROR("%s FAILED to set Exposure values manually\n", __func__);
++  return TRUE;
++}
++
+ /*===========================================================================
+  * FUNCTION    - config_proc_CAMERA_SET_PARM_EXPOSURE -
+  *
+@@ -5455,12 +5558,13 @@ int config_proc_set_ctrl_cmd(void *parm1, void *parm2, int *cmdPending)
+       *(int*)ctrlCmd->value = v4l2_ctrl->value;
+       ret = config_CAMERA_SET_PARM_ZOOM(ctrl, ctrlCmd);
+       break;
+-
++#if 0
+     case MSM_V4L2_PID_MOTION_ISO: {
+         *(int *)ctrlCmd->value = v4l2_ctrl->value;
+         ret = config_proc_CAMERA_SET_MOTION_ISO(ctrl, ctrlCmd);
+       }
+       break;
++#endif
+     case V4L2_CID_POWER_LINE_FREQUENCY: {
+         *(int *)ctrlCmd->value = v4l2_ctrl->value;
+         if (CAMERA_ANTIBANDING_AUTO == v4l2_ctrl->value ||
+@@ -5471,13 +5575,36 @@ int config_proc_set_ctrl_cmd(void *parm1, void *parm2, int *cmdPending)
+           ret = config_proc_CAMERA_SET_PARM_ANTIBANDING(ctrl,ctrlCmd);
+       }
+       break;
+-    case V4L2_CID_EXPOSURE: {
+-        ctrl->v4l2Ctrl.ev_num = v4l2_ctrl->value;
++
++    case MSM_V4L2_PID_BL_DETECTION: {
++        *(int *)ctrlCmd->value = v4l2_ctrl->value;
++        ret = config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_GAIN(ctrl, ctrlCmd);
++      }
++      break;
++    case MSM_V4L2_PID_MOTION_ISO: {
+         *(int *)ctrlCmd->value = v4l2_ctrl->value;
+-        ret = config_proc_CAMERA_SET_PARM_EXPOSURE_COMPENSATION(ctrl, ctrlCmd);
++        ret = config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_CURRENT_LUMA(ctrl, ctrlCmd);
++      }
++      break;
++    case MSM_V4L2_PID_ISO: {
++        *(int *)ctrlCmd->value = v4l2_ctrl->value;
++        ret = config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_TARGET_LUMA(ctrl, ctrlCmd);
++      }
++      break;
++    case MSM_V4L2_PID_EXP_METERING: {
++        *(int *)ctrlCmd->value = v4l2_ctrl->value;
++        ret = config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL_LINECOUNT(ctrl, ctrlCmd);
+       }
+       break;
+ 
++    case V4L2_CID_EXPOSURE: {
++        /*ctrl->v4l2Ctrl.ev_num = v4l2_ctrl->value;*/
++        *(int *)ctrlCmd->value = v4l2_ctrl->value;
++        /*ret = config_proc_CAMERA_SET_PARM_EXPOSURE_COMPENSATION(ctrl, ctrlCmd);*/
++        ret = config_proc_CAMERA_SET_PARM_EXPOSURE_MANUAL(ctrl, ctrlCmd);
++      }
++      break;
++#if 0
+     case V4L2_CID_AUTOGAIN: {
+         *(int *)ctrlCmd->value = v4l2_ctrl->value;
+         ret = config_proc_CAMERA_SET_PARM_EXPOSURE(ctrl, ctrlCmd);
+@@ -5495,7 +5622,7 @@ int config_proc_set_ctrl_cmd(void *parm1, void *parm2, int *cmdPending)
+         ret = config_proc_CAMERA_SET_PARM_ISO(ctrl, ctrlCmd);
+       }
+       break;
+-
++#endif
+     case V4L2_CID_FOCUS_AUTO:
+       /*set continuous auto focus flag to true*/
+       *(int *)ctrlCmd->value = v4l2_ctrl->value;
+diff --git a/server/hardware/sensor/sensor_interface.c b/server/hardware/sensor/sensor_interface.c
+index 783d9f5..655893c 100644
+--- a/server/hardware/sensor/sensor_interface.c
++++ b/server/hardware/sensor/sensor_interface.c
+@@ -165,6 +165,11 @@ static int  sensor_client_set_params(uint32_t handle, int type,
+     /* get exposure settings from stats proc */
+     sensor_set_aec_data_t aec_data;
+     if (NULL == sensor_set) {
++
++      /*CDBG_ERROR("%s:%d] SENSOR_SET_EXPOSURE thru aec skipping \n",
++			 __func__, __LINE__);*/
++      return 1;
++	
+       stats_proc_get_t stats_proc_get;
+       stats_proc_get.d.get_aec.type = AEC_EXPOSURE_PARAMS;
+       stats_proc_get.d.get_aec.d.exp_params.is_snapshot =
+@@ -184,7 +189,7 @@ static int  sensor_client_set_params(uint32_t handle, int type,
+         stats_proc_get.d.get_aec.d.exp_params.luma_target;
+       aec_data.skip_snap_wait = 0;
+       CDBG("%s:%d] SENSOR_SET_EXPOSURE snap %d lum %d gain %f linecnt %u"
+-        " luma target %d ", __func__, __LINE__,
++        " luma target %d \n", __func__, __LINE__,
+         stats_proc_get.d.get_aec.d.exp_params.is_snapshot,
+         aec_data.current_luma,
+         aec_data.gain,
+@@ -192,6 +197,12 @@ static int  sensor_client_set_params(uint32_t handle, int type,
+         aec_data.luma_target);
+     } else {
+       aec_data = sensor_set->data.aec_data;
++      CDBG_ERROR("%s:%d] SENSOR_SET_EXPOSURE manual lum %d gain %f linecnt %u"
++        " luma target %d \n", __func__, __LINE__,
++        sensor_set->data.aec_data.current_luma,
++        sensor_set->data.aec_data.gain,
++        sensor_set->data.aec_data.linecount,
++        sensor_set->data.aec_data.luma_target);
+     }
+ 
+     if (sctrl->sensor.op_mode == SENSOR_MODE_SNAPSHOT ||

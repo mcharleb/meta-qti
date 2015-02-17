@@ -11,11 +11,21 @@ PR = "r0"
 SRC_URI = "git://codeaurora.org/platform/hardware/qcom/camera;protocol=git;nobranch=1"
 
 SRC_URI_append_som8064 = " file://0001-som8064-baseline-for-linux.patch"
+SRC_URI_append_som8064 = " file://0002-stereo-3d-mode.patch"
+
+SRC_URI_append_som8064-revB = " file://0001-som8064-baseline-for-linux.patch"
+SRC_URI_append_som8064-revB = " file://0002-stereo-3d-mode.patch"
+
+SRC_URI_append_som8064-const = " file://0001-som8064-baseline-for-linux.patch"
+SRC_URI_append_som8064-const = " file://0002-stereo-3d-mode.patch"
+
 SRC_URI_append_ifc6410 = " file://0001-ifc6410-baseline-for-linux.patch"
 
 PACKAGES = "${PN}"
 
 SRCREV_som8064 = "AU_LINUX_ANDROID_KK_2.7_RB1.04.04.02.007.041"
+SRCREV_som8064-revB = "AU_LINUX_ANDROID_KK_2.7_RB1.04.04.02.007.041"
+SRCREV_som8064-const = "AU_LINUX_ANDROID_KK_2.7_RB1.04.04.02.007.041"
 SRCREV_ifc6410 = "AU_LINUX_ANDROID_JB_2.5_AUTO.04.02.02.115.005"
 
 inherit autotools qti-proprietary-binary
@@ -42,8 +52,9 @@ EXTRA_OECONF_append = " --enable-target=${BASEMACHINE}"
 
 FILES_${PN}_append += "/usr/lib/hw/*"
 
-# The camera-hal package contains symlinks that trip up insane
 INSANE_SKIP_${PN} = "dev-so"
+INSANE_SKIP_${PN} += "installed-vs-shipped"
+INSANE_SKIP_${PN} += "staticdev"
 
 do_unpack_append() {
     import shutil

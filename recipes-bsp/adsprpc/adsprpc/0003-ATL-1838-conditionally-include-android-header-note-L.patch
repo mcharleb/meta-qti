@@ -1,0 +1,31 @@
+From 9b6a62d74d7d67d65d3bba6cb1ead5fdde465dcd Mon Sep 17 00:00:00 2001
+From: willc <willc@qti.qualcomm.com>
+Date: Fri, 14 Nov 2014 11:08:47 -0800
+Subject: [PATCH] ATL-1838 conditionally include android header, note: LOGL not
+ used anyway
+
+---
+ src/listener_android.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/listener_android.c b/src/listener_android.c
+index db5f72f..798d087 100644
+--- a/src/listener_android.c
++++ b/src/listener_android.c
+@@ -19,9 +19,12 @@
+ #define dlw_Sym dlsym
+ #define dlw_Close dlclose
+ #define dlw_Error dlerror
+-#include <android/log.h>
+ 
++#ifdef __ANDROID__
++#include <android/log.h>
+ #define LOGL(format, ...) __android_log_print(ANDROID_LOG_DEBUG , "adsprpc", __V_FILE_LINE__ format, ##__VA_ARGS__)
++#endif
++
+ #include "mod_table_imp.h"
+ 
+ #include <stdio.h>
+-- 
+1.8.5.2
+

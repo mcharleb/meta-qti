@@ -1,0 +1,465 @@
+diff --git a/include/diag_lsm.h b/include/diag_lsm.h
+index e5990c4..bba5794 100755
+--- a/include/diag_lsm.h
++++ b/include/diag_lsm.h
+@@ -140,6 +140,9 @@ SIDE EFFECTS
+ ===========================================================================*/
+ boolean Diag_LSM_DeInit(void);
+ 
++void enable_write_to_txt_file(int txtFileFlag);
++void enable_write_to_terminal( int terminalFlag );
++
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/mdlog/diag_mdlog.c b/mdlog/diag_mdlog.c
+index 5860eee..d97ae1f 100755
+--- a/mdlog/diag_mdlog.c
++++ b/mdlog/diag_mdlog.c
+@@ -95,6 +95,8 @@ static void usage(char *progname)
+ 	printf("\n-f, --file:\t mask file name\n");
+ 	printf("\n-o, --output:\t output directory name\n");
+ 	printf("\n-s, --size:\t maximum file size in MB\n");
++	printf("\n-t, --text:\t print logging to text file\n");
++	printf("\n-x, --terminal:\t print logging to terminal\n");	
+ 	printf("\n-k, --kill:\t kill existing instance of diag_mdlog\n");
+ 	printf("\n-c  --cleanmask:\t Send mask cleanup to modem at exit\n");
+ 	printf("\n-h, --help:\t usage help\n");
+@@ -111,12 +113,14 @@ static void parse_args(int argc, char **argv)
+ 		{ "file",	1,	NULL,	'f'},
+ 		{ "output",	1,	NULL,	'o'},
+ 		{ "size",	1,	NULL,	's'},
++		{ "text",	0,	NULL,	't'},
++		{ "terminal",	0,	NULL,'x'},
+ 		{ "kill",	0,	NULL,	'k'},
+ 		{ "cleanmask",	0,	NULL,	'c'},
+ 		{ "help",	0,	NULL,	'h'},
+ 	};
+ 
+-	while ((command = getopt_long(argc, argv, "f:o:s:ckh", longopts, NULL))
++	while ((command = getopt_long(argc, argv, "f:o:s:ckh:x:t", longopts, NULL))
+ 			!= -1) {
+ 		switch (command) {
+ 			case 'f':
+@@ -134,12 +138,20 @@ static void parse_args(int argc, char **argv)
+ 					max_file_size *= 1024 * 1024;
+ 				min_file_size = ((max_file_size / 100) * 80);
+ 				break;
++			case 't':
++					enable_write_to_txt_file(TRUE);
++					DIAG_LOGE("Enable writing to text file \n");
++					break;
++			case 'x':
++					enable_write_to_terminal(TRUE);
++					DIAG_LOGE("Enable logging to terminal \n");
++					break;
+ 			case 'k':
+ 				kill_mdlog = 1;
+ 				break;
+ 			case 'c':
+ 				cleanup_mask = 1;
+-				break;
++				break;				
+ 			case 'h':
+ 			default:
+ 				usage(argv[0]);
+diff --git a/src/diag_lsm.c b/src/diag_lsm.c
+index 7d371f3..2af0f85 100755
+--- a/src/diag_lsm.c
++++ b/src/diag_lsm.c
+@@ -96,12 +96,15 @@ and made common later. */
+ 	int gdwClientID = 0;
+ 	int fd = -1;		/* File descriptor for DIAG device */
+ 	int fd_md = -1;		/* File descriptor for Memory device */
++	int fd_md_txt = -1;		/* File descriptor for Memory device */
+ 	int fd_uart = -1;	/* File descriptor for UART device */
+ 	int fd_socket = -1;	/* File descriptor for socket */
+ 	int fd_dev = -1;	/* Generic file descriptor */
++	int fd_dev_txt = -1;	/* Generic file descriptor */
+ 	int num_bytes_read;
+ 	unsigned long count_written_bytes = 0;
+ 	char file_name[FILE_NAME_LEN] = "/sdcard/diag_logs/diag_log_";
++	char file_name_txt[FILE_NAME_LEN] = "/sdcard/diag_logs/diag_log_";
+ 	char mask_file[FILE_NAME_LEN] = "/sdcard/diag_logs/Diag.cfg";
+ 	char output_dir[FILE_NAME_LEN] = "/sdcard/diag_logs/";
+ 	int logging_mode = USB_MODE;
+@@ -580,6 +583,332 @@ static int get_oldest_file(char* oldest_file)
+ 	return status;
+ }
+ 
++/* 65536 + 1024 ( extra buffer for the previous frame )*/
++#define MAX_MESSAGE_ARGUMENTS 8
++unsigned char DecodedFrame[66560];
++int decodedLen = 0;
++int false = 0;
++int true = 1;
++
++/* Default printToTerminal set to FALSE. 
++* ToDO: Set this value based on command line parameter */
++int printToTerminalFlag = FALSE;
++int printToTxtFileFlag = FALSE;
++
++void DumpFrame( unsigned char* ptr, int len )
++{
++	int i;
++	int j;
++	printf( "frame msg len[%d]\n", len );
++	printf( "\n================\n");
++	for( i = 0; i < len; i+=16 )
++	{
++		for( j = 0; j < 16; ++j )
++		{
++			if( (i+j) < len )
++			{
++				printf( "%02x ", ptr[i+j] );
++				if( j == 7 )
++					printf( "- " );
++			}
++		}
++		printf( "  " );
++		for( j = 0; j < 16; ++j )
++		{
++			if( (i+j) < len )
++				printf( "%c", ptr[i+j] );
++		}
++		printf( "\n" );
++
++	}
++	printf( "\n================\n");
++	//assert(1);
++}
++
++
++
++void DecodePayload( unsigned char* payload, int payLoadValues[], int numArgs )
++{
++	int i = 0, j  = 0;
++	static int count_local = 0;
++    
++    /* QXDM sends arguments of size 4 byte with lsb first. 
++		 * First Argument  : 
++		 * ts  = payload[0] << 0;
++		*  ts |= payload[1] << 8;
++		*  ts |= payload[2] << 16;
++		*  ts |= payload[3] << 24;
++		* 
++		*  Second Argument : 
++		* 
++		* x  = payload[4] << 0;
++		* x |= payload[5] << 8;
++		* x |= payload[6] << 16;
++		* x |= payload[7] << 24;
++		* 
++	*/
++
++	for ( i = 0 ; i < numArgs ; i++ )
++	{
++		payLoadValues[i] = 0 ;
++					 
++		for ( j = 0 ; j < 4; j++ )
++		{
++			payLoadValues[i] |= payload[ i*4 + j ] << j * 8;
++		}
++		
++	}	
++}
++
++
++void HDLCDecoder( unsigned char* ptr, int len )
++{
++	int i = 0;
++	
++	if( len > 65536 )
++	{
++		printf( "Error: Cannot decode hdlc frame....exiting\n");
++		return -1;
++	}
++
++	while( i < len )
++	{
++		if( ptr[i] != 0x7d )
++		{
++			DecodedFrame[decodedLen++] = ptr[i];
++		}
++		else
++		{
++			DecodedFrame[decodedLen++] = ptr[++i] ^ 0x20;
++		}
++		i++;
++	}
++}
++
++     
++void GenerateWrite2FileBuf(unsigned char *result_ptr, unsigned char *fileName_ptr , int lineNumber , unsigned char *fmtString_ptr , int payLoadValues[] , int numArgs , unsigned char *header_ptr )
++{
++	char missed_packet_string[10];
++	char lineNumberString[20];
++	char message[8192];
++	
++	
++	if (  result_ptr == NULL || fileName_ptr == NULL || fmtString_ptr ==NULL || header_ptr  == NULL )
++	{
++			DIAG_LOGE("ERROR : Invalid ptr passed - result = %u ,f ileName =  % u , fmtString =  %u , header = %u", result_ptr , fileName_ptr , fmtString_ptr , header_ptr ); 
++	}
++	
++	
++	
++	switch ( numArgs )
++	{
++		case 0:
++			sprintf( message, fmtString_ptr);
++			break;
++			
++		case 1:
++			sprintf( message, fmtString_ptr, payLoadValues[0] );
++			break;
++		
++		case 2:
++			sprintf( message, fmtString_ptr, payLoadValues[0] , payLoadValues[1]);
++			break;
++			
++		case 3:
++			sprintf( message, fmtString_ptr, payLoadValues[0] , payLoadValues[1] , payLoadValues[2] );
++			break;
++			
++		case 4:
++			sprintf( message, fmtString_ptr, payLoadValues[0] , payLoadValues[1] , payLoadValues[2] , payLoadValues[3] );
++			break;
++		
++		case 5:
++			sprintf( message, fmtString_ptr, payLoadValues[0] , payLoadValues[1] , payLoadValues[2] , payLoadValues[3] , payLoadValues[4] );
++			break;
++			
++		case 6:
++			sprintf( message, fmtString_ptr, payLoadValues[0] , payLoadValues[1] , payLoadValues[2] , payLoadValues[3] , payLoadValues[4] , payLoadValues[5]);
++			break;						
++	
++    }
++    
++    strcpy( result_ptr , "");   /* Initialize empty string */ 
++    
++    
++	strcat( result_ptr , fileName_ptr ); /* Write file name to buffer */
++	
++	
++    sprintf( lineNumberString , "	%d	" , lineNumber ); /* Convert line number to string and write to buffer */
++    strcat( result_ptr , lineNumberString );
++     
++    strcat(result_ptr , message );               /* Write the message */
++	strcat(result_ptr ,"	0x79 00 04 ");
++	
++	sprintf( missed_packet_string , "%02d" ,  header_ptr[3]  );   /* Extra logging of raw header. Mainly to log number of missed packets. Hence only 4 bytes */
++    strcat(result_ptr , missed_packet_string ); 
++	strcat(result_ptr , " "); 
++	strcat( result_ptr,"\n");
++	
++	//printf(" To write  = %s \n", result_ptr );
++    return;
++}
++
++/* 
++ * FUNCTION : PrintToTxtFile
++ * DESCRIPTION : Prints the input buffer to a file using linux system call write.           
++ *               
++ */
++
++int PrintToTxtFile( const char *write2FileBuf )
++{
++	size_t nbytes =0,bytes_written = 0;
++	int return_value = 0;
++	
++	if ( write2FileBuf == NULL )
++	{
++		DIAG_LOGE(" Error : Cannot write empty buffer to file", nbytes - bytes_written );
++		return -1;
++	}	
++	nbytes = strlen(write2FileBuf);
++	
++	/* fd_md_txt is a global file descriptor which is set in the function  log_to_device */
++    bytes_written = write(fd_md_txt, write2FileBuf, nbytes);
++    if( nbytes !=  bytes_written )
++    {
++		DIAG_LOGE(" Error : %d number of bytes not written to file: ", nbytes - bytes_written );
++		return_value = -1;
++    }
++    
++    if ( printToTerminalFlag == TRUE )
++    {
++		DIAG_LOGE(write2FileBuf);
++	}
++
++	return 0;	
++}
++
++
++/* 
++ * FUNCTION : WriteToTextFile
++ * DESCRIPTION : Parses diag data and writes to a file.            
++ *               
++ */
++int WriteToTextFile( unsigned char* ptr, int len )
++{
++	int i , j = 0;
++	unsigned char* header;
++	unsigned char* payload;
++	unsigned char* fmtString;
++	unsigned char* fileName;
++    unsigned char* frameCRC;
++    unsigned int lineNumber;
++	int numArgs;
++	int pktLen;
++	unsigned int ts;
++	int x, y, z;
++	int foundFrame = false;
++		
++	const char write2FileBuf[1000];
++    strcpy(write2FileBuf, "");
++    
++    int payLoadValues[MAX_MESSAGE_ARGUMENTS], payLoadNumValues = 0;
++     
++    
++    HDLCDecoder( ptr, len );
++   
++          
++	if( decodedLen == -1 )
++		return -1;
++
++	/* traverse through hdlc decoded buffer to find 0x79 which extended debug message of QXDM
++	 * After which extract information from the buffer
++	*/
++	i = 0; 
++	while( i < decodedLen )
++	{
++		if( DecodedFrame[i] != 0x79 ) 
++		{
++			i++;
++			continue;
++		}
++	
++		if( i + 20 > decodedLen ) break; // not enough header.
++		
++		/*Extract message */
++		header = &DecodedFrame[i];
++		numArgs = header[2]; // the 3rd byte is the count of args.			
++		payload = header + 20;
++		fmtString = payload + numArgs*4;
++		fileName = fmtString + strlen( (char*)fmtString ) + 1;
++		
++		lineNumber  = 0;
++		lineNumber =  header[12]; /* Line number is 2 byte and is stored at 13 and 14th bytes */
++		lineNumber |= header[13] << 8 ;
++		
++		//DIAG_LOGE("DEBUG : Line Number = %d \n",lineNumber ); 
++		 
++		frameCRC = fileName + strlen( (char*)fileName ) + 1;
++		pktLen = 20 + numArgs*4 + strlen( (char*)fmtString ) + 1 + strlen( fileName ) + 1 + 3;
++        
++        
++        
++		if( header[3] != 0 ) // the 4rd byte is the count of missed packets
++		{			
++			DIAG_LOGE("Warning! [%d] qxdm packets dropped\n", header[3] );
++			sprintf(write2FileBuf, "Warning! [%d] qxdm packets dropped \n", header[3] );
++			PrintToTxtFile( write2FileBuf );			
++		}
++
++		if (fmtString != NULL )		
++		{								
++			/* Check if the complete packet is in the current frame else save bytes to be concatenate with the start of next frame */	
++			if ( pktLen > ( decodedLen - i ) )
++			{	
++				
++				//DIAG_LOGE(" Saving bytes for next frame :i = %d , decodedLen =%d , len = %d , pktLen = %d \n",i, decodedLen, len, pktLen );
++				j = 0 ; /* j traverse from start of DecodedFrame to save pending bytes */
++				while( i < decodedLen )
++				{
++					DecodedFrame[j++] = DecodedFrame[i++]; 
++				}
++				decodedLen = j ; 
++				break;										
++				
++				
++			}
++			else 
++			{	
++				DecodePayload( payload, payLoadValues , numArgs );
++				GenerateWrite2FileBuf( write2FileBuf , fileName , lineNumber , fmtString , payLoadValues , numArgs , header ); 
++				PrintToTxtFile( write2FileBuf ); 				              				
++			}
++			//printf( "DecodedFrame: pktLen[%d] args[%d] fmtStr[%s] fileName[%s]\n", pktLen, numArgs, fmtString, fileName );
++		}
++		i += pktLen;
++	}
++	
++	//DIAG_LOGE(" Debug End of buffer :i = %d , decodedLen =%d , len = %d , pktLen = %d  j = %d\n",i, decodedLen, len, pktLen , j );
++		
++	/* No bytes will be reused in the next frame if j = 0 */
++	if ( j == 0 )
++	{
++	   decodedLen = 0 ;		 	
++	}
++
++	return 0;
++}
++
++void enable_write_to_txt_file(int txtFileFlag )
++{
++	printToTxtFileFlag = txtFileFlag;			
++}
++
++void enable_write_to_terminal( int terminalFlag )
++{
++	 
++	printToTerminalFlag = terminalFlag;
++	
++}
+ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ {
+ 	unsigned long count_received_bytes;
+@@ -605,6 +934,8 @@ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ 			(void)std_strlprintf(file_name, FILE_NAME_LEN,
+ 				"%s%s%s%s",output_dir, "/diag_log_",
+ 				timestamp_buf, ".qmdl");
++				
++						
+ 			fd_md = open(file_name, O_CREAT | O_RDWR | O_SYNC | O_APPEND, 0644);
+ 			fd_dev = fd_md;
+ 			if (fd_md < 0) {
+@@ -614,6 +945,23 @@ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ 			else
+ 				DIAG_LOGE(" creating new file %s \n",
+ 								file_name);
++			
++			if ( printToTxtFileFlag  == TRUE )					
++			{					
++				(void)std_strlprintf(file_name_txt, FILE_NAME_LEN,
++					"%s%s%s%s",output_dir, "/diag_log_",
++					 timestamp_buf, ".txt");
++				
++				fd_md_txt = open(file_name_txt, O_CREAT | O_RDWR | O_SYNC | O_APPEND, 0644);
++				fd_dev_txt = fd_md_txt;
++				if (fd_md_txt < 0) {
++					DIAG_LOGE(" File open error, please check");
++					DIAG_LOGE(" memory device %d, errno: %d \n", fd_md_txt, errno);
++				}
++				else
++					DIAG_LOGE(" creating new file %s \n",
++									file_name_txt);
++			}										
+ 		} else
+ 			DIAG_LOGE(" Incorrect logging mode\n");
+ 	}
+@@ -621,6 +969,13 @@ void log_to_device(unsigned char *ptr, int logging_mode, int size)
+ 	if (fd_dev != -1) {
+ 		if(logging_mode == MEMORY_DEVICE_MODE ){
+ 			ret = write(fd_dev, (const void*) base_ptr, size);
++			
++			
++			if ( printToTxtFileFlag == TRUE )					
++			{	
++				WriteToTextFile(base_ptr,size);
++			}
++			
+ 			if ( ret > 0) {
+ 				count_written_bytes += size;
+ 			}else {
