@@ -6,9 +6,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${L
 PV = "1.0"
 PR = "r0"
 
-SRC_URI += "file://0001-Assignment-of-O2-changed-to-to-remove-warnings.patch"
-SRC_URI += "file://0001-Add-init-script-start_mpdecision.patch"
 SRC_URI += "file://mpdecision.conf"
+SRC_URI += "file://0001-add-makefile-and-configure-file-compilation-fix.patch"
 
 PACKAGES = "${PN}"
 
@@ -16,6 +15,14 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 inherit autotools
 inherit qti-proprietary-binary 
+
+
+EXTRA_OECONF_append = "${@base_conditional('MACHINE', 'db8074', ' --enable-target-msm8974=yes', '', d)}"
+#EXTRA_OECONF_append = " --with-dlog"
+
+FILES_${PN} += "\
+    /usr/lib/* \
+    /usr/bin/*"
 
 INITSCRIPT_NAME = "mpdecision"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."

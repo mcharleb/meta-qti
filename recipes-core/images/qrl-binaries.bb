@@ -15,11 +15,28 @@ DEPENDS_append_som8064 = "som8064-networking"
 DEPENDS_append_som8064-revB = "som8064-networking"
 DEPENDS_append_som8064-const = "som8064-networking"
 
-APQ8064_PARTITION_PERSIST_SIZE = "8M"
-APQ8064_PARTITION_SYSTEM_SIZE = "512M"
-APQ8064_PARTITION_CACHE_SIZE = "64M"
+# APQ8074 partition sizes
+PARTITION_PERSIST_SIZE = "32M"
+PARTITION_SYSTEM_SIZE = "1G"
+PARTITION_CACHE_SIZE = "32M"
 
 DEPENDS += " \
+   android-tools \
+   reboot2fastboot \
+   linux-qr-db8074 \
+   diag \
+   mp-decision \
+   qmi \
+   qmi-framework \
+   thermal-engine \
+   compat-wireless \
+   ath6kl-firmware \
+   q6-admin \
+   flight-dsp-image \
+   adsprpc \  
+   "
+
+OLD_DEPENDS += " \
    kernel-module-wlan \
    e2fsprogs-native \
    configdb \
@@ -28,7 +45,7 @@ DEPENDS += " \
    mp-decision \
    qmi \
    qmi-framework \
-   thermal \
+   thermal-engine \
    xmllib \
    reboot2fastboot \
    btnvtool \
@@ -47,6 +64,7 @@ DEPENDS += " \
    libimufastrpc \
    pixhawk \
 "
+
 inherit base
 
 copy_packages() {
@@ -64,28 +82,48 @@ copy_packages() {
   fi
 
   # Open source packages
-  pkgList_os="libglib-2.0-0_2.38.2-r0 \
+  old_pkgList_os="libglib-2.0-0_2.38.2-r0 \
               libz1 \
               libgcc-s1 \
-              qrl-networking \
+              qrl-networking \ 
               android-tools \
+              q6-admin"
+
+  pkgList_os="libglib-2.0-0_2.38.2-r0 \
+              libz1 \
+              libgcc-s1 
+              android-tools\
               q6-admin"
 
   if [ ${MACHINE} = "ifc6410" ]
   then
-    pkgList_os="${pkgList_os} ifc6410-networking"
+    old_pkgList_os="${pkgList_os} ifc6410-networking"
   else
-    pkgList_os="${pkgList_os} som8064-networking"
+    old_pkgList_os="${pkgList_os} som8064-networking"
   fi
 
   # Proprietary packages
-  pkgList_prop="libconfigdb0 \
+  pkgList_prop=" libconfigdb0 \
+                 libdsutils1 \
+                reboot2fastboot \
+                diag \
+                mp-decision \
+                qmi \
+                qmi-framework \
+                thermal-engine \
+                libxml0 \
+                ath6kl-firmware \
+		        flight-dsp-image \
+		        adsprpc \              
+               "
+  old_pkgList_prop="libconfigdb0 \
                 libdsutils1 \
                 diag \
 		mp-decision \
 		qmi \
 		qmi-framework \
 		thermal \
+        thermal-engine \
 		libxml0 \
 		reboot2fastboot \
 		hci-qcomm-init \
@@ -136,7 +174,7 @@ copy_packages() {
 # It expects QRL_BINARIES_FW_LOCATION to contain the filesystem from which
 # the image is built and placed in the out dir.
 create_cache_image() {
-  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${APQ8064_PARTITION_CACHE_SIZE} -L qcom-firmware ${DEPLOY_DIR_IMAGE}/out/cache.img ${QRL_BINARIES_FW_LOCATION}
+  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${PARTITION_CACHE_SIZE} -L qcom-firmware ${DEPLOY_DIR_IMAGE}/out/cache.img ${QRL_BINARIES_FW_LOCATION}
 }
 
 # System image is created by take all the qrlPackage*tgz files from the out directory,
@@ -153,18 +191,18 @@ create_system_image() {
   # Add the Blur meta package
   #cp ${BLUR_META_PKG_LOCATION}/blur-meta-pkg_0.1_all.deb ${IMAGE_ROOTFS}/system_rootfs/qrlPackages
 
-  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${APQ8064_PARTITION_SYSTEM_SIZE} ${DEPLOY_DIR_IMAGE}/out/system.img ${IMAGE_ROOTFS}/system_rootfs
+  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${PARTITION_SYSTEM_SIZE} ${DEPLOY_DIR_IMAGE}/out/system.img ${IMAGE_ROOTFS}/system_rootfs
 }
 
 # Persist image contains NV items.
 create_persist_image() {
-  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${APQ8064_PARTITION_PERSIST_SIZE} ${DEPLOY_DIR_IMAGE}/out/persist.img ${DEPLOY_DIR}/persist/${MACHINE}
+  ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${PARTITION_PERSIST_SIZE} ${DEPLOY_DIR_IMAGE}/out/persist.img ${DEPLOY_DIR}/persist/${MACHINE}
 }
 
 # Create the release structure required for metabuild
 create_release_structure() {
-  mkdir -p ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8960
-  cp ${DEPLOY_DIR_IMAGE}/out/*.img ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8960/
+  mkdir -p ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8974
+  cp ${DEPLOY_DIR_IMAGE}/out/*.img ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8974/
 }
 
 do_copy_packages() {
@@ -175,8 +213,8 @@ do_image() {
   copy_packages
   create_system_image
   create_cache_image
-  create_persist_image
-  create_release_structure
+  #create_persist_image
+  #create_release_structure
 }
 
 do_patch[noexec] = "1"

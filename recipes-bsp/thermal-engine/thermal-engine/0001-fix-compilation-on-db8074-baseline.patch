@@ -1,0 +1,33 @@
+From 4ac17e840677ecc75b00f4d721d2cde0452ef538 Mon Sep 17 00:00:00 2001
+From: sswami <sswami@qti.qualcomm.com>
+Date: Thu, 26 Mar 2015 12:36:04 -0700
+Subject: [PATCH] fix compilation error on baseline
+
+---
+ speaker_cal.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/speaker_cal.c b/speaker_cal.c
+index de33700..3eda92e 100644
+--- a/speaker_cal.c
++++ b/speaker_cal.c
+@@ -170,7 +170,7 @@ static int set_and_wait_alarm(int time_ms)
+ 			wakeup.it_value.tv_nsec -= NANOSEC;
+ 		}
+ 		if(timer_settime(timerid, TIMER_ABSTIME, &wakeup, NULL)) {
+-			msg("%s: error: failed to set wakeup time timerid %d", __func__, timerid);
++			msg("%s: error: failed to set wakeup time timerid %d", __func__, (int)timerid );
+ 			return 0;
+ 		}
+ 	}
+@@ -189,7 +189,6 @@ static int set_and_wait_alarm(int time_ms)
+ static void cancel_alarm(void)
+ {
+ 	char buf[UINT_BUF_MAX] = {0};
+-	struct itimerspec wakeup;
+ 
+ 	dbgmsg("%s: Cancel Alarm", __func__);
+ 	if (msm_thermal_alarm == ALARM_MSM_THERMAL_NODE)
+-- 
+1.7.9.5
+

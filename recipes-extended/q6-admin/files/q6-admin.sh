@@ -9,11 +9,11 @@
 ###############################################################################
 
 Q6_DEST=/lib/firmware
-Q6_MDT=q6.mdt
-Q6_DEVICE=/sys/kernel/debug/apr
-Q6_INIT_STRING=dsp_ver
+Q6_MDT=adsp.mdt
+Q6_DEVICE=/sys/kernel/boot_adsp/boot
+Q6_INIT_STRING=1
 Q6_WAIT_FOR_RESET_TIME=10
-Q6_RESET_MSG="q6: Brought out of reset"
+Q6_RESET_MSG="adsp: Brought out of reset"
 
 resetQ6 () {
     if [  ! -f "${Q6_DEST}/${Q6_MDT}" ]
@@ -21,9 +21,10 @@ resetQ6 () {
        echo "[ERROR] Firmware file not found: ${Q6_DEST}/${Q6_MDT}. Aborting DSP bring up"
        return
     fi
-    echo "[INFO] Reseting DSP"
-    echo ${Q6_INIT_STRING} > ${Q6_DEVICE}
-    sleep ${Q6_WAIT_FOR_RESET_TIME}
+    #These three lines are commented out from db8074 because kernel resets adsp while starting all subsystems.
+    #echo "[INFO] Reseting DSP"     
+    #echo ${Q6_INIT_STRING} > ${Q6_DEVICE}
+    #sleep ${Q6_WAIT_FOR_RESET_TIME}
     resetMsgs=`dmesg | grep "${Q6_RESET_MSG}" | wc -l`
     if [ ${resetMsgs} = 0 ] 
     then
