@@ -8,70 +8,49 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
-SRC_URI = "git://codeaurora.org/platform/hardware/qcom/camera;protocol=git;nobranch=1"
-
-SRC_URI_append_som8064 = " file://0001-som8064-baseline-for-linux.patch"
-SRC_URI_append_som8064 = " file://0002-stereo-3d-mode.patch"
-
-SRC_URI_append_som8064-revB = " file://0001-som8064-baseline-for-linux.patch"
-SRC_URI_append_som8064-revB = " file://0002-stereo-3d-mode.patch"
-
-SRC_URI_append_som8064-const = " file://0001-som8064-baseline-for-linux.patch"
-SRC_URI_append_som8064-const = " file://0002-stereo-3d-mode.patch"
-
-SRC_URI_append_ifc6410 = " file://0001-ifc6410-baseline-for-linux.patch"
-
 PACKAGES = "${PN}"
 
-SRCREV_som8064 = "AU_LINUX_ANDROID_KK_2.7_RB1.04.04.02.007.041"
-SRCREV_som8064-revB = "AU_LINUX_ANDROID_KK_2.7_RB1.04.04.02.007.041"
-SRCREV_som8064-const = "AU_LINUX_ANDROID_KK_2.7_RB1.04.04.02.007.041"
-SRCREV_ifc6410 = "AU_LINUX_ANDROID_JB_2.5_AUTO.04.02.02.115.005"
+SRC_URI = "file://0001-camera-hal-compilation-changes-for-QR-Linux.patch"
+SRC_URI += "file://0002-camera-hal-limit-number-of-frame-dump-to-100-and-dump-at-mod30.patch"
+SRC_URI += "file://0003-camera-hal-create-qcamlib-wrapper-library.patch"
+SRC_URI += "file://0004-camera-hal-reduce-logging-in-camera-app.patch"
+SRC_URI += "file://0005-camera-hal-remove-android-includes-references-from-M.patch"
 
 inherit autotools qti-proprietary-binary
 
 # Need the kernel headers
 DEPENDS += "virtual/kernel"
 DEPENDS += "mm-camera-headers"
-DEPENDS += "mm-still"
+DEPENDS += "android-tools"
 DEPENDS += "mm-video-oss"
-
-BASEMACHINE = "msm8960"
+DEPENDS += "libhardware-headers"
+DEPENDS += "system-headers"
 
 CFLAGS += "-I./mm-camera-interface"
 CFLAGS += "-I${STAGING_INCDIR}/linux-headers/usr/include"
 CFLAGS += "-I${STAGING_INCDIR}/linux-headers/usr/include/media"
-CFLAGS += "-I${STAGING_INCDIR}/jpeg2/inc"
-CFLAGS += "-I${STAGING_INCDIR}/mm-camera/common"
 CFLAGS += "-I${STAGING_INCDIR}/mm-core"
 CFLAGS += "-I${STAGING_INCDIR}/omx/inc"
 
 EXTRA_OECONF_append = " --with-sanitized-headers=${STAGING_INCDIR}/linux-headers/include"
-EXTRA_OECONF_append = " --enable-target=${BASEMACHINE}"
+EXTRA_OECONF_append = " --enable-target=msm8974"
 
 
 FILES_${PN}_append += "/usr/lib/hw/*"
+FILES_${PN} += "/usr/lib/*.so"
 
 INSANE_SKIP_${PN} = "dev-so"
 INSANE_SKIP_${PN} += "installed-vs-shipped"
 INSANE_SKIP_${PN} += "staticdev"
 
-do_unpack_append() {
+
+do_fetch_append() {
     import shutil
     import os
+
+    src = d.getVar('COREBASE', True)+'/../camera-hal'
     s = d.getVar('S', True)
-    wd = d.getVar('WORKDIR',True)
     if os.path.exists(s):
         shutil.rmtree(s)
-    shutil.move(wd+'/git', s)
-}
-
-do_install_append() {
-
-   dest=${D}/usr/lib/hw
-   mkdir -p ${dest}
-
-   # Move and rename libcamera.so files to hw/machine-specific names.
-   cp ${D}/usr/lib/libcamera.so.0.0.0 ${dest}/libcamera.so
-   cp ${D}/usr/lib/hw/libcamera.so ${dest}/camera.msm8960.so
+    shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
 }

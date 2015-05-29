@@ -1,0 +1,4015 @@
+From b1ae66ccdf60ec5eb07a458208543ceaeb1d46d1 Mon Sep 17 00:00:00 2001
+From: Punit Soni <punits@qti.qualcomm.com>
+Date: Thu, 2 Apr 2015 17:36:28 -0700
+Subject: [PATCH] mm-camera: compilation for linux on db8074
+
+- add autotools build files from Tizen
+- Fix compilation issues
+
+Change-Id: I893c0dae21d886f06c1a85d57953469d392cf3cf
+---
+ Makefile.am                                        |   7 +-
+ configure.ac                                       |  94 ++++++++--
+ mm-camera2/android_adapter.h                       |  13 ++
+ mm-camera2/includes/camera_dbg.h                   |  10 +-
+ mm-camera2/includes/mtype.h                        |  13 +-
+ mm-camera2/media-controller/Makefile.am            |  12 ++
+ mm-camera2/media-controller/mct/Makefile.am        |  59 +++++++
+ mm-camera2/media-controller/mct/bus/mct_bus.c      |  14 +-
+ .../mct/controller/mct_controller.c                |  10 +-
+ .../media-controller/mct/module/mct_module.c       |   2 +-
+ .../media-controller/mct/pipeline/mct_pipeline.c   |  33 ++--
+ mm-camera2/media-controller/mct/port/mct_port.c    |   2 +-
+ .../media-controller/mct/stream/mct_stream.c       |  99 ++++++-----
+ .../media-controller/modules/iface/Makefile.am     |  63 +++++++
+ mm-camera2/media-controller/modules/iface/ispif.c  |   2 +-
+ .../media-controller/modules/iface/port_ispif.c    |   2 +-
+ .../media-controller/modules/imglib/Makefile.am    | 145 ++++++++++++++++
+ .../modules/imglib/components/cac/cac_comp.c       |   2 +-
+ .../modules/imglib/components/cac_v2/cac_v2_comp.c |   2 +
+ .../modules/imglib/components/common/img_common.c  |  10 +-
+ .../modules/imglib/components/common/img_comp.c    |   2 +
+ .../imglib/components/common/img_comp_factory.c    |   2 +
+ .../imglib/components/faceproc/faceproc_comp.c     |   2 +
+ .../imglib/components/faceproc/faceproc_comp_eng.c |   1 +
+ .../imglib/components/frameproc/frameproc_comp.c   |   2 +
+ .../modules/imglib/components/hdr/hdr_comp.c       |   1 +
+ .../modules/imglib/components/include/img_common.h |   2 +
+ .../modules/imglib/components/include/img_dbg.h    |  11 +-
+ .../modules/imglib/components/test/img_test.h      |   1 +
+ .../modules/imglib/components/wd/wd_comp.c         |   1 +
+ .../modules/imglib/modules/afs/module_afs_client.c |   7 +-
+ .../modules/imglib/modules/cac/module_cac.c        |   4 +
+ .../imglib/modules/common/module_imglib_common.h   |   2 +
+ .../modules/faceproc/module_faceproc_client.c      |   7 +-
+ .../imglib/modules/faceproc/module_faceproc_stab.c |   8 +-
+ .../modules/imglib/modules/wnr/module_wnr.h        |   3 +
+ .../modules/imglib/utils/img_buffer.c              |   2 +
+ .../modules/imglib/utils/img_buffer.h              |   1 +
+ .../modules/imglib/utils/img_queue.c               |   2 +
+ .../media-controller/modules/includes/isp_event.h  |   1 +
+ .../media-controller/modules/includes/modules.h    |   1 +
+ .../media-controller/modules/isp/Makefile.am       | 193 +++++++++++++++++++++
+ .../isp/algo/interfaces/tintless_interface.c       |   5 +
+ .../algo/interfaces/tintless_interface_bg_pca.c    |   7 +
+ .../modules/isp/algo/isp_tintless.c                |   3 +-
+ .../media-controller/modules/isp/hw/isp_axi.c      |   2 +
+ .../media-controller/modules/isp/hw/isp_axi_util.c |   2 +
+ .../media-controller/modules/isp/hw/isp_hw.c       |   2 +
+ .../media-controller/modules/isp/hw/isp_pipeline.c |   2 +
+ .../modules/isp/hw/isp_pipeline40.c                |   2 +
+ .../modules/isp/hw/modules/gamma/gamma40/gamma40.c |   1 +
+ .../modules/isp/hw/modules/isp_hw_module.c         |   2 +
+ .../modules/isp/hw/modules/stats/isp_stats_util.c  |   4 +-
+ .../isp/hw/modules/stats/stats32/stats_parser.c    |   1 +
+ .../isp/hw/modules/stats/stats40/stats_parser.c    |   1 +
+ .../modules/isp/hw/modules/wb/wb32/wb32_reg.h      |   2 +
+ mm-camera2/media-controller/modules/isp/isp.c      |   2 +
+ .../media-controller/modules/isp/isp_buf_mgr.c     |   2 +
+ .../modules/isp/isp_channel_util.c                 |   2 +
+ mm-camera2/media-controller/modules/isp/isp_def.h  |   1 +
+ mm-camera2/media-controller/modules/isp/isp_ops.h  |   1 +
+ .../modules/isp/isp_resource_mgr.c                 |   3 +
+ mm-camera2/media-controller/modules/isp/isp_util.c |   2 +
+ mm-camera2/media-controller/modules/isp/isp_zoom.c |   2 +
+ .../media-controller/modules/isp/module_isp.c      |   2 +
+ mm-camera2/media-controller/modules/isp/port_isp.c |   2 +
+ .../modules/isp/unit_test/isp_unit_test.c          |   1 +
+ .../media-controller/modules/pproc-new/Makefile.am |  60 +++++++
+ .../modules/pproc-new/c2d/Makefile.am              |  58 +++++++
+ .../media-controller/modules/pproc-new/c2d/c2d.h   |   1 +
+ .../modules/pproc-new/c2d/c2d_hardware.h           |   1 +
+ .../modules/pproc-new/c2d/c2d_module.c             |   3 +
+ .../modules/pproc-new/cpp/Makefile.am              |  53 ++++++
+ .../modules/pproc-new/cpp/cpp_hardware.c           |   2 +
+ .../modules/pproc-new/pproc_port.c                 |   2 +
+ .../modules/pproc-new/vpe/Makefile.am              |  46 +++++
+ .../modules/pproc-new/vpe/vpe_hardware.h           |   1 +
+ .../modules/pproc-new/vpe/vpe_module.c             |   3 +
+ .../modules/pproc-new/wnr/Makefile.am              |  38 ++++
+ .../media-controller/modules/sensors/Makefile.am   |  64 +++++++
+ .../modules/sensors/actuators/0208/af_tuning.h     |   1 +
+ .../actuators/0301/actuator_libs/Makefile.am       |   3 +
+ .../0301/actuator_libs/dw9714/Makefile.am          |   3 +
+ .../0301/actuator_libs/dw9714/camcorder/Android.mk |   0
+ .../actuator_libs/dw9714/camcorder/Makefile.am     |  21 +++
+ .../0301/actuator_libs/dw9714/camera/Makefile.am   |  22 +++
+ .../modules/sensors/actuators/0301/af_tuning.h     |   1 +
+ .../chromatix/0301/libchromatix/Makefile.am        |  10 ++
+ .../0301/libchromatix/chromatix_imx135/Makefile.am |  11 ++
+ .../chromatix_imx135/common/Makefile.am            |  23 +++
+ .../chromatix_imx135/hfr_120/Makefile.am           |  23 +++
+ .../chromatix_imx135/liveshot/Makefile.am          |  19 ++
+ .../chromatix_imx135/preview/Makefile.am           |  23 +++
+ .../chromatix_imx135/snapshot/Makefile.am          |  23 +++
+ .../chromatix_imx135/video/Makefile.am             |  23 +++
+ .../media-controller/modules/sensors/csid/csid.h   |   1 +
+ .../modules/sensors/csiphy/csiphy.h                |   1 +
+ .../modules/sensors/includes/sensor_lib.h          |   1 +
+ .../modules/sensors/module/port_sensor.c           |   7 +-
+ .../modules/sensors/module/sensor_common.h         |   1 +
+ .../modules/sensors/module/sensor_dbg.h            |  16 +-
+ .../modules/sensors/sensor_libs/Makefile.am        |  11 ++
+ .../modules/sensors/sensor_libs/imx135/Makefile.am |  21 +++
+ .../modules/sensors/sensors/sensor.c               |   5 +
+ .../media-controller/modules/stats/Makefile.am     | 114 ++++++++++++
+ .../modules/stats/afd/afd_module.c                 |   2 +
+ .../media-controller/modules/stats/afd/afd_port.c  |   3 +
+ .../modules/stats/asd/asd_module.c                 |   2 +
+ .../modules/stats/asd/asd_thread.c                 |   3 +
+ .../modules/stats/gyro/dsps/dsps_hw.h              |   3 +
+ .../modules/stats/gyro/dsps/dsps_hw_interface.c    |   2 +-
+ .../modules/stats/gyro/gyro_module.c               |   5 +-
+ .../modules/stats/gyro/gyro_port.c                 |   2 +-
+ .../modules/stats/is/dis_interface.c               |   2 +-
+ .../modules/stats/is/eis2_interface.c              |   5 +-
+ .../modules/stats/is/eis_interface.c               |   5 +-
+ .../media-controller/modules/stats/is/is_module.c  |   3 +
+ .../media-controller/modules/stats/is/is_port.c    |   8 +-
+ .../media-controller/modules/stats/is/is_process.c |   5 +-
+ .../media-controller/modules/stats/is/is_set.c     |   5 +-
+ .../media-controller/modules/stats/is/is_thread.c  |   2 +-
+ .../modules/stats/q3a/aec/aec_port.c               |   2 +-
+ .../media-controller/modules/stats/q3a/af/af.h     |   2 +-
+ .../modules/stats/q3a/af/af_module.c               |   2 +-
+ .../modules/stats/q3a/af/af_port.c                 |   3 +-
+ .../modules/stats/q3a/awb/awb_port.c               |   2 +-
+ .../media-controller/modules/stats/stats_dbg.h     |  12 ++
+ mm-camera2/server-imaging/Makefile.am              |  43 +++++
+ mm-camera2/server-imaging/server.c                 |   0
+ mm-camera2/server-imaging/server_process.c         |  33 +++-
+ 130 files changed, 1620 insertions(+), 158 deletions(-)
+ mode change 100644 => 100755 configure.ac
+ create mode 100644 mm-camera2/android_adapter.h
+ mode change 100644 => 100755 mm-camera2/includes/camera_dbg.h
+ create mode 100644 mm-camera2/media-controller/Makefile.am
+ create mode 100644 mm-camera2/media-controller/mct/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/mct/bus/mct_bus.c
+ mode change 100644 => 100755 mm-camera2/media-controller/mct/controller/mct_controller.c
+ mode change 100644 => 100755 mm-camera2/media-controller/mct/module/mct_module.c
+ mode change 100644 => 100755 mm-camera2/media-controller/mct/pipeline/mct_pipeline.c
+ mode change 100644 => 100755 mm-camera2/media-controller/mct/port/mct_port.c
+ mode change 100644 => 100755 mm-camera2/media-controller/mct/stream/mct_stream.c
+ create mode 100644 mm-camera2/media-controller/modules/iface/Makefile.am
+ create mode 100755 mm-camera2/media-controller/modules/imglib/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/cac/cac_comp.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/cac_v2/cac_v2_comp.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/common/img_common.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/common/img_comp.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/common/img_comp_factory.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp_eng.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/frameproc/frameproc_comp.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/hdr/hdr_comp.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/include/img_common.h
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/include/img_dbg.h
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/components/wd/wd_comp.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/modules/cac/module_cac.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/utils/img_buffer.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/imglib/utils/img_queue.c
+ create mode 100755 mm-camera2/media-controller/modules/isp/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface_bg_pca.c
+ create mode 100644 mm-camera2/media-controller/modules/pproc-new/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/pproc-new/c2d/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/pproc-new/c2d/c2d_module.c
+ create mode 100644 mm-camera2/media-controller/modules/pproc-new/cpp/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/pproc-new/vpe/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/pproc-new/vpe/vpe_module.c
+ create mode 100644 mm-camera2/media-controller/modules/pproc-new/wnr/Makefile.am
+ create mode 100755 mm-camera2/media-controller/modules/sensors/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Android.mk
+ create mode 100755 mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Makefile.am
+ create mode 100755 mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camera/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/common/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/hfr_120/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/liveshot/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/preview/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/snapshot/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/video/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/sensors/module/sensor_dbg.h
+ create mode 100644 mm-camera2/media-controller/modules/sensors/sensor_libs/Makefile.am
+ create mode 100644 mm-camera2/media-controller/modules/sensors/sensor_libs/imx135/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/sensors/sensors/sensor.c
+ create mode 100644 mm-camera2/media-controller/modules/stats/Makefile.am
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/afd/afd_module.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/afd/afd_port.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/asd/asd_module.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/asd/asd_thread.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw.h
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw_interface.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/gyro/gyro_module.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/gyro/gyro_port.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/dis_interface.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/eis2_interface.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/eis_interface.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/is_module.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/is_port.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/is_process.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/is_set.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/is/is_thread.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/q3a/aec/aec_port.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/q3a/af/af.h
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/q3a/af/af_module.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/q3a/af/af_port.c
+ mode change 100644 => 100755 mm-camera2/media-controller/modules/stats/q3a/awb/awb_port.c
+ create mode 100755 mm-camera2/media-controller/modules/stats/stats_dbg.h
+ create mode 100644 mm-camera2/server-imaging/Makefile.am
+ mode change 100644 => 100755 mm-camera2/server-imaging/server.c
+ mode change 100644 => 100755 mm-camera2/server-imaging/server_process.c
+
+diff --git a/Makefile.am b/Makefile.am
+index 21c9aed..e298e29 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,12 +1,11 @@
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-dirs :=
++dirs =
+ 
+ if COMPILE_CAMERA
+-#dirs += targets
+-dirs += server
+-dirs += apps
++dirs += mm-camera2/media-controller
++dirs += mm-camera2/server-imaging
+ endif
+ 
+ SUBDIRS = $(dirs)
+diff --git a/configure.ac b/configure.ac
+old mode 100644
+new mode 100755
+index 010b03e..26190ae
+--- a/configure.ac
++++ b/configure.ac
+@@ -11,6 +11,7 @@ AC_CONFIG_MACRO_DIR([m4])
+ 
+ # Checks for programs.
+ AM_PROG_AS
++AM_PROG_AR
+ AC_PROG_CC
+ AM_PROG_CC_C_O
+ AC_PROG_LIBTOOL
+@@ -38,13 +39,42 @@ DEBUG_CPPFLAGS=
+ DEBUG_CFLAGS=
+ DEBUG_LDFLAGS=
+ 
++AC_ARG_WITH([dlog],
++      AC_HELP_STRING([--with-dlog],
++         [enable dlog, building HLOS systems which use dlog]))
++
++if (test "x${with_dlog}" = "xyes"); then
++      AC_DEFINE(ENABLE_USEDLOG, 1, [Define if HLOS systems uses dlog])
++      PKG_CHECK_MODULES(DLOG, [dlog])
++      AC_SUBST(DLOG_CFLAGS)
++      AC_SUBST(DLOG_LIBS)
++fi
++
++AM_CONDITIONAL(USE_DLOG, test "x${with_dlog}" = "xyes")
++
+ AC_ARG_WITH([sanitized-headers],
+ 	[AS_HELP_STRING([--with-sanitized-headers=DIR],[location of the sanitized Linux kernel headers])],
+ 	[CFLAGS="$CFLAGS -I$withval/media -I $withval"])
++AC_ARG_WITH([camera-hal-headers],
++	[AS_HELP_STRING([--with-camera-hal-headers=DIR],[location of the camera HAL headers])],
++	[CFLAGS="$CFLAGS -I$withval"])
++
++AC_ARG_WITH([sensors-headers],
++	[AS_HELP_STRING([--with-sensors-headers=DIR],[location of sensors API headers])],
++	[CFLAGS="$CFLAGS -I$withval"])
++
++AC_ARG_WITH([adreno200-headers],
++	[AS_HELP_STRING([--with-adreno200-headers=DIR],[location of adreno/C2D headers])],
++	[CFLAGS="$CFLAGS -I$withval"])
++
++AC_ARG_WITH([qmi-framework-headers],
++	[AS_HELP_STRING([--with-qmi-framework-headers=DIR],[location of qmi-framework headers])],
++	[CFLAGS="$CFLAGS -I$withval"])
++
+ 
+ AC_ARG_WITH([extra-cflags],
+ 	[AS_HELP_STRING([--with-extra-cflags=DIR],[additional compliation flags])],
+-	[CFLAGS="$CFLAGS $withval"])
++	[CFLAGS="$CFLAGS -I$withval"])
+ 
+ AC_ARG_ENABLE([target],
+ 	[AS_HELP_STRING([--enable-target=TARGET],[target to build for])],
+@@ -105,6 +135,16 @@ elif test "x$enable_target" = "xmsm8960"; then
+ 	FEATURE_VFE_TEST_VEC=false
+ 	DEBUG_CPPFLAGS=-DHW_ENCODE -DCONFIG_MSG_THESHOLD=350
+ 	DEBUG_CFLAGS=-DHW_ENCODE -DCONFIG_MSG_THESHOLD=350
++elif test "x$enable_target" = "xmsm8974"; then
++	VFE_VERS=vfe40
++	MSM_VERSION=8974
++	#FEATURE_WAVELET_DENOISE=true
++	FEATURE_ZSL=true
++	FEATURE_FACE_PROC=true
++	FEATURE_VFE_TEST_VEC=false
++        USE_CAC_V1=false
++	#DEBUG_CPPFLAGS=-DHW_ENCODE -DCONFIG_MSG_THESHOLD=350
++	#DEBUG_CFLAGS=-DHW_ENCODE -DCONFIG_MSG_THESHOLD=350
+ elif test "x$enable_target" = "xmsm7625"; then
+ 	VFE_VERS=vfe2x
+ 	MSM_VERSION=7x2x
+@@ -119,6 +159,8 @@ elif test "x$VFE_VERS" = "xvfe31"; then
+ 	CHROMATIX_VERSION=0208
+ elif test "x$VFE_VERS" = "xvfe2x"; then
+ 	CHROMATIX_VERSION=0208
++elif test "x$VFE_VERS" = "xvfe40"; then
++	CHROMATIX_VERSION=0301
+ else
+ 	CHROMATIX_VERSION=0205
+ fi
+@@ -151,14 +193,20 @@ AC_SUBST([FEATURE_FACE_PROC])
+ AC_SUBST([FEATURE_WAVELET_DENOISE])
+ AC_SUBST([FEATURE_VFE_TEST_VEC])
+ 
++FEATURE_GYRO = false
++
++AM_CONDITIONAL([FEATURE_GYRO], [test "x$FEATURE_GYRO" = "xtrue"])
+ AM_CONDITIONAL([VFE2X], [test "x$VFE_VERS" = "xvfe2x"])
+ AM_CONDITIONAL([VFE30], [test "x$VFE_VERS" = "xvfe30"])
+ AM_CONDITIONAL([VFE31], [test "x$VFE_VERS" = "xvfe31"])
+ AM_CONDITIONAL([VFE32], [test "x$VFE_VERS" = "xvfe32"])
++AM_CONDITIONAL([VFE40], [test "x$VFE_VERS" = "xvfe40"])
+ AM_CONDITIONAL([CHROMATIX0207], [test "x$CHROMATIX_VERSION" = "x0207"])
++AM_CONDITIONAL([CHROMATIX0301], [test "x$CHROMATIX_VERSION" = "0301"])
+ AM_CONDITIONAL([WAVELET_DENOISE], [test "x$FEATURE_WAVELET_DENOISE" = "xtrue"])
+ AM_CONDITIONAL([VFE_TEST_VEC], [test "x$FEATURE_VFE_TEST_VEC" = "xtrue"])
+ AM_CONDITIONAL([FACE_PROC], [test "x$FEATURE_FACE_PROC" = "xtrue"])
++AM_CONDITIONAL([USE_CAC_V1], [test "x$USE_CAC_V1" = "xtrue"])
+ 
+ AM_CONDITIONAL([MSM7X0X], [test "x$MSM_VERSION" = "x7x0x"])
+ AM_CONDITIONAL([MSM7X2X], [test "x$MSM_VERSION" = "x7x2x"])
+@@ -166,6 +214,7 @@ AM_CONDITIONAL([MSM7X27A], [test "x$MSM_VERSION" = "x7x27A"])
+ AM_CONDITIONAL([MSM7630], [test "x$MSM_VERSION" = "x7x30"])
+ AM_CONDITIONAL([MSM8660], [test "x$MSM_VERSION" = "x8660"])
+ AM_CONDITIONAL([MSM8960], [test "x$MSM_VERSION" = "x8960"])
++AM_CONDITIONAL([MSM8974], [test "x$MSM_VERSION" = "x8974"])
+ 
+ AS_CASE([$host],
+ 	[arm*], [ARM=yes],
+@@ -174,15 +223,38 @@ AS_CASE([$host],
+ AM_CONDITIONAL([ARM], [test "x$ARM" = "xyes"])
+ 
+ AC_OUTPUT([ \
+-	Makefile \
+-	apps/Makefile \
+-	apps/appslib/Makefile \
+-	apps/mm-qcamera-app/Makefile \
+-	apps/v4l2-qcamera-app/Makefile \
+-    server/Makefile \
+-    server/chromatix/0208/libchromatix/chromatix_vx6953/preview/Makefile \
+-    server/chromatix/0208/libchromatix/chromatix_vx6953/video/Makefile \
+-    server/chromatix/0208/libchromatix/chromatix_s5k4e1/preview/Makefile \
+-    server/chromatix/0208/libchromatix/chromatix_s5k4e1/video/Makefile
++        Makefile \
++        mm-camera2/media-controller/Makefile \
++        mm-camera2/media-controller/mct/Makefile \
++        mm-camera2/media-controller/modules/iface/Makefile \
++        mm-camera2/media-controller/modules/isp/Makefile \
++        mm-camera2/media-controller/modules/sensors/Makefile \
++        mm-camera2/media-controller/modules/stats/Makefile \
++        mm-camera2/media-controller/modules/pproc-new/Makefile \
++        mm-camera2/media-controller/modules/pproc-new/cpp/Makefile \
++        mm-camera2/media-controller/modules/pproc-new/c2d/Makefile \
++        mm-camera2/media-controller/modules/pproc-new/vpe/Makefile \
++        mm-camera2/media-controller/modules/pproc-new/wnr/Makefile \
++        mm-camera2/media-controller/modules/imglib/Makefile \
++        mm-camera2/media-controller/modules/sensors/sensor_libs/Makefile \
++        mm-camera2/media-controller/modules/sensors/sensor_libs/imx135/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/common/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/preview/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/snapshot/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/liveshot/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/video/Makefile \
++        mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/hfr_120/Makefile \
++        mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/Makefile \
++        mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/Makefile \
++        mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camera/Makefile \
++        mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Makefile \
++        mm-camera2/server-imaging/Makefile \
+ ])
+ 
++
++
++
++
++
+diff --git a/mm-camera2/android_adapter.h b/mm-camera2/android_adapter.h
+new file mode 100644
+index 0000000..dd73fcb
+--- /dev/null
++++ b/mm-camera2/android_adapter.h
+@@ -0,0 +1,13 @@
++#ifndef ANDROID_ADAPTER_H
++#define ANDROID_ADAPTER_H
++
++#include<string.h>
++
++#define PROPERTY_VALUE_MAX 32
++
++#define property_get(name, value_str, default_value) \
++  do { \
++    strncpy(value_str, default_value, PROPERTY_VALUE_MAX); \
++  } while (0)
++
++#endif
+diff --git a/mm-camera2/includes/camera_dbg.h b/mm-camera2/includes/camera_dbg.h
+old mode 100644
+new mode 100755
+index 6ced4bc..5bcfe59
+--- a/mm-camera2/includes/camera_dbg.h
++++ b/mm-camera2/includes/camera_dbg.h
+@@ -41,9 +41,11 @@
+   #define CDBG_ERROR(fmt, args...)  ALOGE(fmt, ##args)
+   #define CDBG_LOW(fmt, args...) do {} while (0)
+ #else
+-  #define CDBG_HIGH(fmt, args...) fprintf(stderr, fmt, ##args)
+-  #define CDBG_ERROR(fmt, args...) fprintf(stderr, fmt, ##args)
+-  #define CDBG_LOW(fmt, args...) fprintf(stderr, fmt, ##args)
++  #define CDBG_HIGH(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++  #define CDBG_ERROR(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++  #define CDBG_LOW(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++  #define CDBG(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++  #define ALOGE(fmt, args...) fprintf(stderr, fmt"\n", ##args)
+ #endif
+ 
+ #define PRINT_2D_MATRIX(X,Y,M) ({ \
+@@ -65,4 +67,6 @@
+   } \
+ })
+ 
++#define CDBG_HERE fprintf(stderr, "%s:%d here\n", __func__, __LINE__);
++
+ #endif /* __CAMERA_DBG_H__ */
+diff --git a/mm-camera2/includes/mtype.h b/mm-camera2/includes/mtype.h
+index b539b6d..1b36336 100644
+--- a/mm-camera2/includes/mtype.h
++++ b/mm-camera2/includes/mtype.h
+@@ -38,7 +38,7 @@
+ /* =====================================================================
+  * ***** Important: Provide type definitions for common used types *****
+  * =====================================================================
+- **  
++ **
+ */
+ 
+ typedef int   boolean;
+@@ -58,6 +58,7 @@ typedef int   boolean;
+ #define CEILING4(X)  (((X) + 0x0003) & 0xFFFC)
+ #define CEILING2(X)  (((X) + 0x0001) & 0xFFFE)
+ 
++#if 0
+ #undef __FD_SET
+ #define __FD_SET(fd, fdsetp) \
+   (((fd_set *)(fdsetp))->fds_bits[(fd) >> 5] |= (1<<((fd) & 31)))
+@@ -73,7 +74,7 @@ typedef int   boolean;
+ #undef  __FD_ZERO
+ #define __FD_ZERO(fdsetp) \
+   (memset (fdsetp, 0, sizeof (*(fd_set *)(fdsetp))))
+-
++#endif
+ 
+ typedef enum {
+   M_BAYER_8_BITS,
+@@ -93,16 +94,16 @@ typedef enum {
+ 	(((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+ 
+ /*
+- * _M_TYPE_WAIT_TIMEOUT: 
++ * _M_TYPE_WAIT_TIMEOUT:
+  *  cond:    POSIX conditional variable;
+  *  mutex:   POSIX mutex;
+  *  timeout: type of signed long long,  specified
+  *           timeout measured in nanoseconds;
+  *           timeout = -1 means no timeout, it becomes
+  *           to regular conditional timewait.
+- * 
++ *
+  *  Commonly used for timeout waiting.
+- * */ 
++ * */
+ #define _M_TYPE_WAIT_TIMEOUT(cond, mutex, timeout)   \
+ 	do {                                               \
+     signed long long end_time;                       \
+@@ -118,7 +119,7 @@ typedef enum {
+ 		} else {                                          \
+ 		   ret = pthread_cond_wait(cond, mutex);          \
+ 		}                                                 \
+-	} while(0) 
++	} while(0)
+ 
+ #define _M_TYPE_OFFSET(s_type, field) ((long)&(((s_type *)0)->field))
+ #endif /* __M_TYPE_H__ */
+diff --git a/mm-camera2/media-controller/Makefile.am b/mm-camera2/media-controller/Makefile.am
+new file mode 100644
+index 0000000..786a9fc
+--- /dev/null
++++ b/mm-camera2/media-controller/Makefile.am
+@@ -0,0 +1,12 @@
++ACLOCAL_AMFLAGS = -I m4
++
++SUBDIRS = mct
++SUBDIRS += modules/iface
++SUBDIRS += modules/imglib
++SUBDIRS += modules/isp
++SUBDIRS += modules/pproc-new
++SUBDIRS += modules/sensors
++SUBDIRS += modules/stats
++SUBDIRS += modules/sensors/sensor_libs
++SUBDIRS += modules/sensors/chromatix/0301/libchromatix
++
+diff --git a/mm-camera2/media-controller/mct/Makefile.am b/mm-camera2/media-controller/mct/Makefile.am
+new file mode 100644
+index 0000000..8918e55
+--- /dev/null
++++ b/mm-camera2/media-controller/mct/Makefile.am
+@@ -0,0 +1,59 @@
++ACLOCAL_AMFLAGS = -I m4
++
++#liboemcamera.so
++lib_LTLIBRARIES = liboemcamera.la
++
++liboemcamera_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++liboemcamera_la_CFLAGS += -DMSM_CAMERA_GCC
++liboemcamera_la_CFLAGS += -DLOGE=ALOGE
++liboemcamera_la_CFLAGS += -fPIC
++
++liboemcamera_la_CPPFLAGS = -DLOGE=ALOGE
++
++liboemcamera_la_CFLAGS += -DUSE_ION
++if MSM8974
++liboemcamera_la_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++else
++liboemcamera_la_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CAMERA_HEAP_ID
++endif
++
++if VFE40
++liboemcamera_la_CFLAGS += -DVFE_40
++endif
++liboemcamera_la_CFLAGS += -DIPL_DEBUG_STANDALONE
++
++liboemcamera_la_CFLAGS += -I ../../includes/
++liboemcamera_la_CFLAGS += -I ../../../common/
++liboemcamera_la_CFLAGS += -I ../includes/
++liboemcamera_la_CFLAGS += -I tools/
++liboemcamera_la_CFLAGS += -I bus/
++liboemcamera_la_CFLAGS += -I controller/
++liboemcamera_la_CFLAGS += -I event/
++liboemcamera_la_CFLAGS += -I module/
++liboemcamera_la_CFLAGS += -I object/
++liboemcamera_la_CFLAGS += -I pipeline/
++liboemcamera_la_CFLAGS += -I port/
++liboemcamera_la_CFLAGS += -I stream/
++liboemcamera_la_CFLAGS += -I ../../server-imaging/
++liboemcamera_la_CFLAGS += -I ../modules/includes/
++
++# all files under mct compiled into liboemcamera.so
++liboemcamera_la_SOURCES = module/mct_module.c
++liboemcamera_la_SOURCES += bus/mct_bus.c
++liboemcamera_la_SOURCES += controller/mct_controller.c
++liboemcamera_la_SOURCES += stream/mct_stream.c
++liboemcamera_la_SOURCES += tools/mct_queue.c
++liboemcamera_la_SOURCES += tools/mct_list.c
++liboemcamera_la_SOURCES += object/mct_object.c
++liboemcamera_la_SOURCES += port/mct_port.c
++liboemcamera_la_SOURCES += pipeline/mct_pipeline.c
++
++#LOCAL_SHARED_LIBRARIES:= libdl libcutils  liblog
++
++liboemcamera_la_LDFLAGS = -shared
++liboemcamera_la_LIBADD = -ldl -lrt
++
++if USE_DLOG
++liboemcamera_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++liboemcamera_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/mct/bus/mct_bus.c b/mm-camera2/media-controller/mct/bus/mct_bus.c
+old mode 100644
+new mode 100755
+index 01f1e07..e4e7066
+--- a/mm-camera2/media-controller/mct/bus/mct_bus.c
++++ b/mm-camera2/media-controller/mct/bus/mct_bus.c
+@@ -11,7 +11,7 @@
+ 
+ #if 0
+ #undef CDBG
+-#define CDBG ALOGE
++#define CDBG CDBG_ERROR
+ #endif
+ 
+ #define MCT_BUS_SOF_TIMEOUT 5000000000 /*in ns unit*/
+@@ -90,7 +90,7 @@ static void start_sof_check_thread(mct_bus_t *bus)
+ {
+   if (bus->thread_run == 1)
+     return;
+-  ALOGE("%s: Starting SOF timeout thread\n", __func__);
++  CDBG_ERROR("%s: Starting SOF timeout thread\n", __func__);
+   bus->thread_run = 1;
+   pthread_mutex_init(&bus->bus_sof_msg_lock, NULL);
+   pthread_cond_init(&bus->bus_sof_msg_cond, NULL);
+@@ -101,7 +101,7 @@ static void stop_sof_check_thread(mct_bus_t *bus)
+ {
+   if (bus->thread_run == 0)
+     return;
+-  ALOGE("%s: Stopping SOF timeout thread\n", __func__);
++  CDBG_ERROR("%s: Stopping SOF timeout thread\n", __func__);
+   bus->thread_run = 0;
+   pthread_mutex_lock(&bus->bus_sof_msg_lock);
+   pthread_cond_signal(&bus->bus_sof_msg_cond);
+@@ -118,14 +118,14 @@ static boolean msg_bus_post_msg(mct_bus_t *bus, mct_bus_msg_t *bus_msg)
+   unsigned int payload_size;
+ 
+   if (!bus_msg) {
+-    ALOGE("%s:%d NULL ptr", __func__, __LINE__);
++    CDBG_ERROR("%s:%d NULL ptr", __func__, __LINE__);
+     goto error_2;
+   }
+ 
+   if (bus->bus_queue->length > MAX_MCT_BUS_QUEUE_LENGTH) {
+       pthread_mutex_lock(&bus->bus_msg_q_lock);
+       mct_bus_queue_flush(bus);
+-      ALOGE("%s : Discard the bus msg's that got stagnated in the queue\n",__func__);
++      CDBG_ERROR("%s : Discard the bus msg's that got stagnated in the queue\n",__func__);
+       pthread_mutex_unlock(&bus->bus_msg_q_lock);
+       return TRUE;
+   }
+@@ -251,7 +251,7 @@ static boolean msg_bus_post_msg(mct_bus_t *bus, mct_bus_msg_t *bus_msg)
+   local_msg = malloc(sizeof(mct_bus_msg_t));
+ 
+   if (!local_msg) {
+-    ALOGE("%s:%d Can't allocate memory", __func__, __LINE__);
++    CDBG_ERROR("%s:%d Can't allocate memory", __func__, __LINE__);
+     goto error_2;
+   }
+ 
+@@ -262,7 +262,7 @@ static boolean msg_bus_post_msg(mct_bus_t *bus, mct_bus_msg_t *bus_msg)
+   if (payload_size) {
+     local_msg->msg = malloc(payload_size);
+     if (!local_msg->msg) {
+-      ALOGE("%s:%d Can't allocate memory", __func__, __LINE__);
++      CDBG_ERROR("%s:%d Can't allocate memory", __func__, __LINE__);
+       goto error_1;
+     }
+     memcpy(local_msg->msg, bus_msg->msg, payload_size);
+diff --git a/mm-camera2/media-controller/mct/controller/mct_controller.c b/mm-camera2/media-controller/mct/controller/mct_controller.c
+old mode 100644
+new mode 100755
+index 933ff76..c9371a4
+--- a/mm-camera2/media-controller/mct/controller/mct_controller.c
++++ b/mm-camera2/media-controller/mct/controller/mct_controller.c
+@@ -15,7 +15,7 @@
+ 
+ #if 0
+ #undef CDBG
+-#define CDBG ALOGE
++#define CDBG CDBG_ERROR
+ #endif
+ 
+ mct_list_t *mcts = NULL;
+@@ -294,14 +294,14 @@ static mct_process_ret_t mct_controller_proc_serv_msg_internal(
+   case SERV_MSG_DS: {
+     if (msg->u.ds_msg.operation == CAM_MAPPING_TYPE_FD_MAPPING &&
+         pipeline->map_buf) {
+-      ALOGV("[dbgHang] - Map buffer >>> enter");
++      CDBG("[dbgHang] - Map buffer >>> enter");
+       ret.u.serv_msg_ret.error = pipeline->map_buf(&msg->u.ds_msg, pipeline);
+-      ALOGV("[dbgHang] - Map buffer >>> exit with status: %d", ret.u.serv_msg_ret.error);
++      CDBG("[dbgHang] - Map buffer >>> exit with status: %d", ret.u.serv_msg_ret.error);
+     } else if (msg->u.ds_msg.operation == CAM_MAPPING_TYPE_FD_UNMAPPING &&
+         pipeline->unmap_buf) {
+-      ALOGV("[dbgHang] - UnMap buffer >>>>> enter");
++      CDBG("[dbgHang] - UnMap buffer >>>>> enter");
+       ret.u.serv_msg_ret.error = pipeline->unmap_buf(&msg->u.ds_msg, pipeline);
+-      ALOGV("[dbgHang] - UnMap buffer >>>>> exit with status: %d", ret.u.serv_msg_ret.error);
++      CDBG("[dbgHang] - UnMap buffer >>>>> exit with status: %d", ret.u.serv_msg_ret.error);
+     }
+   }
+     break;
+diff --git a/mm-camera2/media-controller/mct/module/mct_module.c b/mm-camera2/media-controller/mct/module/mct_module.c
+old mode 100644
+new mode 100755
+index 87399b5..8c6390e
+--- a/mm-camera2/media-controller/mct/module/mct_module.c
++++ b/mm-camera2/media-controller/mct/module/mct_module.c
+@@ -15,7 +15,7 @@
+ 
+ #if 0
+ #undef CDBG
+-#define CDBG ALOGE
++#define CDBG CDBG_ERROR
+ #endif
+ 
+ /** Name:
+diff --git a/mm-camera2/media-controller/mct/pipeline/mct_pipeline.c b/mm-camera2/media-controller/mct/pipeline/mct_pipeline.c
+old mode 100644
+new mode 100755
+index 002e357..efccea9
+--- a/mm-camera2/media-controller/mct/pipeline/mct_pipeline.c
++++ b/mm-camera2/media-controller/mct/pipeline/mct_pipeline.c
+@@ -13,7 +13,7 @@
+ 
+ #if 0
+ #undef CDBG
+-#define CDBG ALOGE
++#define CDBG CDBG_ERROR
+ #endif
+ 
+ #ifndef MIN
+@@ -172,7 +172,7 @@ static mct_stream_t* mct_pipeline_get_stream(mct_pipeline_t *pipeline,
+   mct_list_t *find_list = NULL;
+ 
+   if (!MCT_PIPELINE_CHILDREN(pipeline)) {
+-    ALOGE("%s: no children", __func__);
++    CDBG_ERROR("%s: no children", __func__);
+     return NULL;
+   }
+ 
+@@ -182,7 +182,7 @@ static mct_stream_t* mct_pipeline_get_stream(mct_pipeline_t *pipeline,
+   MCT_OBJECT_UNLOCK(pipeline);
+ 
+   if (!find_list) {
+-    ALOGE("%s: stream not found in the list", __func__);
++    CDBG_ERROR("%s: stream not found in the list", __func__);
+     return NULL;
+   }
+ 
+@@ -683,7 +683,7 @@ boolean mct_pipeline_send_ctrl_events(mct_pipeline_t *pipeline,
+                && event_parm.type == CAM_INTF_META_FRAME_NUMBER) {
+       frame_num_id = malloc(sizeof(mct_stream_frame_num_idx_map_t));
+       if (frame_num_id == NULL) {
+-        ALOGE("%s: Mapping failed with %s\n", __func__, strerror(errno));
++        CDBG_ERROR("%s: Mapping failed with %s\n", __func__, strerror(errno));
+         return FALSE;
+       }
+       info.check_type   = CHECK_TYPE;
+@@ -1374,7 +1374,8 @@ static boolean mct_pipeline_process_set(struct msm_v4l2_event_data *data,
+   mct_stream_t *stream = NULL;
+   mct_pipeline_get_stream_info_t info;
+ 
+-  ALOGE("%s:command=%x", __func__, data->command);
++  CDBG_ERROR("%s:command=%x, session_id=%d, stream_id=%d", __func__,
++              data->command, data->session_id, data->stream_id);
+ 
+   /* First find correct stream; for some commands find based on index,
+    * for others (session based commands) find the appropriate stream
+@@ -1389,7 +1390,8 @@ static boolean mct_pipeline_process_set(struct msm_v4l2_event_data *data,
+     info.stream_index = data->stream_id;
+     stream = mct_pipeline_get_stream(pipeline, &info);
+     if (!stream) {
+-      CDBG_ERROR("%s:%d: Couldn't find stream\n", __func__, __LINE__);
++      CDBG_ERROR("%s:%d: Couldn't find stream, id = %d\n", __func__, __LINE__,
++                  data->stream_id);
+       return FALSE;
+     }
+   }
+@@ -1404,7 +1406,8 @@ static boolean mct_pipeline_process_set(struct msm_v4l2_event_data *data,
+     info.stream_type  = CAM_STREAM_TYPE_PREVIEW;
+     stream = mct_pipeline_get_stream(pipeline, &info);
+     if (!stream) {
+-      CDBG_ERROR("%s:%d: Couldn't find stream\n", __func__, __LINE__);
++      CDBG_ERROR("%s:%d: Couldn't find stream, type=%d\n", __func__, __LINE__,
++                  info.stream_type);
+       if (data->command == CAM_PRIV_CANCEL_AUTO_FOCUS) {
+         /* preview stream is not present.
+          * There is no module linked to the stream.
+@@ -1474,7 +1477,7 @@ static boolean mct_pipeline_process_set(struct msm_v4l2_event_data *data,
+       event_data.type = MCT_EVENT_CONTROL_STREAMOFF;
+ 
+     event_data.control_event_data = (void *)&stream->streaminfo;
+-    ALOGE("%s: stream_type = %d\n", __func__, stream->streaminfo.stream_type);
++    CDBG_ERROR("%s: stream_type = %d\n", __func__, stream->streaminfo.stream_type);
+     cmd_event = mct_pipeline_pack_event(MCT_EVENT_CONTROL_CMD,
+       (pack_identity(MCT_PIPELINE_SESSION(pipeline), data->stream_id)),
+        MCT_EVENT_DOWNSTREAM, &event_data);
+@@ -1769,7 +1772,7 @@ static boolean mct_pipeline_process_bus_msg(void *msg,
+   if (stream) {
+     ret = mct_stream_metadata_bus_msg(stream, bus_msg);
+   } else {
+-    ALOGE("%s: Can't find stream", __func__);
++    CDBG_ERROR("%s: Can't find stream", __func__);
+   }
+ 
+   return ret;
+@@ -2086,7 +2089,7 @@ void mct_pipeline_add_stream_to_linked_streams(mct_pipeline_t *pipeline,
+     ((cam_stream_info_t *)(MCT_STREAM_STREAMINFO(stream)))->stream_type;
+     pipeline->linked_streams |= (1 << stream_type);
+ 
+-    ALOGE("%s: linked streams: 0x%x", __func__, pipeline->linked_streams);
++    CDBG_ERROR("%s: linked streams: 0x%x", __func__, pipeline->linked_streams);
+ }
+ 
+ void mct_pipeline_remove_stream_from_linked_streams(mct_pipeline_t *pipeline,
+@@ -2096,23 +2099,23 @@ void mct_pipeline_remove_stream_from_linked_streams(mct_pipeline_t *pipeline,
+   cam_stream_info_t * stream_info;
+ 
+   if (NULL == pipeline) {
+-    ALOGE("%s: ERROR - no pipeline", __func__);
++    CDBG_ERROR("%s: ERROR - no pipeline", __func__);
+     return;
+   }
+   if (!stream) {
+-    ALOGE("%s: stream is NULL", __func__);
++    CDBG_ERROR("%s: stream is NULL", __func__);
+     return;
+   }
+   stream_info = &stream->streaminfo;
+   if (!stream_info) {
+-    ALOGE("%s: no stream info", __func__);
++    CDBG_ERROR("%s: no stream info", __func__);
+     return;
+   }
+   stream_type = stream_info->stream_type;
+ 
+-  ALOGD("%s: stream type: %d", __func__, stream_type);
++  CDBG("%s: stream type: %d", __func__, stream_type);
+ 
+   pipeline->linked_streams &= ~(1 << stream_type);
+ 
+-  ALOGD("%s: linked streams: 0x%x", __func__, pipeline->linked_streams);
++  CDBG("%s: linked streams: 0x%x", __func__, pipeline->linked_streams);
+ }
+diff --git a/mm-camera2/media-controller/mct/port/mct_port.c b/mm-camera2/media-controller/mct/port/mct_port.c
+old mode 100644
+new mode 100755
+index 100b4d5..0adab7a
+--- a/mm-camera2/media-controller/mct/port/mct_port.c
++++ b/mm-camera2/media-controller/mct/port/mct_port.c
+@@ -14,7 +14,7 @@
+ 
+ #if 0
+ #undef CDBG
+-#define CDBG ALOGE
++#define CDBG CDBG_ERROR
+ #endif
+ 
+ /** Name:
+diff --git a/mm-camera2/media-controller/mct/stream/mct_stream.c b/mm-camera2/media-controller/mct/stream/mct_stream.c
+old mode 100644
+new mode 100755
+index e4e7dea..c73aa97
+--- a/mm-camera2/media-controller/mct/stream/mct_stream.c
++++ b/mm-camera2/media-controller/mct/stream/mct_stream.c
+@@ -14,7 +14,7 @@
+ 
+ #if 0
+ #undef CDBG
+-#define CDBG ALOGE
++#define CDBG CDBG_ERROR
+ #endif
+ 
+ /** g_imglib_feature_mask:
+@@ -247,7 +247,7 @@ static boolean mct_stream_start_link(mct_stream_t *stream)
+     pproc  = mct_stream_get_module(modules, "pproc");
+ 
+     if (!sensor || !iface || !isp || !stats || !pproc) {
+-      ALOGE("%s:%d] Null: %p %p %p %p %p", __func__, __LINE__,
++      CDBG_ERROR("%s:%d] Null: %p %p %p %p %p", __func__, __LINE__,
+         sensor, iface, isp, stats, pproc);
+       return FALSE;
+     }
+@@ -289,27 +289,30 @@ static boolean mct_stream_start_link(mct_stream_t *stream)
+     isp    = mct_stream_get_module(modules, "isp");
+     stats  = mct_stream_get_module(modules, "stats");
+     pproc  = mct_stream_get_module(modules, "pproc");
+-    imglib = mct_stream_get_module(modules, "imglib");
+ 
+-    if (!sensor || !iface || !isp || !stats || !pproc || !imglib) {
+-      ALOGE("%s:%d] Null: %p %p %p %p %p %p", __func__, __LINE__,
+-        sensor, iface, isp, stats, pproc, imglib);
++
++    /* disabling imglib */
++    //imglib = mct_stream_get_module(modules, "imglib");
++
++    if (!sensor || !iface || !isp || !stats || !pproc) {
++      CDBG_ERROR("%s:%d] Null: %p %p %p %p %p", __func__, __LINE__,
++        sensor, iface, isp, stats, pproc);
+       return FALSE;
+     }
+     sensor->set_mod(sensor, MCT_MODULE_FLAG_SOURCE,
+       stream->streaminfo.identity);
+     iface->set_mod(iface, MCT_MODULE_FLAG_INDEXABLE,
+       stream->streaminfo.identity);
+-    isp->set_mod(isp, MCT_MODULE_FLAG_INDEXABLE,
++    isp->set_mod(isp, MCT_MODULE_FLAG_SINK,
+       stream->streaminfo.identity);
+     stats->set_mod(stats, MCT_MODULE_FLAG_SINK,
+       stream->streaminfo.identity);
+-    pproc->set_mod(pproc, MCT_MODULE_FLAG_INDEXABLE,
+-      stream->streaminfo.identity);
+-    imglib->set_mod(imglib, MCT_MODULE_FLAG_SINK,
+-      stream->streaminfo.identity);
++//    pproc->set_mod(pproc, MCT_MODULE_FLAG_SINK,
++//      stream->streaminfo.identity);
++//    imglib->set_mod(imglib, MCT_MODULE_FLAG_SINK,
++//      stream->streaminfo.identity);
+ 
+-    ret = mct_stream_link_modules(stream, sensor, iface, isp, pproc, imglib,
++    ret = mct_stream_link_modules(stream, sensor, iface, isp,
+       NULL);
+     if (ret == FALSE) {
+       CDBG_ERROR("%s:%d] link failed", __func__, __LINE__);
+@@ -345,28 +348,28 @@ static boolean mct_stream_start_link(mct_stream_t *stream)
+       /* this means this stream(list->data) has the same bundle_id
+        * and it is ZSL snapshot stream, which doesn't need to link
+        * pproc module */
+-      ALOGE("%s: ZSL snapshot", __func__);
++      CDBG_ERROR("%s: ZSL snapshot", __func__);
+       sensor = mct_stream_get_module(modules, "sensor");
+       iface  = mct_stream_get_module(modules, "iface");
+       isp    = mct_stream_get_module(modules, "isp");
+       stats  = mct_stream_get_module(modules, "stats");
+       pproc  = NULL;
+       if (!sensor || !iface || !isp || !stats) {
+-        ALOGE("%s:%d] Null: %p %p %p %p", __func__, __LINE__,
++        CDBG_ERROR("%s:%d] Null: %p %p %p %p", __func__, __LINE__,
+         sensor, iface, isp, stats);
+         return FALSE;
+       }
+     } else {
+       /* regular snapshot stream which needs to link pproc module */
+ 
+-      ALOGE("%s: Regular snapshot", __func__);
++      CDBG_ERROR("%s: Regular snapshot", __func__);
+       sensor = mct_stream_get_module(modules, "sensor");
+       iface  = mct_stream_get_module(modules, "iface");
+       isp    = mct_stream_get_module(modules, "isp");
+       stats  = mct_stream_get_module(modules, "stats");
+       pproc  = mct_stream_get_module(modules, "pproc");
+       if (!sensor || !iface || !isp || !stats || !pproc) {
+-        ALOGE("%s:%d] Null: %p %p %p %p %p", __func__, __LINE__,
++        CDBG_ERROR("%s:%d] Null: %p %p %p %p %p", __func__, __LINE__,
+           sensor, iface, isp, stats, pproc);
+           return FALSE;
+       }
+@@ -411,7 +414,7 @@ static boolean mct_stream_start_link(mct_stream_t *stream)
+     pproc  = mct_stream_get_module(modules, "pproc");
+ 
+     if (!sensor || !iface || !isp || !stats || !pproc ) {
+-      ALOGE("%s:%d] Null: %p %p %p %p %p", __func__, __LINE__,
++      CDBG_ERROR("%s:%d] Null: %p %p %p %p %p", __func__, __LINE__,
+         sensor, iface, isp, stats, pproc);
+       return FALSE;
+     }
+@@ -458,7 +461,7 @@ static boolean mct_stream_start_link(mct_stream_t *stream)
+     stats    = mct_stream_get_module(modules, "stats");
+ 
+     if (!sensor || !iface || !isp || !stats) {
+-      ALOGE("%s:Null: %p %p %p %p", __func__, sensor, iface, isp, stats);
++      CDBG_ERROR("%s:Null: %p %p %p %p", __func__, sensor, iface, isp, stats);
+       return FALSE;
+     }
+ 
+@@ -497,7 +500,7 @@ static boolean mct_stream_start_link(mct_stream_t *stream)
+       imglib = mct_stream_get_module(modules, "imglib");
+ 
+       if (!imglib) {
+-        ALOGE("%s:Null: imglib Module", __func__);
++        CDBG_ERROR("%s:Null: imglib Module", __func__);
+         return FALSE;
+       }
+     }
+@@ -517,7 +520,7 @@ static boolean mct_stream_start_link(mct_stream_t *stream)
+       pproc = mct_stream_get_module(modules, "pproc");
+ 
+       if (!pproc) {
+-        ALOGE("%s:Null: postproc Module", __func__);
++        CDBG_ERROR("%s:Null: postproc Module", __func__);
+         return FALSE;
+       }
+     }
+@@ -713,13 +716,13 @@ static boolean mct_stream_metabuf_find_bfr_mngr_subdev(int *buf_mgr_fd)
+     snprintf(dev_name, sizeof(dev_name), "/dev/media%d", num_media_devices);
+     dev_fd = open(dev_name, O_RDWR | O_NONBLOCK);
+     if (dev_fd < 0) {
+-      ALOGE("%s:%d Done enumerating media devices\n", __func__, __LINE__);
++      CDBG_ERROR("%s:%d Done enumerating media devices\n", __func__, __LINE__);
+       break;
+     }
+     num_media_devices++;
+     ioctl_ret = ioctl(dev_fd, MEDIA_IOC_DEVICE_INFO, &mdev_info);
+     if (ioctl_ret < 0) {
+-      ALOGE("%s:%d Done enumerating media devices\n", __func__, __LINE__);
++      CDBG_ERROR("%s:%d Done enumerating media devices\n", __func__, __LINE__);
+       close(dev_fd);
+       break;
+     }
+@@ -734,7 +737,7 @@ static boolean mct_stream_metabuf_find_bfr_mngr_subdev(int *buf_mgr_fd)
+       CDBG("%s:%d entity id %d", __func__, __LINE__, entity.id);
+       ioctl_ret = ioctl(dev_fd, MEDIA_IOC_ENUM_ENTITIES, &entity);
+       if (ioctl_ret < 0) {
+-        ALOGE("%s:%d Done enumerating media entities\n", __func__, __LINE__);
++        CDBG_ERROR("%s:%d Done enumerating media entities\n", __func__, __LINE__);
+         ret = FALSE;
+         close(dev_fd);
+         break;
+@@ -753,7 +756,7 @@ static boolean mct_stream_metabuf_find_bfr_mngr_subdev(int *buf_mgr_fd)
+         *buf_mgr_fd = open(subdev_name, O_RDWR);
+         CDBG("%s: *buf_mgr_fd=%d\n", __func__, *buf_mgr_fd);
+         if (*buf_mgr_fd < 0) {
+-          ALOGE("%s: Open subdev failed\n", __func__);
++          CDBG_ERROR("%s: Open subdev failed\n", __func__);
+           continue;
+         }
+         ret = TRUE;
+@@ -780,7 +783,7 @@ static void add_metadata_entry(int meta_type, uint32_t meta_length,
+   int current, next;
+ 
+   if (position >= CAM_INTF_PARM_MAX) {
+-    ALOGE("%s: position %d out of bound [0, %d]",
++    CDBG_ERROR("%s: position %d out of bound [0, %d]",
+       __func__, position, CAM_INTF_PARM_MAX-1);
+     return;
+   }
+@@ -805,7 +808,7 @@ static void add_metadata_entry(int meta_type, uint32_t meta_length,
+   }
+ 
+   if (meta_length > sizeof(metadata_type_t)) {
+-    ALOGE("%s:Size of input larger than max entry size",__func__);
++    CDBG_ERROR("%s:Size of input larger than max entry size",__func__);
+   }
+   memcpy(POINTER_OF(meta_type, m_table), meta_value, meta_length);
+ 
+@@ -832,14 +835,14 @@ static boolean mct_stream_send_event_stream_on(void *data, void *user_data)
+ 
+   event_data.type = MCT_EVENT_CONTROL_STREAMON;
+   event_data.control_event_data = (void *)&stream->streaminfo;
+-  ALOGE("%s: stream_type = %d stream state = %d\n",
++  CDBG_ERROR("%s: stream_type = %d stream state = %d\n",
+             __func__, stream->streaminfo.stream_type, stream->state);
+ 
+   if (MCT_ST_STATE_PENDING_RESTART == stream->state) {
+     event_data.type = MCT_EVENT_CONTROL_STREAMON;
+     event_data.control_event_data = (void *)&stream->streaminfo;
+ 
+-    ALOGE("SSS %s buff list %p\n", __func__, stream->streaminfo.img_buffer_list);
++    CDBG_ERROR("SSS %s buff list %p\n", __func__, stream->streaminfo.img_buffer_list);
+ 
+     cmd_event = mct_pipeline_pack_event(MCT_EVENT_CONTROL_CMD,
+       (pack_identity(MCT_PIPELINE_SESSION(
+@@ -849,7 +852,7 @@ static boolean mct_stream_send_event_stream_on(void *data, void *user_data)
+     ret = stream->send_event(stream, &cmd_event);
+     stream->state = MCT_ST_STATE_RUNNING;
+   } else {
+-    ALOGE("%s: Skip\n", __func__);
++    CDBG_ERROR("%s: Skip\n", __func__);
+   }
+ 
+   return ret;
+@@ -875,7 +878,7 @@ static boolean mct_stream_send_event_stream_off(void *data, void *user_data)
+ 
+   event_data.type = MCT_EVENT_CONTROL_STREAMOFF;
+   event_data.control_event_data = (void *)&stream->streaminfo;
+-  ALOGE("%s: stream_type = %d stream state = %d\n",
++  CDBG_ERROR("%s: stream_type = %d stream state = %d\n",
+           __func__, stream->streaminfo.stream_type, stream->state);
+ 
+   if (MCT_ST_STATE_RUNNING == stream->state) {
+@@ -887,12 +890,12 @@ static boolean mct_stream_send_event_stream_off(void *data, void *user_data)
+         MCT_PIPELINE_CAST(MCT_OBJECT_PARENT(stream)->data)), stream->streamid)),
+         MCT_EVENT_DOWNSTREAM, &event_data);
+ 
+-    ALOGE("%s: stream_type = %d\n", __func__, stream->streaminfo.stream_type);
++    CDBG_ERROR("%s: stream_type = %d\n", __func__, stream->streaminfo.stream_type);
+ 
+     ret = stream->send_event(stream, &cmd_event);
+     stream->state = MCT_ST_STATE_PENDING_RESTART;
+   } else {
+-    ALOGE("%s: Skip\n", __func__);
++    CDBG_ERROR("%s: Skip\n", __func__);
+   }
+ 
+   return ret;
+@@ -1474,7 +1477,7 @@ boolean mct_stream_metadata_bus_msg(mct_stream_t *stream,
+             &(stream->metadata_stream.session_meta),
+             sizeof(mct_stream_session_metadata_info));
+         else
+-          ALOGE("%s: Private metadata not of sufficient size\n", __func__);
++          CDBG_ERROR("%s: Private metadata not of sufficient size\n", __func__);
+         if ((current_buf_v1->tuning_params.tuning_sensor_data_size > 0) &&
+             (current_buf_v1->tuning_params.tuning_vfe_data_size > 0)) {
+           current_buf_v1->is_tuning_params_valid = 1;
+@@ -1504,7 +1507,7 @@ boolean mct_stream_metadata_bus_msg(mct_stream_t *stream,
+       ret = ioctl(stream->metadata_stream.buf_mgr_dev_fd,
+         VIDIOC_MSM_BUF_MNGR_BUF_DONE, &buf_info);
+       if (ret < 0) {
+-        ALOGE("%s:Failed to do buf_done", __func__);
++        CDBG_ERROR("%s:Failed to do buf_done", __func__);
+         ret = FALSE;
+       }
+     }
+@@ -1516,7 +1519,7 @@ boolean mct_stream_metadata_bus_msg(mct_stream_t *stream,
+     ret = ioctl(stream->metadata_stream.buf_mgr_dev_fd,
+       VIDIOC_MSM_BUF_MNGR_GET_BUF, &get_buf);
+     if (ret < 0) {
+-      ALOGE("%s:Failed to get_buf", __func__);
++      CDBG_ERROR("%s:Failed to get_buf", __func__);
+       ret = FALSE;
+       stream->metadata_stream.get_buf_err = TRUE;
+       stream->metadata_stream.current_buf_idx = -1;
+@@ -1540,7 +1543,7 @@ boolean mct_stream_metadata_bus_msg(mct_stream_t *stream,
+             ->first_flagged_entry = CAM_INTF_PARM_MAX;
+       }
+     } else {
+-      ALOGE("%s:%d: NULL ptr\n", __func__, __LINE__);
++      CDBG_ERROR("%s:%d: NULL ptr\n", __func__, __LINE__);
+       ret = FALSE;
+     }
+   }
+@@ -1579,7 +1582,7 @@ boolean mct_stream_metadata_ctrl_event(mct_stream_t *stream,
+        ret = mct_stream_metabuf_find_bfr_mngr_subdev(
+          &stream->metadata_stream.buf_mgr_dev_fd);
+        if (ret == FALSE) {
+-         ALOGE("%s:failed to find buffer manager subdev \n", __func__);
++         CDBG_ERROR("%s:failed to find buffer manager subdev \n", __func__);
+          break;
+        }
+        buf_info.stream_id = stream->streamid;
+@@ -1589,7 +1592,7 @@ boolean mct_stream_metadata_ctrl_event(mct_stream_t *stream,
+        ioctl_ret = ioctl(stream->metadata_stream.buf_mgr_dev_fd,
+          VIDIOC_MSM_BUF_MNGR_GET_BUF, &buf_info);
+        if (ioctl_ret < 0) {
+-         ALOGE("%s:Failed to get_buf", __func__);
++         CDBG_ERROR("%s:Failed to get_buf", __func__);
+          stream->metadata_stream.get_buf_err = TRUE;
+          ret = FALSE;
+          break;
+@@ -1610,7 +1613,7 @@ boolean mct_stream_metadata_ctrl_event(mct_stream_t *stream,
+             ->first_flagged_entry = CAM_INTF_PARM_MAX;
+          }
+        } else {
+-         ALOGE("%s:%d: NULL ptr\n", __func__, __LINE__);
++         CDBG_ERROR("%s:%d: NULL ptr\n", __func__, __LINE__);
+          ret = FALSE;
+          break;
+        }
+@@ -1628,7 +1631,7 @@ boolean mct_stream_metadata_ctrl_event(mct_stream_t *stream,
+         ret = ioctl(stream->metadata_stream.buf_mgr_dev_fd,
+           VIDIOC_MSM_BUF_MNGR_PUT_BUF, &buf_info);
+         if (ret < 0) {
+-          ALOGE("%s:Failed to do buf_done at stream off - errno: %s!!! "
++          CDBG_ERROR("%s:Failed to do buf_done at stream off - errno: %s!!! "
+             "for buffer info - index: %d, stream id: %d, session id: %d",
+              __func__, strerror(errno),
+               buf_info.index, buf_info.stream_id, buf_info.session_id);
+@@ -1655,7 +1658,7 @@ boolean mct_stream_metadata_ctrl_event(mct_stream_t *stream,
+ 
+     default: {
+       ret = TRUE;
+-      ALOGE("%s:%d: ret=%d Unsupported cmd\n", __func__, __LINE__, ret);
++      CDBG_ERROR("%s:%d: ret=%d Unsupported cmd\n", __func__, __LINE__, ret);
+     }
+       break;
+   } /* ctrl event type switch*/
+@@ -1663,7 +1666,7 @@ boolean mct_stream_metadata_ctrl_event(mct_stream_t *stream,
+   break;
+ 
+   default: {
+-    ALOGE("%s:%d: ret=%d Unsupported cmd\n", __func__, __LINE__, ret);
++    CDBG_ERROR("%s:%d: ret=%d Unsupported cmd\n", __func__, __LINE__, ret);
+     break;
+   }
+   } /* event type switch*/
+@@ -1751,7 +1754,7 @@ static mct_stream_map_buf_t *mct_stream_create_buffers(
+     buf_holder->buf_planes[0].buf = mmap(NULL, msg->size,
+       PROT_READ | PROT_WRITE, MAP_SHARED, msg->fd, 0);
+     if (buf_holder->buf_planes[0].buf == MAP_FAILED) {
+-      ALOGE("%s: Mapping failed with error %s\n", __func__, strerror(errno));
++      CDBG_ERROR("%s: Mapping failed with error %s\n", __func__, strerror(errno));
+       goto error1;
+     }
+     buf_holder->buf_size             = msg->size;
+@@ -1764,7 +1767,7 @@ static mct_stream_map_buf_t *mct_stream_create_buffers(
+       buf_holder->buf_planes[0].buf = mmap(NULL, msg->size,
+         PROT_READ | PROT_WRITE, MAP_SHARED, msg->fd, 0);
+       if (buf_holder->buf_planes[0].buf == MAP_FAILED) {
+-        ALOGE("%s: Mapping failed with error %s\n", __func__, strerror(errno));
++        CDBG_ERROR("%s: Mapping failed with error %s\n", __func__, strerror(errno));
+         goto error1;
+       }
+ 
+@@ -1793,7 +1796,7 @@ static mct_stream_map_buf_t *mct_stream_create_buffers(
+           buf_planes.plane_info.mp[i].scanline;
+       }
+       for (i = 0; i < buf_holder->num_planes; i++) {
+-        ALOGV("%s: plane idx = %d, offset %d, stride %d, scanline = %d",
++        CDBG("%s: plane idx = %d, offset %d, stride %d, scanline = %d",
+               __func__, i, buf_planes.plane_info.mp[i].offset,
+               buf_planes.plane_info.mp[i].stride,
+               buf_planes.plane_info.mp[i].scanline);
+@@ -1900,7 +1903,7 @@ static boolean mct_stream_map_buf(void *message, mct_stream_t *stream)
+       MAP_SHARED, msg->fd, 0);
+ 
+     if (stream->buffers.stream_info == MAP_FAILED) {
+-      ALOGE("%s: Mapping failed with error %s\n", __func__, strerror(errno));
++      CDBG_ERROR("%s: Mapping failed with error %s\n", __func__, strerror(errno));
+       ret = FALSE;
+       break;
+     }
+@@ -2089,7 +2092,7 @@ boolean mct_stream_remvove_stream_from_module(void *data,
+ 
+ static boolean mct_stream_streamoff(void *data, void *user_data)
+ {
+-  ALOGE("%s: Enter\n", __func__);
++  CDBG_ERROR("%s: Enter\n", __func__);
+   mct_stream_t *stream   = (mct_stream_t *)data;
+   mct_pipeline_t *pipeline = (mct_pipeline_t *)user_data;
+   mct_event_t cmd_event;
+@@ -2097,7 +2100,7 @@ static boolean mct_stream_streamoff(void *data, void *user_data)
+   if (stream->state == MCT_ST_STATE_RUNNING) {
+     event_data.type = MCT_EVENT_CONTROL_STREAMOFF;
+     event_data.control_event_data = (void *)&stream->streaminfo;
+-    ALOGE("%s: STREAMING OFFstream_type = %d\n", __func__, stream->streaminfo.stream_type);
++    CDBG_ERROR("%s: STREAMING OFFstream_type = %d\n", __func__, stream->streaminfo.stream_type);
+     cmd_event = mct_pipeline_pack_event(MCT_EVENT_CONTROL_CMD,
+     (pack_identity(MCT_PIPELINE_SESSION(pipeline), stream->streamid)),
+     MCT_EVENT_DOWNSTREAM, &event_data);
+diff --git a/mm-camera2/media-controller/modules/iface/Makefile.am b/mm-camera2/media-controller/modules/iface/Makefile.am
+new file mode 100644
+index 0000000..1d6f975
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/iface/Makefile.am
+@@ -0,0 +1,63 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_iface_modules
++lib_LTLIBRARIES = libmmcamera2_iface_modules.la
++
++libmmcamera2_iface_modules_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_iface_modules_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_iface_modules_la_CFLAGS += -fPIC
++
++
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/includes
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/includes
++
++
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/includes
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/controller
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/pipeline
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/stream
++
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/includes
++
++
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/core
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/includes
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/axi
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/pix
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/pix/pix40
++libmmcamera2_iface_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/pix/modules
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_C_INCLUDES += \
++# $(LOCAL_PATH)/../../../../../../../../hardware/qcom/camera/QCamera2/stack/common
++
++libmmcamera2_iface_modules_la_SOURCES = ispif_util.c
++libmmcamera2_iface_modules_la_SOURCES += ispif.c
++libmmcamera2_iface_modules_la_SOURCES += module_ispif.c
++libmmcamera2_iface_modules_la_SOURCES += port_ispif.c
++
++#LOCAL_SHARED_LIBRARIES := liblog libcutils liboemcamera libmmcamera2_isp_modules
++libmmcamera2_iface_modules_la_LDFLAGS = -shared
++libmmcamera2_iface_modules_la_LIBADD = -ldl -lrt
++libmmcamera2_iface_modules_la_LIBADD += ../../../../mm-camera2/media-controller/mct/liboemcamera.la
++#libmmcamera2_iface_modules_la_LIBADD += ../../../../mm-camera2/media-controller/modules/isp/libmmcamera2_isp_modules.la
++
++dirs =
++SUBDIRS = $(dirs)
++
++if USE_DLOG
++libmmcamera2_iface_modules_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_iface_modules_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/iface/ispif.c b/mm-camera2/media-controller/modules/iface/ispif.c
+index 52570d8..98c7003 100644
+--- a/mm-camera2/media-controller/modules/iface/ispif.c
++++ b/mm-camera2/media-controller/modules/iface/ispif.c
+@@ -985,7 +985,7 @@ static int ispif_proc_streamoff(ispif_t *ispif, ispif_session_t *session,
+           return rc;
+         } else {
+           CDBG_ERROR("%s: ISPIF_CFG error = %d\n", __func__, rc);
+-          assert(fd == 0);
++          assert(ispif->fd == 0);
+ 
+           return rc;
+         }
+diff --git a/mm-camera2/media-controller/modules/iface/port_ispif.c b/mm-camera2/media-controller/modules/iface/port_ispif.c
+index 3f976ba..310c53b 100644
+--- a/mm-camera2/media-controller/modules/iface/port_ispif.c
++++ b/mm-camera2/media-controller/modules/iface/port_ispif.c
+@@ -44,7 +44,7 @@ static boolean port_ispif_free_mem_func(void *data, void *user_data)
+   mct_port_t *port = (mct_port_t *)data;
+ 
+   assert(port != NULL);
+-  assert(port->private != NULL);
++  assert(port->port_private != NULL);
+ 
+   if (port->port_private){
+     free (port->port_private);
+diff --git a/mm-camera2/media-controller/modules/imglib/Makefile.am b/mm-camera2/media-controller/modules/imglib/Makefile.am
+new file mode 100755
+index 0000000..3274554
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/imglib/Makefile.am
+@@ -0,0 +1,145 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++################ module library ######################
++#libmmcamera2_imglib_modules.so
++lib_LTLIBRARIES = libmmcamera2_imglib_modules.la
++
++libmmcamera2_imglib_modules_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_imglib_modules_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_imglib_modules_la_CFLAGS += -fPIC
++
++
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/includes
++
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/includes
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/includes
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/controller
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/pipeline
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/stream
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/stream
++libmmcamera2_imglib_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++
++
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/common
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/hdr
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/wd
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/faceproc
++if USE_CAC_V1
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/cac
++libmmcamera2_imglib_modules_la_CFLAGS += -DUSE_CAC_V1
++else
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/cac_v2
++endif
++
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/include
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/lib
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/lib/faceproc
++libmmcamera2_imglib_modules_la_CFLAGS += -I components/lib/cac
++libmmcamera2_imglib_modules_la_CFLAGS += -I modules
++libmmcamera2_imglib_modules_la_CFLAGS += -I modules/common
++libmmcamera2_imglib_modules_la_CFLAGS += -I modules/faceproc
++libmmcamera2_imglib_modules_la_CFLAGS += -I modules/denoise
++libmmcamera2_imglib_modules_la_CFLAGS += -I modules/hdr
++libmmcamera2_imglib_modules_la_CFLAGS += -I modules/cac
++libmmcamera2_imglib_modules_la_CFLAGS += -I modules/base
++libmmcamera2_imglib_modules_la_CFLAGS += -I utils
++
++libmmcamera2_imglib_modules_la_SOURCES = modules/denoise/module_denoise.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/module_imglib.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/module_imglib_port.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/common/module_imglib_common.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/denoise/module_denoise_lib.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/denoise/module_denoise_port.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/cac/module_cac.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/cac/module_cac2_config.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/cac/module_cac1_config.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/cac/module_cac_client.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/hdr/module_hdr_port.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/faceproc/module_faceproc.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/faceproc/module_faceproc_stab.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/faceproc/module_faceproc_client.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/hdr/module_hdr.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/hdr/module_hdr_lib.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/optizoom/module_optizoom.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/ubifocus/module_ubifocus.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/chroma_flash/module_chroma_flash.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/base/module_imgbase.c
++libmmcamera2_imglib_modules_la_SOURCES += modules/base/module_imgbase_client.c
++
++libmmcamera2_imglib_modules_la_LDFLAGS = -shared
++libmmcamera2_imglib_modules_la_LIBADD = ../../../../mm-camera2/media-controller/mct/liboemcamera.la
++libmmcamera2_imglib_modules_la_LIBADD += ./libmmcamera_imglib.la
++
++if USE_DLOG
++libmmcamera2_imglib_modules_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_imglib_modules_la_LIBADD += @DLOG_LIBS@
++endif
++
++################ faceproc library ######################
++if FACE_PROC
++libmmcamera2_imglib_modulesdir = $(libdir)
++dist_libmmcamera2_imglib_modules_DATA  = components/lib/faceproc/libmmcamera_faceproc.so
++endif
++################ component library ######################
++
++#libmmcamera_imglib.so
++lib_LTLIBRARIES += libmmcamera_imglib.la
++
++libmmcamera_imglib_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera_imglib_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera_imglib_la_CFLAGS += -fPIC
++
++libmmcamera_imglib_la_CFLAGS += -DUSE_ION
++libmmcamera_imglib_la_CFLAGS += -DLOGE=ALOGE
++libmmcamera_imglib_la_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID
++
++libmmcamera_imglib_la_CFLAGS += -I components
++libmmcamera_imglib_la_CFLAGS += -I components/include
++libmmcamera_imglib_la_CFLAGS += -I components/common
++libmmcamera_imglib_la_CFLAGS += -I components/hdr
++libmmcamera_imglib_la_CFLAGS += -I components/wd
++libmmcamera_imglib_la_CFLAGS += -I components/faceproc
++if USE_CAC_V1
++libmmcamera_imglib_la_CFLAGS += -I components/cac
++else
++libmmcamera_imglib_la_CFLAGS += -I components/cac_v2
++endif
++libmmcamera_imglib_la_CFLAGS += -I components/lib
++libmmcamera_imglib_la_CFLAGS += -I components/lib/faceproc
++libmmcamera_imglib_la_CFLAGS += -I components/lib/cac
++libmmcamera_imglib_la_CFLAGS += -I utils
++libmmcamera_imglib_la_CFLAGS += -I ../../../../mm-camera2
++libmmcamera_imglib_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++
++
++libmmcamera_imglib_la_SOURCES = utils/img_queue.c
++libmmcamera_imglib_la_SOURCES += utils/img_buffer.c
++libmmcamera_imglib_la_SOURCES += components/common/img_common.c
++libmmcamera_imglib_la_SOURCES += components/common/img_comp.c
++libmmcamera_imglib_la_SOURCES += components/common/img_comp_factory.c
++libmmcamera_imglib_la_SOURCES += components/wd/wd_comp.c
++libmmcamera_imglib_la_SOURCES += components/hdr/hdr_comp.c
++libmmcamera_imglib_la_SOURCES += components/faceproc/faceproc_comp_eng.c
++libmmcamera_imglib_la_SOURCES += components/faceproc/faceproc_comp.c
++libmmcamera_imglib_la_SOURCES += components/frameproc/frameproc_comp.c
++if USE_CAC_V1
++libmmcamera_imglib_la_SOURCES += components/cac/cac_comp.c
++else
++libmmcamera_imglib_la_SOURCES += components/cac_v2/cac_v2_comp.c
++endif
++
++libmmcamera_imglib_la_LDFLAGS = -shared
++libmmcamera_imglib_la_LIBADD = -ldl  -lpthread -lrt -lm
++
++if USE_DLOG
++libmmcamera_imglib_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera_imglib_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/imglib/components/cac/cac_comp.c b/mm-camera2/media-controller/modules/imglib/components/cac/cac_comp.c
+old mode 100644
+new mode 100755
+index 29d2a11..d9e0b39
+--- a/mm-camera2/media-controller/modules/imglib/components/cac/cac_comp.c
++++ b/mm-camera2/media-controller/modules/imglib/components/cac/cac_comp.c
+@@ -4,7 +4,7 @@
+ **********************************************************************/
+ 
+ #include "cac_comp.h"
+-
++#include "img_dbg.h"
+ /**
+  * CONSTANTS and MACROS
+  **/
+diff --git a/mm-camera2/media-controller/modules/imglib/components/cac_v2/cac_v2_comp.c b/mm-camera2/media-controller/modules/imglib/components/cac_v2/cac_v2_comp.c
+old mode 100644
+new mode 100755
+index 4143222..0563e7c
+--- a/mm-camera2/media-controller/modules/imglib/components/cac_v2/cac_v2_comp.c
++++ b/mm-camera2/media-controller/modules/imglib/components/cac_v2/cac_v2_comp.c
+@@ -5,6 +5,8 @@
+ 
+ #include "cac_v2_comp.h"
+ 
++#include "img_dbg.h"
++
+ /**
+  * CONSTANTS and MACROS
+  **/
+diff --git a/mm-camera2/media-controller/modules/imglib/components/common/img_common.c b/mm-camera2/media-controller/modules/imglib/components/common/img_common.c
+old mode 100644
+new mode 100755
+index bd8f3cd..50d4ab2
+--- a/mm-camera2/media-controller/modules/imglib/components/common/img_common.c
++++ b/mm-camera2/media-controller/modules/imglib/components/common/img_common.c
+@@ -9,8 +9,16 @@
+ #include <fcntl.h>
+ #include <sys/mman.h>
+ #include "img_meta.h"
+-#include <cutils/properties.h>
+ #include <stdlib.h>
++#include <sys/ioctl.h>
++
++#include "img_dbg.h"
++
++#ifdef _ANDROID_
++#include <cutils/properties.h>
++#else
++#include "android_adapter.h"
++#endif
+ 
+ #define Q12 4096
+ #define MN_DIVISION_Q_BITS 10
+diff --git a/mm-camera2/media-controller/modules/imglib/components/common/img_comp.c b/mm-camera2/media-controller/modules/imglib/components/common/img_comp.c
+old mode 100644
+new mode 100755
+index c79aa5a..67c1579
+--- a/mm-camera2/media-controller/modules/imglib/components/common/img_comp.c
++++ b/mm-camera2/media-controller/modules/imglib/components/common/img_comp.c
+@@ -4,6 +4,8 @@
+ ****************************************************************************/
+ 
+ #include "img_comp_priv.h"
++#include "img_dbg.h"
++#include <string.h>
+ 
+ /**
+  * Function: img_comp_init
+diff --git a/mm-camera2/media-controller/modules/imglib/components/common/img_comp_factory.c b/mm-camera2/media-controller/modules/imglib/components/common/img_comp_factory.c
+old mode 100644
+new mode 100755
+index 08e234b..d6f8694
+--- a/mm-camera2/media-controller/modules/imglib/components/common/img_comp_factory.c
++++ b/mm-camera2/media-controller/modules/imglib/components/common/img_comp_factory.c
+@@ -5,6 +5,8 @@
+ 
+ #include "img_comp_registry.h"
+ 
++#include "img_dbg.h"
++#include <string.h>
+ /**
+  * Function: img_core_get_comp
+  *
+diff --git a/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp.c b/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp.c
+old mode 100644
+new mode 100755
+index 2ce7ece..303137a
+--- a/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp.c
++++ b/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp.c
+@@ -6,6 +6,8 @@
+ #include "faceproc_comp.h"
+ #include <math.h>
+ 
++#include "img_dbg.h"
++
+ /**
+  * CONSTANTS and MACROS
+  **/
+diff --git a/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp_eng.c b/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp_eng.c
+old mode 100644
+new mode 100755
+index 6d72e59..c83c6fc
+--- a/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp_eng.c
++++ b/mm-camera2/media-controller/modules/imglib/components/faceproc/faceproc_comp_eng.c
+@@ -6,6 +6,7 @@
+ #include <dlfcn.h>
+ #include <math.h>
+ 
++#include "img_dbg.h"
+ #include "faceproc_comp.h"
+ 
+ #ifdef FD_PROFILE
+diff --git a/mm-camera2/media-controller/modules/imglib/components/frameproc/frameproc_comp.c b/mm-camera2/media-controller/modules/imglib/components/frameproc/frameproc_comp.c
+old mode 100644
+new mode 100755
+index ae61754..9ae46df
+--- a/mm-camera2/media-controller/modules/imglib/components/frameproc/frameproc_comp.c
++++ b/mm-camera2/media-controller/modules/imglib/components/frameproc/frameproc_comp.c
+@@ -5,6 +5,8 @@
+ 
+ #include "frameproc_comp.h"
+ 
++#include "img_dbg.h"
++
+ /**
+  * CONSTANTS and MACROS
+  **/
+diff --git a/mm-camera2/media-controller/modules/imglib/components/hdr/hdr_comp.c b/mm-camera2/media-controller/modules/imglib/components/hdr/hdr_comp.c
+old mode 100644
+new mode 100755
+index 90e8193..f2fabcc
+--- a/mm-camera2/media-controller/modules/imglib/components/hdr/hdr_comp.c
++++ b/mm-camera2/media-controller/modules/imglib/components/hdr/hdr_comp.c
+@@ -4,6 +4,7 @@
+  **********************************************************************/
+ 
+ #include "hdr_comp.h"
++#include "img_dbg.h"
+ 
+ /**
+  * CONSTANTS and MACROS
+diff --git a/mm-camera2/media-controller/modules/imglib/components/include/img_common.h b/mm-camera2/media-controller/modules/imglib/components/include/img_common.h
+old mode 100644
+new mode 100755
+index 3221147..74b66ab
+--- a/mm-camera2/media-controller/modules/imglib/components/include/img_common.h
++++ b/mm-camera2/media-controller/modules/imglib/components/include/img_common.h
+@@ -10,7 +10,9 @@
+ #include <unistd.h>
+ #include <math.h>
+ #include <pthread.h>
++#include <stdint.h>
+ #include <linux/msm_ion.h>
++#include "img_dbg.h"
+ 
+ /**
+  * CONSTANTS and MACROS
+diff --git a/mm-camera2/media-controller/modules/imglib/components/include/img_dbg.h b/mm-camera2/media-controller/modules/imglib/components/include/img_dbg.h
+old mode 100644
+new mode 100755
+index 2abbdaa..2a435a7
+--- a/mm-camera2/media-controller/modules/imglib/components/include/img_dbg.h
++++ b/mm-camera2/media-controller/modules/imglib/components/include/img_dbg.h
+@@ -26,7 +26,8 @@
+         #define IDBG(fmt, args...) ALOGE(fmt, ##args)
+         #define INDBG(fmt, args...) do{}while(0)
+     #else
+-        #define IDBG(fmt, args...) fprintf(stderr, fmt, ##args)
++        #define IDBG(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++        #define INDBG(fmt, args...) do{}while(0)
+     #endif
+ #else
+     #define IDBG(fmt, args...) do{}while(0)
+@@ -44,10 +45,10 @@
+   #define IDBG_MED(...)    IDBG(__VA_ARGS__)
+   #define IDBG_LOW(...)    INDBG(__VA_ARGS__)
+ #elif (IDBG_LOG_LEVEL == 2)
+-  #define IDBG_ERROR(...)  IDBG(__VA_ARGS__)
+-  #define IDBG_HIGH(...)   IDBG(__VA_ARGS__)
+-  #define IDBG_MED(...)    INDBG(__VA_ARGS__)
+-  #define IDBG_LOW(...)    INDBG(__VA_ARGS__)
++  #define IDBG_ERROR  IDBG
++  #define IDBG_HIGH   IDBG
++  #define IDBG_MED    INDBG
++  #define IDBG_LOW    INDBG
+ #elif (IDBG_LOG_LEVEL == 1)
+   #define IDBG_ERROR(...)  IDBG(__VA_ARGS__)
+   #define IDBG_HIGH(...)   INDBG(__VA_ARGS__)
+diff --git a/mm-camera2/media-controller/modules/imglib/components/test/img_test.h b/mm-camera2/media-controller/modules/imglib/components/test/img_test.h
+index e247440..4db44a1 100644
+--- a/mm-camera2/media-controller/modules/imglib/components/test/img_test.h
++++ b/mm-camera2/media-controller/modules/imglib/components/test/img_test.h
+@@ -14,6 +14,7 @@
+ #include "faceproc.h"
+ #include "cac.h"
+ #include "fd_chromatix.h"
++#include "img_dbg.h"
+ 
+ /**
+  * CONSTANTS and MACROS
+diff --git a/mm-camera2/media-controller/modules/imglib/components/wd/wd_comp.c b/mm-camera2/media-controller/modules/imglib/components/wd/wd_comp.c
+old mode 100644
+new mode 100755
+index 2a5246e..05f5c56
+--- a/mm-camera2/media-controller/modules/imglib/components/wd/wd_comp.c
++++ b/mm-camera2/media-controller/modules/imglib/components/wd/wd_comp.c
+@@ -6,6 +6,7 @@
+ #include "wd_comp.h"
+ #include <math.h>
+ 
++#include "img_dbg.h"
+ #ifdef USE_SMMU_BUFFERS_FOR_WNR
+ #include "remote.h"
+ #endif
+diff --git a/mm-camera2/media-controller/modules/imglib/modules/afs/module_afs_client.c b/mm-camera2/media-controller/modules/imglib/modules/afs/module_afs_client.c
+index 0c7a1af..b25c605 100644
+--- a/mm-camera2/media-controller/modules/imglib/modules/afs/module_afs_client.c
++++ b/mm-camera2/media-controller/modules/imglib/modules/afs/module_afs_client.c
+@@ -4,7 +4,6 @@
+ * Qualcomm Technologies Proprietary and Confidential.                 *
+ **********************************************************************/
+ 
+-#include <cutils/properties.h>
+ #include <linux/media.h>
+ #include "mct_module.h"
+ #include "module_afs.h"
+@@ -13,6 +12,12 @@
+ #include "fd_chromatix.h"
+ #include <dlfcn.h>
+ 
++#ifdef _ANDROID_
++#include <cutils/properties.h>
++#else
++#include "android_adapter.h"
++#endif
++
+ //#define TEST_AFS
+ //#define AFS_PROFILE
+ 
+diff --git a/mm-camera2/media-controller/modules/imglib/modules/cac/module_cac.c b/mm-camera2/media-controller/modules/imglib/modules/cac/module_cac.c
+old mode 100644
+new mode 100755
+index 6bf2899..5211a3d
+--- a/mm-camera2/media-controller/modules/imglib/modules/cac/module_cac.c
++++ b/mm-camera2/media-controller/modules/imglib/modules/cac/module_cac.c
+@@ -995,6 +995,10 @@ mct_module_t *module_cac_init(const char *name)
+   int rc = 0;
+   int i = 0;
+ 
++
++  IDBG_ERROR("%s:%d cac disabled", __func__, __LINE__);
++  return NULL;
++
+   IDBG_MED("%s:%d] ", __func__, __LINE__);
+   p_mct_mod = mct_module_create(name);
+   if (NULL == p_mct_mod) {
+diff --git a/mm-camera2/media-controller/modules/imglib/modules/common/module_imglib_common.h b/mm-camera2/media-controller/modules/imglib/modules/common/module_imglib_common.h
+index 4865df2..e753c12 100644
+--- a/mm-camera2/media-controller/modules/imglib/modules/common/module_imglib_common.h
++++ b/mm-camera2/media-controller/modules/imglib/modules/common/module_imglib_common.h
+@@ -19,6 +19,8 @@
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ /** GET_STATUS
+diff --git a/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_client.c b/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_client.c
+index 6476588..8127a41 100644
+--- a/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_client.c
++++ b/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_client.c
+@@ -3,7 +3,6 @@
+ * Qualcomm Technologies Proprietary and Confidential.                 *
+ **********************************************************************/
+ 
+-#include <cutils/properties.h>
+ #include <linux/media.h>
+ #include "mct_module.h"
+ #include "module_faceproc.h"
+@@ -11,6 +10,12 @@
+ #include "modules.h"
+ #include "fd_chromatix.h"
+ 
++#ifdef _ANDROID_
++#include <cutils/properties.h>
++#else
++#include "android_adapter.h"
++#endif
++
+ //#define FD_RESULT_DEBUG
+ //#define FD_USE_PROP
+ 
+diff --git a/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_stab.c b/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_stab.c
+index 478e6e6..f8a97c1 100644
+--- a/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_stab.c
++++ b/mm-camera2/media-controller/modules/imglib/modules/faceproc/module_faceproc_stab.c
+@@ -2,11 +2,17 @@
+ * Copyright (c) 2013 Qualcomm Technologies, Inc. All Rights Reserved. *
+ * Qualcomm Technologies Proprietary and Confidential.                 *
+ **********************************************************************/
+-#include <cutils/properties.h>
++
+ #include <linux/media.h>
+ #include "mct_module.h"
+ #include "module_faceproc.h"
+ 
++#ifdef _ANDROID_
++#include <cutils/properties.h>
++#else
++#include "android_adapter.h"
++#endif
++
+ #define FACEPROC_FACE_SAME   0
+ #define FACEPROC_FACE_BEFORE 1
+ #define FACEPROC_FACE_AFTER  2
+diff --git a/mm-camera2/media-controller/modules/imglib/modules/wnr/module_wnr.h b/mm-camera2/media-controller/modules/imglib/modules/wnr/module_wnr.h
+index 3ed5a09..3415694 100644
+--- a/mm-camera2/media-controller/modules/imglib/modules/wnr/module_wnr.h
++++ b/mm-camera2/media-controller/modules/imglib/modules/wnr/module_wnr.h
+@@ -14,8 +14,11 @@
+ #include "camera_dbg.h"
+ #include "modules.h"
+ #include "mct_pipeline.h"
++
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #define IMGLIB_MOD_NAME "wnr"
+diff --git a/mm-camera2/media-controller/modules/imglib/utils/img_buffer.c b/mm-camera2/media-controller/modules/imglib/utils/img_buffer.c
+old mode 100644
+new mode 100755
+index f3239f8..5e0af01
+--- a/mm-camera2/media-controller/modules/imglib/utils/img_buffer.c
++++ b/mm-camera2/media-controller/modules/imglib/utils/img_buffer.c
+@@ -6,6 +6,8 @@
+ #include <sys/ioctl.h>
+ #include "img_buffer.h"
+ #include <linux/msm_ion.h>
++#include "img_dbg.h"
++#include <string.h>
+ 
+ /** buffer_allocate:
+  *
+diff --git a/mm-camera2/media-controller/modules/imglib/utils/img_buffer.h b/mm-camera2/media-controller/modules/imglib/utils/img_buffer.h
+index 59eadb7..8444222 100644
+--- a/mm-camera2/media-controller/modules/imglib/utils/img_buffer.h
++++ b/mm-camera2/media-controller/modules/imglib/utils/img_buffer.h
+@@ -12,6 +12,7 @@
+ #include <errno.h>
+ #include <linux/android_pmem.h>
+ #include <fcntl.h>
++#include <stdint.h>
+ 
+ /** img_buffer_t:
+  *
+diff --git a/mm-camera2/media-controller/modules/imglib/utils/img_queue.c b/mm-camera2/media-controller/modules/imglib/utils/img_queue.c
+old mode 100644
+new mode 100755
+index 7451847..8bac058
+--- a/mm-camera2/media-controller/modules/imglib/utils/img_queue.c
++++ b/mm-camera2/media-controller/modules/imglib/utils/img_queue.c
+@@ -5,6 +5,8 @@
+ 
+ #include "img_queue.h"
+ #include "img_common.h"
++#include <stdlib.h>
++#include <string.h>
+ 
+ /**
+  * Function: img_q_init
+diff --git a/mm-camera2/media-controller/modules/includes/isp_event.h b/mm-camera2/media-controller/modules/includes/isp_event.h
+index 1fb2741..964fa92 100644
+--- a/mm-camera2/media-controller/modules/includes/isp_event.h
++++ b/mm-camera2/media-controller/modules/includes/isp_event.h
+@@ -6,6 +6,7 @@ Qualcomm Technologies Proprietary and Confidential.
+ #define __ISP_EVENT_H__
+ 
+ #include <linux/videodev2.h>
++#include <stdint.h>
+ #include <media/msmb_camera.h>
+ #include <media/msmb_ispif.h>
+ #include <media/msmb_isp.h>
+diff --git a/mm-camera2/media-controller/modules/includes/modules.h b/mm-camera2/media-controller/modules/includes/modules.h
+index c59c235..c60d8f3 100644
+--- a/mm-camera2/media-controller/modules/includes/modules.h
++++ b/mm-camera2/media-controller/modules/includes/modules.h
+@@ -7,6 +7,7 @@
+ #ifndef __MODULES_H__
+ #define __MODULES_H__
+ 
++#include <stdint.h>
+ #include <media/msm_cam_sensor.h>
+ #include <linux/v4l2-mediabus.h>
+ #include "mct_module.h"
+diff --git a/mm-camera2/media-controller/modules/isp/Makefile.am b/mm-camera2/media-controller/modules/isp/Makefile.am
+new file mode 100755
+index 0000000..a3843ad
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/isp/Makefile.am
+@@ -0,0 +1,193 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_isp_modules.so
++lib_LTLIBRARIES = libmmcamera2_isp_modules.la
++
++libmmcamera2_isp_modules_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_isp_modules_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_isp_modules_la_CFLAGS += -fPIC
++
++#libmmcamera2_isp_modules_la_CFLAGS += -DFEATURE_GYRO
++
++if VFE40
++libmmcamera2_isp_modules_la_CFLAGS += -DVFE_40
++endif
++
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2
++
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/includes
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/includes
++
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/includes
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/controller
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/pipeline
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/stream
++
++
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/includes
++
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++
++
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/q3a
++
++
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/core
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/algo
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/algo/interfaces
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/modules
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/axi
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/pix
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/pix/pix40
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/isp/hw/pix/modules
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/server-tuning/tuning
++libmmcamera2_isp_modules_la_CFLAGS += -I ../../../../mm-camera2/
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_C_INCLUDES += \
++# $(LOCAL_PATH)/../../../../../../../../hardware/qcom/camera/QCamera2/stack/common
++
++libmmcamera2_isp_modules_la_SOURCES = isp_channel_util.c
++libmmcamera2_isp_modules_la_SOURCES += isp_util.c
++libmmcamera2_isp_modules_la_SOURCES += module_isp.c
++libmmcamera2_isp_modules_la_SOURCES += isp.c
++libmmcamera2_isp_modules_la_SOURCES += isp_buf_mgr.c
++libmmcamera2_isp_modules_la_SOURCES += algo/interfaces/tintless_interface.c
++libmmcamera2_isp_modules_la_SOURCES += algo/interfaces/tintless_interface_bg_pca.c
++libmmcamera2_isp_modules_la_SOURCES += algo/isp_tintless.c
++libmmcamera2_isp_modules_la_SOURCES += algo/isp_tintless_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_thread.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_pipeline32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/frame_skip/frame_skip_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/frame_skip/frame_skip32/frame_skip32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/gamma/gamma_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/gamma/gamma32/gamma32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/gamma/gamma40/gamma40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/clf/clf32/clf32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/clf/clf_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/clf/clf40/clf40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_enhan/chroma_enhan_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_enhan/chroma_enhan40/chroma_enhan40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_enhan/chroma_enhan32/chroma_enhan32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/rolloff/mesh_rolloff40/mesh_rolloff40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/rolloff/pca_rolloff32/pca_rolloff32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/rolloff/mlro_to_plro/mlro_utils.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/rolloff/mlro_to_plro/matrix_utils.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/rolloff/mlro_to_plro/mlro.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/rolloff/rolloff_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/clamp/clamp32/clamp32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/clamp/clamp40/clamp40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/clamp/clamp_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_suppress/chroma_suppress_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_suppress/chroma_suppress40/chroma_suppress40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_suppress/chroma_suppress32/chroma_suppress32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/sce/sce32/sce32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/sce/sce_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/sce/sce40/sce40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/abf/abf32/abf32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/abf/abf40/abf40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/abf/abf_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/wb/wb_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/wb/wb32/wb32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/wb/wb40/wb40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/demux/demux40/demux40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/demux/demux32/demux32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/demux/demux_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/linearization/linearization_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/linearization/linearization40/linearization40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/linearization/linearization32/linearization32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/mce/mce_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/mce/mce32/mce32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/mce/mce40/mce40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/isp_hw_module.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/awb_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/be_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/bf_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/bhist_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/bg_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/stats_parser.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/stats40_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/af_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/cs_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/aec_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/rs_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats40/ihist_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/isp_stats_util.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/awb_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/be_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/bf_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/bhist_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/bg_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/stats_parser.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/stats32_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/af_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/cs_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/aec_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/rs_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/stats/stats32/ihist_stats.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/asf/asf32/asf32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/asf/asf_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/luma_adaptation/la_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/luma_adaptation/luma_adaptation32/luma_adaptation32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/luma_adaptation/luma_adaptation40/luma_adaptation40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/bcc/bcc32/bcc32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/bcc/bcc_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/bcc/bcc40/bcc40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/colorxform/colorxform_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/colorxform/colorxform40/colorxform40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/demosaic/demosaic32/demosaic32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/demosaic/demosaic_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/demosaic/demosaic40/demosaic40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_subsample/chroma_subsample32/chroma_subsample32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/chroma_subsample/chroma_subsample_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/bpc/bpc40/bpc40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/bpc/bpc_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/bpc/bpc32/bpc32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/fovcrop/fov_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/fovcrop/fovcrop40/fovcrop40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/fovcrop/fovcrop32/fovcrop32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/scaler/scaler_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/scaler/scaler40/scaler40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/scaler/scaler32/scaler32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/colorcorrect/colorcorrect32/colorcorrect32.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/colorcorrect/colorcorrect40/colorcorrect40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/modules/colorcorrect/colorcorrect_interface.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_pipeline_util.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_axi.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_pipeline40.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_pipeline.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_hw.c
++libmmcamera2_isp_modules_la_SOURCES += hw/isp_axi_util.c
++libmmcamera2_isp_modules_la_SOURCES += isp_zoom.c
++libmmcamera2_isp_modules_la_SOURCES += isp_resource_mgr.c
++#libmmcamera2_isp_modules_la_SOURCES += unit_test/isp_unit_test.c
++libmmcamera2_isp_modules_la_SOURCES += port_isp.c
++
++#TODO::
++#LOCAL_ADDITIONAL_DEPENDENCIES  := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
++#LOCAL_SHARED_LIBRARIES := liblog libcutils liboemcamera
++libmmcamera2_isp_modules_la_LDFLAGS = -shared
++libmmcamera2_isp_modules_la_LIBADD = -ldl -lrt -lm
++libmmcamera2_isp_modules_la_LIBADD +=  ../../../../mm-camera2/media-controller/mct/liboemcamera.la
++
++dirs =
++SUBDIRS = $(dirs)
++
++if USE_DLOG
++libmmcamera2_isp_modules_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_isp_modules_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface.c b/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface.c
+old mode 100644
+new mode 100755
+index 0c5e9e7..6b57586
+--- a/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface.c
++++ b/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface.c
+@@ -13,6 +13,11 @@
+ #include "tintless_interface.h"
+ #include "isp_tintless_interface.h"
+ 
++#ifndef _ANDROID_
++#include "glib.h"
++#define strlcpy g_strlcpy
++#endif
++
+ #define MESH_ROLL_OFF_V4_TABLE_SIZE  (13 * 10)
+ #if DMLROC_MESH_ROLLOFF_SIZE != MESH_ROLL_OFF_V4_TABLE_SIZE
+ #error "Rolloff mesh size mismatch"
+diff --git a/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface_bg_pca.c b/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface_bg_pca.c
+old mode 100644
+new mode 100755
+index 7af3b41..6407d01
+--- a/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface_bg_pca.c
++++ b/mm-camera2/media-controller/modules/isp/algo/interfaces/tintless_interface_bg_pca.c
+@@ -16,6 +16,13 @@
+ 
+ #include "camera_dbg.h"
+ 
++
++#ifndef _ANDROID_
++#include "glib.h"
++#define strlcpy g_strlcpy
++#endif
++
++
+ #define TINTLESS_DEBUG
+ #ifdef TINTLESS_DEBUG
+     #define CDBG_TINTLESS ALOGE
+diff --git a/mm-camera2/media-controller/modules/isp/algo/isp_tintless.c b/mm-camera2/media-controller/modules/isp/algo/isp_tintless.c
+index 231fcba..ab58ef5 100644
+--- a/mm-camera2/media-controller/modules/isp/algo/isp_tintless.c
++++ b/mm-camera2/media-controller/modules/isp/algo/isp_tintless.c
+@@ -10,8 +10,9 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+-
+ #ifdef ENABLE_TINTLESS_LOGGING
+   #undef CDBG
+   #define CDBG ALOGE
+diff --git a/mm-camera2/media-controller/modules/isp/hw/isp_axi.c b/mm-camera2/media-controller/modules/isp/hw/isp_axi.c
+index 56b11de..00058b5 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/isp_axi.c
++++ b/mm-camera2/media-controller/modules/isp/hw/isp_axi.c
+@@ -21,6 +21,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #ifdef ENABLE_ISP_AXI_LOGGING
+diff --git a/mm-camera2/media-controller/modules/isp/hw/isp_axi_util.c b/mm-camera2/media-controller/modules/isp/hw/isp_axi_util.c
+index eb6dff4..38b4da9 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/isp_axi_util.c
++++ b/mm-camera2/media-controller/modules/isp/hw/isp_axi_util.c
+@@ -20,6 +20,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #ifdef ENABLE_ISP_AXI_U_LOGGING
+diff --git a/mm-camera2/media-controller/modules/isp/hw/isp_hw.c b/mm-camera2/media-controller/modules/isp/hw/isp_hw.c
+index e287b9d..79f44eb 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/isp_hw.c
++++ b/mm-camera2/media-controller/modules/isp/hw/isp_hw.c
+@@ -31,6 +31,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #ifdef ENABLE_ISP_HW_LOGGING
+diff --git a/mm-camera2/media-controller/modules/isp/hw/isp_pipeline.c b/mm-camera2/media-controller/modules/isp/hw/isp_pipeline.c
+index 64b3ae7..6e84154 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/isp_pipeline.c
++++ b/mm-camera2/media-controller/modules/isp/hw/isp_pipeline.c
+@@ -26,6 +26,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #ifdef PIPELINE_DEBUG
+diff --git a/mm-camera2/media-controller/modules/isp/hw/isp_pipeline40.c b/mm-camera2/media-controller/modules/isp/hw/isp_pipeline40.c
+index 223b170..f7d8110 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/isp_pipeline40.c
++++ b/mm-camera2/media-controller/modules/isp/hw/isp_pipeline40.c
+@@ -25,6 +25,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #ifdef ENABLE_ISP_PIPELINE40_LOGGING
+diff --git a/mm-camera2/media-controller/modules/isp/hw/modules/gamma/gamma40/gamma40.c b/mm-camera2/media-controller/modules/isp/hw/modules/gamma/gamma40/gamma40.c
+index 90fc8f6..16038da 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/modules/gamma/gamma40/gamma40.c
++++ b/mm-camera2/media-controller/modules/isp/hw/modules/gamma/gamma40/gamma40.c
+@@ -4,6 +4,7 @@
+   Qualcomm Technologies Proprietary and Confidential.
+ 
+ ============================================================================*/
++#include <stdint.h>
+ #include <media/msmb_isp.h>
+ #include "camera_dbg.h"
+ #include "gamma40.h"
+diff --git a/mm-camera2/media-controller/modules/isp/hw/modules/isp_hw_module.c b/mm-camera2/media-controller/modules/isp/hw/modules/isp_hw_module.c
+index 304085b..dffc94b 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/modules/isp_hw_module.c
++++ b/mm-camera2/media-controller/modules/isp/hw/modules/isp_hw_module.c
+@@ -17,6 +17,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #ifdef ENABLE_ISP_HW_M_LOGGING
+diff --git a/mm-camera2/media-controller/modules/isp/hw/modules/stats/isp_stats_util.c b/mm-camera2/media-controller/modules/isp/hw/modules/stats/isp_stats_util.c
+index a81748e..7d9269b 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/modules/stats/isp_stats_util.c
++++ b/mm-camera2/media-controller/modules/isp/hw/modules/stats/isp_stats_util.c
+@@ -10,13 +10,15 @@ Qualcomm Technologies Proprietary and Confidential.
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <linux/media.h>
++#include <stdint.h>
+ #include <media/msmb_isp.h>
+ 
+ #include "isp_stats.h"
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+-
+ #if 0
+ #undef CDBG
+ #define CDBG ALOGE
+diff --git a/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats32/stats_parser.c b/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats32/stats_parser.c
+index 03179ed..6f77058 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats32/stats_parser.c
++++ b/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats32/stats_parser.c
+@@ -13,6 +13,7 @@
+ #include <string.h>
+ #include <errno.h>
+ #include <poll.h>
++#include <stdint.h>
+ #include <media/msm_isp.h>
+ 
+ #include "../isp_stats.h"
+diff --git a/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats40/stats_parser.c b/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats40/stats_parser.c
+index 03179ed..6f77058 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats40/stats_parser.c
++++ b/mm-camera2/media-controller/modules/isp/hw/modules/stats/stats40/stats_parser.c
+@@ -13,6 +13,7 @@
+ #include <string.h>
+ #include <errno.h>
+ #include <poll.h>
++#include <stdint.h>
+ #include <media/msm_isp.h>
+ 
+ #include "../isp_stats.h"
+diff --git a/mm-camera2/media-controller/modules/isp/hw/modules/wb/wb32/wb32_reg.h b/mm-camera2/media-controller/modules/isp/hw/modules/wb/wb32/wb32_reg.h
+index 538cb3b..f407b45 100644
+--- a/mm-camera2/media-controller/modules/isp/hw/modules/wb/wb32/wb32_reg.h
++++ b/mm-camera2/media-controller/modules/isp/hw/modules/wb/wb32/wb32_reg.h
+@@ -7,6 +7,8 @@
+ #ifndef __WB32_REG_H__
+ #define __WB32_REG_H__
+ 
++#include <stdint.h>
++
+ #define ISP_WB32_OFF 0x00000384
+ #define ISP_WB32_LEN 1
+ 
+diff --git a/mm-camera2/media-controller/modules/isp/isp.c b/mm-camera2/media-controller/modules/isp/isp.c
+index aa3e5f6..8929675 100644
+--- a/mm-camera2/media-controller/modules/isp/isp.c
++++ b/mm-camera2/media-controller/modules/isp/isp.c
+@@ -27,6 +27,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if ISP_DEBUG
+diff --git a/mm-camera2/media-controller/modules/isp/isp_buf_mgr.c b/mm-camera2/media-controller/modules/isp/isp_buf_mgr.c
+index e6897c5..843bfa8 100644
+--- a/mm-camera2/media-controller/modules/isp/isp_buf_mgr.c
++++ b/mm-camera2/media-controller/modules/isp/isp_buf_mgr.c
+@@ -6,6 +6,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ #include "mct_stream.h"
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if 0
+diff --git a/mm-camera2/media-controller/modules/isp/isp_channel_util.c b/mm-camera2/media-controller/modules/isp/isp_channel_util.c
+index 6faf098..521bc7f 100644
+--- a/mm-camera2/media-controller/modules/isp/isp_channel_util.c
++++ b/mm-camera2/media-controller/modules/isp/isp_channel_util.c
+@@ -32,6 +32,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if 0
+diff --git a/mm-camera2/media-controller/modules/isp/isp_def.h b/mm-camera2/media-controller/modules/isp/isp_def.h
+index d338b26..9e2961f 100644
+--- a/mm-camera2/media-controller/modules/isp/isp_def.h
++++ b/mm-camera2/media-controller/modules/isp/isp_def.h
+@@ -5,6 +5,7 @@ Qualcomm Technologies Proprietary and Confidential.
+ #ifndef __ISP_DEF_H__
+ #define __ISP_DEF_H__
+ 
++#include <stdint.h>
+ #include <media/msmb_isp.h>
+ #include <media/msmb_ispif.h>
+ #include "modules.h"
+diff --git a/mm-camera2/media-controller/modules/isp/isp_ops.h b/mm-camera2/media-controller/modules/isp/isp_ops.h
+index bc9be82..753c9c8 100644
+--- a/mm-camera2/media-controller/modules/isp/isp_ops.h
++++ b/mm-camera2/media-controller/modules/isp/isp_ops.h
+@@ -6,6 +6,7 @@ Qualcomm Technologies Proprietary and Confidential.
+ #ifndef __ISP_OPS_H__
+ #define __ISP_OPS_H__
+ 
++#include <stdint.h>
+ 
+ typedef struct {
+   void *parent;      /* parent pointer */
+diff --git a/mm-camera2/media-controller/modules/isp/isp_resource_mgr.c b/mm-camera2/media-controller/modules/isp/isp_resource_mgr.c
+index 27f40db..0f9b918 100644
+--- a/mm-camera2/media-controller/modules/isp/isp_resource_mgr.c
++++ b/mm-camera2/media-controller/modules/isp/isp_resource_mgr.c
+@@ -4,6 +4,7 @@ Qualcomm Technologies Proprietary and Confidential.
+ ============================================================================*/
+ 
+ #include <stdlib.h>
++#include <stdint.h>
+ #include <sys/ioctl.h>
+ #include <math.h>
+ #include <unistd.h>
+@@ -23,6 +24,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if 0
+diff --git a/mm-camera2/media-controller/modules/isp/isp_util.c b/mm-camera2/media-controller/modules/isp/isp_util.c
+index b9f6149..90bded0 100644
+--- a/mm-camera2/media-controller/modules/isp/isp_util.c
++++ b/mm-camera2/media-controller/modules/isp/isp_util.c
+@@ -32,6 +32,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if ISP_UTIL_DEBUG
+diff --git a/mm-camera2/media-controller/modules/isp/isp_zoom.c b/mm-camera2/media-controller/modules/isp/isp_zoom.c
+index 49fc5c3..8b72759 100644
+--- a/mm-camera2/media-controller/modules/isp/isp_zoom.c
++++ b/mm-camera2/media-controller/modules/isp/isp_zoom.c
+@@ -25,6 +25,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #ifdef ENABLE_ZOOM_LOGGING
+diff --git a/mm-camera2/media-controller/modules/isp/module_isp.c b/mm-camera2/media-controller/modules/isp/module_isp.c
+index c8ba310..0e4c890 100644
+--- a/mm-camera2/media-controller/modules/isp/module_isp.c
++++ b/mm-camera2/media-controller/modules/isp/module_isp.c
+@@ -21,6 +21,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if MODULE_ISP_DEBUG
+diff --git a/mm-camera2/media-controller/modules/isp/port_isp.c b/mm-camera2/media-controller/modules/isp/port_isp.c
+index ad1354d..7b06d1e 100644
+--- a/mm-camera2/media-controller/modules/isp/port_isp.c
++++ b/mm-camera2/media-controller/modules/isp/port_isp.c
+@@ -24,6 +24,8 @@ Qualcomm Technologies Proprietary and Confidential.
+ 
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if PORT_ISP_DEBUG
+diff --git a/mm-camera2/media-controller/modules/isp/unit_test/isp_unit_test.c b/mm-camera2/media-controller/modules/isp/unit_test/isp_unit_test.c
+index 0288a7d..fdc1d86 100644
+--- a/mm-camera2/media-controller/modules/isp/unit_test/isp_unit_test.c
++++ b/mm-camera2/media-controller/modules/isp/unit_test/isp_unit_test.c
+@@ -20,6 +20,7 @@ Qualcomm Technologies Proprietary and Confidential.
+ #include <linux/media.h>
+ #include <cutils/log.h>
+ #include <poll.h>
++#include <stdint.h>
+ #include <media/msmb_isp.h>
+ #include <errno.h>
+ #include "cam_intf.h"
+diff --git a/mm-camera2/media-controller/modules/pproc-new/Makefile.am b/mm-camera2/media-controller/modules/pproc-new/Makefile.am
+new file mode 100644
+index 0000000..e93b7aa
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/pproc-new/Makefile.am
+@@ -0,0 +1,60 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_pproc_modules.so
++lib_LTLIBRARIES = libmmcamera2_pproc_modules.la
++
++libmmcamera2_pproc_modules_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_pproc_modules_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_pproc_modules_la_CFLAGS += -fPIC
++libmmcamera2_pproc_modules_la_CFLAGS += -DCAMERA_FEATURE_CAC
++
++
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/includes
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/server-tuning/tuning
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/includes
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/includes
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/controller
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/pipeline
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/stream
++
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/pproc-new
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/pproc-new/cpp
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/pproc-new/c2d
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/pproc-new/vpe
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/pproc-new/wnr
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/imglib/modules
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/imglib/modules/cac
++libmmcamera2_pproc_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++
++libmmcamera2_pproc_modules_la_SOURCES = pproc_module.c
++libmmcamera2_pproc_modules_la_SOURCES += pproc_port.c
++
++#LOCAL_SHARED_LIBRARIES := liblog libcutils libmmcamera2_cpp_module liboemcamera libdl libmmcamera2_c2d_module libmmcamera2_imglib_modules libmmcamera2_wnr_module libmmcamera2_vpe_module
++libmmcamera2_pproc_modules_la_LDFLAGS = -shared
++libmmcamera2_pproc_modules_la_LIBADD = -ldl
++libmmcamera2_pproc_modules_la_LIBADD +=  ../../../../mm-camera2/media-controller/mct/liboemcamera.la
++libmmcamera2_pproc_modules_la_LIBADD += c2d/libmmcamera2_c2d_module.la
++libmmcamera2_pproc_modules_la_LIBADD += wnr/libmmcamera2_wnr_module.la
++libmmcamera2_pproc_modules_la_LIBADD += vpe/libmmcamera2_vpe_module.la
++libmmcamera2_pproc_modules_la_LIBADD += cpp/libmmcamera2_cpp_module.la
++
++dirs =
++dirs += cpp
++dirs += c2d
++dirs += vpe
++dirs += wnr
++
++SUBDIRS = $(dirs)
++
++if USE_DLOG
++libmmcamera2_pproc_modules_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_pproc_modules_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/pproc-new/c2d/Makefile.am b/mm-camera2/media-controller/modules/pproc-new/c2d/Makefile.am
+new file mode 100644
+index 0000000..c25f7a8
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/pproc-new/c2d/Makefile.am
+@@ -0,0 +1,58 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_c2d_module.so
++lib_LTLIBRARIES = libmmcamera2_c2d_module.la
++
++libmmcamera2_c2d_module_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_c2d_module_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_c2d_module_la_CFLAGS += -fPIC
++
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../pproc-new
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/includes
++
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/includes
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/stream
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/pipeline
++
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/modules/pproc-new/buf_mgr
++libmmcamera2_c2d_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++
++#TODO::
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/include/adreno/
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/include/adreno200/
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_C_INCLUDES += \
++# $(LOCAL_PATH)/../../../../../../../../hardware/qcom/camera/QCamera2/stack/common
++
++libmmcamera2_c2d_module_la_SOURCES = c2d_module.c
++libmmcamera2_c2d_module_la_SOURCES += c2d_module_events.c
++libmmcamera2_c2d_module_la_SOURCES += c2d_module_util.c
++libmmcamera2_c2d_module_la_SOURCES += c2d_port.c
++libmmcamera2_c2d_module_la_SOURCES += c2d_thread.c
++libmmcamera2_c2d_module_la_SOURCES += c2d_hardware.c
++#libmmcamera2_c2d_module_la_SOURCES += cpp_hw_params.c
++libmmcamera2_c2d_module_la_SOURCES += ../buf_mgr/pp_buf_mgr.c
++libmmcamera2_c2d_module_la_SOURCES += c2d.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils liboemcamera libdl
++libmmcamera2_c2d_module_la_LDFLAGS = -shared
++libmmcamera2_c2d_module_la_LIBADD = ../../../../media-controller/mct/liboemcamera.la
++libmmcamera2_c2d_module_la_LIBADD += -ldl
++
++dirs =
++SUBDIRS = $(dirs)
++
++if USE_DLOG
++libmmcamera2_c2d_module_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_c2d_module_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/pproc-new/c2d/c2d.h b/mm-camera2/media-controller/modules/pproc-new/c2d/c2d.h
+index ff5203b..91ed409 100644
+--- a/mm-camera2/media-controller/modules/pproc-new/c2d/c2d.h
++++ b/mm-camera2/media-controller/modules/pproc-new/c2d/c2d.h
+@@ -8,6 +8,7 @@
+ 
+ #include <pthread.h>
+ #include <semaphore.h>
++#include <stdint.h>
+ #include <media/msmb_pproc.h>
+ #include "c2d2.h"
+ #include "c2dExt.h"
+diff --git a/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_hardware.h b/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_hardware.h
+index 8b483aa..e474829 100644
+--- a/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_hardware.h
++++ b/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_hardware.h
+@@ -8,6 +8,7 @@
+ #define C2D_HARDWARE_H
+ 
+ #include <pthread.h>
++#include <stdint.h>
+ #include <media/msmb_camera.h>
+ #include <media/msmb_pproc.h>
+ #include "cam_types.h"
+diff --git a/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_module.c b/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_module.c
+old mode 100644
+new mode 100755
+index 0bda0cc..75e5d51
+--- a/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_module.c
++++ b/mm-camera2/media-controller/modules/pproc-new/c2d/c2d_module.c
+@@ -25,12 +25,15 @@ mct_module_t *c2d_module_init(const char *name)
+ {
+   mct_module_t *module;
+   c2d_module_ctrl_t* ctrl;
++
+   CDBG_ERROR("%s:%d name=%s", __func__, __LINE__, name);
+   module = mct_module_create(name);
+   if(!module) {
+     CDBG_ERROR("%s:%d failed.", __func__, __LINE__);
+     return NULL;
+   }
++  CDBG_ERROR("%s:%d c2d disabled", __func__, __LINE__);
++  return NULL;
+   ctrl = c2d_module_create_c2d_ctrl();
+   if(!ctrl) {
+     CDBG_ERROR("%s:%d failed", __func__, __LINE__);
+diff --git a/mm-camera2/media-controller/modules/pproc-new/cpp/Makefile.am b/mm-camera2/media-controller/modules/pproc-new/cpp/Makefile.am
+new file mode 100644
+index 0000000..97f2a6a
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/pproc-new/cpp/Makefile.am
+@@ -0,0 +1,53 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_cpp_module.so
++lib_LTLIBRARIES = libmmcamera2_cpp_module.la
++
++libmmcamera2_cpp_module_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_cpp_module_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_cpp_module_la_CFLAGS += -DARM
++libmmcamera2_cpp_module_la_CFLAGS += -fPIC
++#libmmcamera2_cpp_module_la_CFLAGS += -pedantic
++
++libmmcamera2_cpp_module_la_CFLAGS += -I .
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../pproc-new
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../../mm-camera2
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../../mm-camera2/server-tuning/tuning
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../../mm-camera2/includes
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/includes
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/modules/includes
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/tools
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/port
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/object
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/event
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/bus
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/module
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/stream
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/mct/pipeline
++libmmcamera2_cpp_module_la_CFLAGS += -I ../../../../media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++
++libmmcamera2_cpp_moduledir = $(rootdir)/lib/firmware
++dist_libmmcamera2_cpp_module_DATA  = firmware/cpp_firmware_v1_1_1.fw \
++                                     firmware/cpp_firmware_v1_1_6.fw \
++                                     firmware/cpp_firmware_v1_2_0.fw
++
++libmmcamera2_cpp_module_la_SOURCES = cpp_module.c
++libmmcamera2_cpp_module_la_SOURCES += cpp_module_events.c
++libmmcamera2_cpp_module_la_SOURCES += cpp_module_util.c
++libmmcamera2_cpp_module_la_SOURCES += cpp_port.c
++libmmcamera2_cpp_module_la_SOURCES += cpp_thread.c
++libmmcamera2_cpp_module_la_SOURCES += cpp_hardware.c
++libmmcamera2_cpp_module_la_SOURCES += cpp_hw_params.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils liboemcamera
++libmmcamera2_cpp_module_la_LDFLAGS = -shared
++libmmcamera2_cpp_module_la_LDFLAGS += -ldl -lrt
++libmmcamera2_cpp_module_la_LIBADD = ../../../../media-controller/mct/liboemcamera.la
++
++dirs =
++SUBDIRS = $(dirs)
++
++if USE_DLOG
++libmmcamera2_cpp_module_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_cpp_module_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/pproc-new/cpp/cpp_hardware.c b/mm-camera2/media-controller/modules/pproc-new/cpp/cpp_hardware.c
+index d3f3637..dca60a5 100644
+--- a/mm-camera2/media-controller/modules/pproc-new/cpp/cpp_hardware.c
++++ b/mm-camera2/media-controller/modules/pproc-new/cpp/cpp_hardware.c
+@@ -14,6 +14,8 @@
+ #include <errno.h>
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if 0
+diff --git a/mm-camera2/media-controller/modules/pproc-new/pproc_port.c b/mm-camera2/media-controller/modules/pproc-new/pproc_port.c
+index 0a7dc75..d0b5225 100644
+--- a/mm-camera2/media-controller/modules/pproc-new/pproc_port.c
++++ b/mm-camera2/media-controller/modules/pproc-new/pproc_port.c
+@@ -17,6 +17,8 @@
+ #include "chromatix_metadata.h"
+ #ifdef _ANDROID_
+ #include <cutils/properties.h>
++#else
++#include "android_adapter.h"
+ #endif
+ 
+ #if 0
+diff --git a/mm-camera2/media-controller/modules/pproc-new/vpe/Makefile.am b/mm-camera2/media-controller/modules/pproc-new/vpe/Makefile.am
+new file mode 100644
+index 0000000..4b46999
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/pproc-new/vpe/Makefile.am
+@@ -0,0 +1,46 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_vpe_module.so
++lib_LTLIBRARIES = libmmcamera2_vpe_module.la
++
++libmmcamera2_vpe_module_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_vpe_module_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_vpe_module_la_CFLAGS += -fPIC
++
++
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../pproc-new
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/includes
++
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/includes
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/stream
++libmmcamera2_vpe_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/pipeline
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_C_INCLUDES += \
++# $(LOCAL_PATH)/../../../../../../../../hardware/qcom/camera/QCamera2/stack/common
++
++libmmcamera2_vpe_module_la_SOURCES = vpe_module.c
++libmmcamera2_vpe_module_la_SOURCES += vpe_module_util.c
++libmmcamera2_vpe_module_la_SOURCES += vpe_port.c
++libmmcamera2_vpe_module_la_SOURCES += vpe_thread.c
++libmmcamera2_vpe_module_la_SOURCES += vpe_hardware.c
++libmmcamera2_vpe_module_la_SOURCES += vpe_hw_params.c
++libmmcamera2_vpe_module_la_SOURCES += vpe_proc.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils liboemcamera
++libmmcamera2_vpe_module_la_LDFLAGS = -shared
++libmmcamera2_vpe_module_la_LIBADD = ../../../../media-controller/mct/liboemcamera.la
++
++if USE_DLOG
++libmmcamera2_vpe_module_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_vpe_module_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_hardware.h b/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_hardware.h
+index 4c2fcad..dc913ed 100644
+--- a/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_hardware.h
++++ b/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_hardware.h
+@@ -8,6 +8,7 @@
+ #define VPE_HARDWARE_H
+ 
+ #include <pthread.h>
++#include <stdint.h>
+ #include <media/msmb_camera.h>
+ #include <media/msmb_pproc.h>
+ #include "cam_types.h"
+diff --git a/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_module.c b/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_module.c
+old mode 100644
+new mode 100755
+index de0ba31..8434881
+--- a/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_module.c
++++ b/mm-camera2/media-controller/modules/pproc-new/vpe/vpe_module.c
+@@ -29,6 +29,9 @@ mct_module_t *vpe_module_init(const char *name)
+     CDBG_ERROR("%s:%d failed.", __func__, __LINE__);
+     return NULL;
+   }
++
++  CDBG_ERROR("%s:%d vpe disabled", __func__, __LINE__);
++  return NULL;
+   ctrl = vpe_module_create_vpe_ctrl();
+   if(!ctrl) {
+     CDBG_ERROR("%s:%d failed", __func__, __LINE__);
+diff --git a/mm-camera2/media-controller/modules/pproc-new/wnr/Makefile.am b/mm-camera2/media-controller/modules/pproc-new/wnr/Makefile.am
+new file mode 100644
+index 0000000..0fd1a2d
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/pproc-new/wnr/Makefile.am
+@@ -0,0 +1,38 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_wnr_module.so
++lib_LTLIBRARIES = libmmcamera2_wnr_module.la
++
++libmmcamera2_wnr_module_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_wnr_module_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_wnr_module_la_CFLAGS += -fPIC
++
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../pproc-new
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/includes
++
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/includes
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/stream
++libmmcamera2_wnr_module_la_CFLAGS += -I ../../../../../mm-camera2/media-controller/mct/pipeline
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_C_INCLUDES += \
++# $(LOCAL_PATH)/../../../../../../../../hardware/qcom/camera/QCamera2/stack/common
++
++libmmcamera2_wnr_module_la_SOURCES = wnr_module.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils liboemcamera
++libmmcamera2_wnr_module_la_LDFLAGS = -shared
++libmmcamera2_wnr_module_la_LIBADD = ../../../../media-controller/mct/liboemcamera.la
++
++if USE_DLOG
++libmmcamera2_wnr_module_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_wnr_module_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/sensors/Makefile.am b/mm-camera2/media-controller/modules/sensors/Makefile.am
+new file mode 100755
+index 0000000..0b189cb
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/Makefile.am
+@@ -0,0 +1,64 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_sensor_modules.so
++lib_LTLIBRARIES = libmmcamera2_sensor_modules.la
++
++libmmcamera2_sensor_modules_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_sensor_modules_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_sensor_modules_la_CFLAGS += -fPIC
++
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/includes
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/includes
++
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/includes
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/controller
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/pipeline
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/port
++
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/stream
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/includes
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/module
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/sensors
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/actuators
++libmmcamera2_sensor_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/actuators/0301
++
++#TODO::
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_C_INCLUDES += \
++# $(LOCAL_PATH)/../../../../../../../../hardware/qcom/camera/QCamera2/stack/common
++
++libmmcamera2_sensor_modules_la_SOURCES = module/sensor_util.c
++libmmcamera2_sensor_modules_la_SOURCES += module/port_sensor.c
++libmmcamera2_sensor_modules_la_SOURCES += module/module_sensor.c
++libmmcamera2_sensor_modules_la_SOURCES += module/sensor_init.c
++libmmcamera2_sensor_modules_la_SOURCES += sensors/sensor.c
++libmmcamera2_sensor_modules_la_SOURCES += sensors/sensor_thread.c
++libmmcamera2_sensor_modules_la_SOURCES += chromatix/module/chromatix_sub_module.c
++libmmcamera2_sensor_modules_la_SOURCES += actuators/actuator.c
++libmmcamera2_sensor_modules_la_SOURCES += eeprom/eeprom.c
++libmmcamera2_sensor_modules_la_SOURCES += led_flash/led_flash.c
++libmmcamera2_sensor_modules_la_SOURCES += strobe_flash/strobe_flash.c
++libmmcamera2_sensor_modules_la_SOURCES += csiphy/csiphy.c
++libmmcamera2_sensor_modules_la_SOURCES += csid/csid.c
++
++#LOCAL_SHARED_LIBRARIES := libdl liblog libcutils liboemcamera
++libmmcamera2_sensor_modules_la_LDFLAGS = -shared
++libmmcamera2_sensor_modules_la_LIBADD = -ldl
++libmmcamera2_sensor_modules_la_LIBADD += ../../../../mm-camera2/media-controller/mct/liboemcamera.la
++
++dirs = actuators/0301/actuator_libs
++SUBDIRS = $(dirs)
++
++if USE_DLOG
++libmmcamera2_sensor_modules_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_sensor_modules_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/sensors/actuators/0208/af_tuning.h b/mm-camera2/media-controller/modules/sensors/actuators/0208/af_tuning.h
+index 29af2a8..7a52a53 100644
+--- a/mm-camera2/media-controller/modules/sensors/actuators/0208/af_tuning.h
++++ b/mm-camera2/media-controller/modules/sensors/actuators/0208/af_tuning.h
+@@ -8,6 +8,7 @@
+ #define __AF_TUNING_H__
+ 
+ //#include <media/msmb_camera.h>
++#include <stdint.h>
+ #include <media/msm_cam_sensor.h>
+ 
+ 
+diff --git a/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/Makefile.am b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/Makefile.am
+new file mode 100644
+index 0000000..47423f3
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/Makefile.am
+@@ -0,0 +1,3 @@
++ACLOCAL_AMFLAGS = -I m4
++
++SUBDIRS = dw9714
+diff --git a/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/Makefile.am b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/Makefile.am
+new file mode 100644
+index 0000000..fa9a8ed
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/Makefile.am
+@@ -0,0 +1,3 @@
++ACLOCAL_AMFLAGS = -I m4
++
++SUBDIRS = camera camcorder
+diff --git a/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Android.mk b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Android.mk
+old mode 100644
+new mode 100755
+diff --git a/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Makefile.am b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Makefile.am
+new file mode 100755
+index 0000000..631b0f4
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camcorder/Makefile.am
+@@ -0,0 +1,21 @@
++ACLOCAL_AMFLAGS = -I m4
++
++#### libactuator_dw9714_camcorder.so ####
++lib_LTLIBRARIES = libactuator_dw9714_camcorder.la
++
++MCTL_PATH = ../../../../../../../../media-controller
++
++libactuator_dw9714_camcorder_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libactuator_dw9714_camcorder_la_CFLAGS += -DMSM_CAMERA_GCC
++libactuator_dw9714_camcorder_la_CFLAGS += -fPIC
++
++libactuator_dw9714_camcorder_la_CFLAGS += -I ../../../
++libactuator_dw9714_camcorder_la_CFLAGS += -I ../../../../../module
++libactuator_dw9714_camcorder_la_CFLAGS += -I ../../../../../../../../../common
++libactuator_dw9714_camcorder_la_CFLAGS += -I $(MCTL_PATH)/mct/tools
++libactuator_dw9714_camcorder_la_CFLAGS += -I $(MCTL_PATH)/modules/sensors/actuators
++
++libactuator_dw9714_camcorder_la_SOURCES = dw9714_camcorder_lib.c
++
++libactuator_dw9714_camcorder_la_LDFLAGS = -shared
++libactuator_dw9714_camcorder_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camera/Makefile.am b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camera/Makefile.am
+new file mode 100755
+index 0000000..dddbdd9
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/actuators/0301/actuator_libs/dw9714/camera/Makefile.am
+@@ -0,0 +1,22 @@
++
++ACLOCAL_AMFLAGS = -I m4
++
++#### libactuator_dw9714_camera.so ####
++lib_LTLIBRARIES = libactuator_dw9714_camera.la
++
++MCTL_PATH = ../../../../../../../../media-controller
++
++libactuator_dw9714_camera_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libactuator_dw9714_camera_la_CFLAGS += -DMSM_CAMERA_GCC
++libactuator_dw9714_camera_la_CFLAGS += -fPIC
++
++libactuator_dw9714_camera_la_CFLAGS += -I ../../../
++libactuator_dw9714_camera_la_CFLAGS += -I ../../../../../module
++libactuator_dw9714_camera_la_CFLAGS += -I ../../../../../../../../../common
++libactuator_dw9714_camera_la_CFLAGS += -I $(MCTL_PATH)/mct/tools
++libactuator_dw9714_camera_la_CFLAGS += -I $(MCTL_PATH)/modules/sensors/actuators
++
++libactuator_dw9714_camera_la_SOURCES = dw9714_camera_lib.c
++
++libactuator_dw9714_camera_la_LDFLAGS = -shared
++libactuator_dw9714_camera_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/actuators/0301/af_tuning.h b/mm-camera2/media-controller/modules/sensors/actuators/0301/af_tuning.h
+index edd207b..949939c 100644
+--- a/mm-camera2/media-controller/modules/sensors/actuators/0301/af_tuning.h
++++ b/mm-camera2/media-controller/modules/sensors/actuators/0301/af_tuning.h
+@@ -7,6 +7,7 @@
+ #ifndef __AF_TUNING_H__
+ #define __AF_TUNING_H__
+ 
++#include <stdint.h>
+ #include <media/msm_cam_sensor.h>
+ 
+ typedef int boolean;
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/Makefile.am
+new file mode 100644
+index 0000000..a429e11
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/Makefile.am
+@@ -0,0 +1,10 @@
++ACLOCAL_AMFLAGS = -I m4
++
++dirs = chromatix_imx135
++#dirs += chromatix_imx134
++#dirs += chromatix_ov2720
++#dirs += chromatix_ov8825
++#dirs += chromatix_ov9724
++#dirs += chromatix_s5k3l1yx
++
++SUBDIRS = $(dirs)
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/Makefile.am
+new file mode 100644
+index 0000000..b526f1b
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/Makefile.am
+@@ -0,0 +1,11 @@
++ACLOCAL_AMFLAGS = -I m4
++
++dirs =
++dirs += common
++dirs += snapshot
++dirs += preview
++dirs += video
++dirs += hfr_120
++dirs += liveshot
++
++SUBDIRS = $(dirs)
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/common/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/common/Makefile.am
+new file mode 100644
+index 0000000..6d96b10
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/common/Makefile.am
+@@ -0,0 +1,23 @@
++# ---------------------------------------------------------------------------
++#                      Make the shared library (libchromatix_imx135_common)
++# ---------------------------------------------------------------------------
++#libchromatix_imx135_common
++lib_LTLIBRARIES = libchromatix_imx135_common.la
++
++libchromatix_imx135_common_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libchromatix_imx135_common_la_CFLAGS += -fPIC
++
++libchromatix_imx135_common_la_CFLAGS += -I ../../../
++libchromatix_imx135_common_la_CFLAGS += -I ../../../../../module/
++libchromatix_imx135_common_la_CFLAGS += -I ../../../../../../../../../common/
++libchromatix_imx135_common_la_CFLAGS += -I .
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
++libchromatix_imx135_common_la_SOURCES = chromatix_imx135_common.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils
++libchromatix_imx135_common_la_LDFLAGS = -shared
++libchromatix_imx135_common_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/hfr_120/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/hfr_120/Makefile.am
+new file mode 100644
+index 0000000..cbd86c5
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/hfr_120/Makefile.am
+@@ -0,0 +1,23 @@
++# ---------------------------------------------------------------------------
++#                      Make the shared library (libchromatix_imx135_hfr_120)
++# ---------------------------------------------------------------------------
++#libchromatix_imx135_hfr_120
++lib_LTLIBRARIES = libchromatix_imx135_hfr_120.la
++
++libchromatix_imx135_hfr_120_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libchromatix_imx135_hfr_120_la_CFLAGS += -fPIC
++
++libchromatix_imx135_hfr_120_la_CFLAGS += -I ../../../
++libchromatix_imx135_hfr_120_la_CFLAGS += -I ../../../../../module/
++libchromatix_imx135_hfr_120_la_CFLAGS += -I ../../../../../../../../../common/
++libchromatix_imx135_hfr_120_la_CFLAGS += -I .
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
++libchromatix_imx135_hfr_120_la_SOURCES = chromatix_imx135_hfr_120.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils
++libchromatix_imx135_hfr_120_la_LDFLAGS = -shared
++libchromatix_imx135_hfr_120_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/liveshot/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/liveshot/Makefile.am
+new file mode 100644
+index 0000000..5a089ba
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/liveshot/Makefile.am
+@@ -0,0 +1,19 @@
++# ---------------------------------------------------------------------------
++#                      Make the shared library (libchromatix_imx135_liveshot)
++# ---------------------------------------------------------------------------
++#libchromatix_imx135_liveshot
++lib_LTLIBRARIES = libchromatix_imx135_liveshot.la
++
++libchromatix_imx135_liveshot_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libchromatix_imx135_liveshot_la_CFLAGS += -fPIC
++
++libchromatix_imx135_liveshot_la_CFLAGS += -I ../../../
++libchromatix_imx135_liveshot_la_CFLAGS += -I ../../../../../module/
++libchromatix_imx135_liveshot_la_CFLAGS += -I ../../../../../../../../../common/
++libchromatix_imx135_liveshot_la_CFLAGS += -I .
++
++libchromatix_imx135_liveshot_la_SOURCES = chromatix_imx135_liveshot.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils
++libchromatix_imx135_liveshot_la_LDFLAGS = -shared
++libchromatix_imx135_liveshot_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/preview/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/preview/Makefile.am
+new file mode 100644
+index 0000000..29a02a7
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/preview/Makefile.am
+@@ -0,0 +1,23 @@
++# ---------------------------------------------------------------------------
++#                      Make the shared library (libchromatix_imx135_preview)
++# ---------------------------------------------------------------------------
++#libchromatix_imx135_preview
++lib_LTLIBRARIES = libchromatix_imx135_preview.la
++
++libchromatix_imx135_preview_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libchromatix_imx135_preview_la_CFLAGS += -fPIC
++
++libchromatix_imx135_preview_la_CFLAGS += -I ../../../
++libchromatix_imx135_preview_la_CFLAGS += -I ../../../../../module/
++libchromatix_imx135_preview_la_CFLAGS += -I ../../../../../../../../../common/
++libchromatix_imx135_preview_la_CFLAGS += -I .
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
++libchromatix_imx135_preview_la_SOURCES = chromatix_imx135_preview.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils
++libchromatix_imx135_preview_la_LDFLAGS = -shared
++libchromatix_imx135_preview_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/snapshot/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/snapshot/Makefile.am
+new file mode 100644
+index 0000000..db8e038
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/snapshot/Makefile.am
+@@ -0,0 +1,23 @@
++# ---------------------------------------------------------------------------
++#                     Make the shared library (libchromatix_imx135_snapshot)
++# ---------------------------------------------------------------------------
++#libchromatix_s5k3l1yx_snapshot
++lib_LTLIBRARIES = libchromatix_imx135_snapshot.la
++
++libchromatix_imx135_snapshot_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libchromatix_imx135_snapshot_la_CFLAGS += -fPIC
++
++libchromatix_imx135_snapshot_la_CFLAGS += -I ../../../
++libchromatix_imx135_snapshot_la_CFLAGS += -I ../../../../../module/
++libchromatix_imx135_snapshot_la_CFLAGS += -I ../../../../../../../../../common/
++libchromatix_imx135_snapshot_la_CFLAGS += -I .
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
++libchromatix_imx135_snapshot_la_SOURCES = chromatix_imx135_snapshot.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils
++libchromatix_imx135_snapshot_la_LDFLAGS = -shared
++libchromatix_imx135_snapshot_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/video/Makefile.am b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/video/Makefile.am
+new file mode 100644
+index 0000000..853e096
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/chromatix/0301/libchromatix/chromatix_imx135/video/Makefile.am
+@@ -0,0 +1,23 @@
++# ---------------------------------------------------------------------------
++#                    Make the shared library (libchromatix_imx135_default_video)
++# ---------------------------------------------------------------------------
++#libchromatix_imx135_default_video
++lib_LTLIBRARIES = libchromatix_imx135_default_video.la
++
++libchromatix_imx135_default_video_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libchromatix_imx135_default_video_la_CFLAGS += -fPIC
++
++libchromatix_imx135_default_video_la_CFLAGS += -I ../../../
++libchromatix_imx135_default_video_la_CFLAGS += -I ../../../../../module/
++libchromatix_imx135_default_video_la_CFLAGS += -I ../../../../../../../../../common/
++libchromatix_imx135_default_video_la_CFLAGS += -I .
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
++libchromatix_imx135_default_video_la_SOURCES = chromatix_imx135_video.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils
++libchromatix_imx135_default_video_la_LDFLAGS = -shared
++libchromatix_imx135_default_video_la_LIBADD = -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/csid/csid.h b/mm-camera2/media-controller/modules/sensors/csid/csid.h
+index 085906f..4bb4280 100644
+--- a/mm-camera2/media-controller/modules/sensors/csid/csid.h
++++ b/mm-camera2/media-controller/modules/sensors/csid/csid.h
+@@ -7,6 +7,7 @@
+ #ifndef __CSID_H__
+ #define __CSID_H__
+ 
++#include <stdint.h>
+ #include <media/msm_cam_sensor.h>
+ 
+ typedef struct {
+diff --git a/mm-camera2/media-controller/modules/sensors/csiphy/csiphy.h b/mm-camera2/media-controller/modules/sensors/csiphy/csiphy.h
+index ca5b14a..52d02bd 100644
+--- a/mm-camera2/media-controller/modules/sensors/csiphy/csiphy.h
++++ b/mm-camera2/media-controller/modules/sensors/csiphy/csiphy.h
+@@ -7,6 +7,7 @@
+ #ifndef __CSIPHY_H__
+ #define __CSIPHY_H__
+ 
++#include <stdint.h>
+ #include <media/msm_cam_sensor.h>
+ 
+ typedef struct {
+diff --git a/mm-camera2/media-controller/modules/sensors/includes/sensor_lib.h b/mm-camera2/media-controller/modules/sensors/includes/sensor_lib.h
+index d6171ca..04e8b20 100644
+--- a/mm-camera2/media-controller/modules/sensors/includes/sensor_lib.h
++++ b/mm-camera2/media-controller/modules/sensors/includes/sensor_lib.h
+@@ -7,6 +7,7 @@
+ #ifndef __SENSOR_LIB_H_
+ #define __SENSOR_LIB_H_
+ 
++#include <stdint.h>
+ #include <media/msm_cam_sensor.h>
+ 
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+diff --git a/mm-camera2/media-controller/modules/sensors/module/port_sensor.c b/mm-camera2/media-controller/modules/sensors/module/port_sensor.c
+index a948586..a7adfa3 100644
+--- a/mm-camera2/media-controller/modules/sensors/module/port_sensor.c
++++ b/mm-camera2/media-controller/modules/sensors/module/port_sensor.c
+@@ -4,7 +4,6 @@
+  * Qualcomm Technologies Proprietary and Confidential.
+  */
+ 
+-#include <cutils/properties.h>
+ #include "media_controller.h"
+ #include "modules.h"
+ #include "mct_stream.h"
+@@ -12,6 +11,12 @@
+ #include "sensor_util.h"
+ #include "led_flash/led_flash.h"
+ 
++#ifdef _ANDROID_
++#include <cutils/properties.h>
++#else
++#include "android_adapter.h"
++#endif
++
+ /** port_sensor_caps_reserve: check caps functiont of find
+  *  compatible port
+  *
+diff --git a/mm-camera2/media-controller/modules/sensors/module/sensor_common.h b/mm-camera2/media-controller/modules/sensors/module/sensor_common.h
+index 14b3378..47eb727 100644
+--- a/mm-camera2/media-controller/modules/sensors/module/sensor_common.h
++++ b/mm-camera2/media-controller/modules/sensors/module/sensor_common.h
+@@ -12,6 +12,7 @@
+ #ifndef __SENSOR_COMMON_H__
+ #define __SENSOR_COMMON_H__
+ 
++#include <stdint.h>
+ #include <media/msm_cam_sensor.h>
+ #include "mct_list.h"
+ #include "mct_bus.h"
+diff --git a/mm-camera2/media-controller/modules/sensors/module/sensor_dbg.h b/mm-camera2/media-controller/modules/sensors/module/sensor_dbg.h
+old mode 100644
+new mode 100755
+index 9dabdcb..d36f226
+--- a/mm-camera2/media-controller/modules/sensors/module/sensor_dbg.h
++++ b/mm-camera2/media-controller/modules/sensors/module/sensor_dbg.h
+@@ -37,9 +37,9 @@
+       ALOGE("%s:%d "fmt"\n", __func__, __LINE__, ##args)
+   #else
+     #include <stdio.h>
+-    #define SERR(fmt, args...) fprintf(stderr, fmt, ##args)
+-    #define SLOW(fmt, args...) fprintf(stderr, fmt, ##args)
+-    #define SHIGH(fmt, args...) fprintf(stderr, fmt, ##args)
++    #define SERR(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++    #define SLOW(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++    #define SHIGH(fmt, args...) fprintf(stderr, fmt"\n", ##args)
+   #endif
+ #elif defined(SLOG_HIGH)
+   #ifdef _ANDROID_
+@@ -55,9 +55,9 @@
+       ALOGE("%s:%d "fmt"\n", __func__, __LINE__, ##args)
+   #else
+     #include <stdio.h>
+-    #define SERR(fmt, args...) fprintf(stderr, fmt, ##args)
++    #define SERR(fmt, args...) fprintf(stderr, fmt"\n", ##args)
+     #define SLOW(fmt, args...) do{}while(0)
+-    #define SHIGH(fmt, args...) fprintf(stderr, fmt, ##args)
++    #define SHIGH(fmt, args...) fprintf(stderr, fmt"\n", ##args)
+   #endif
+ #else
+   #ifdef _ANDROID_
+@@ -72,12 +72,16 @@
+     #define SHIGH(fmt, args...) do{}while(0)
+   #else
+     #include <stdio.h>
+-    #define SERR(fmt, args...) fprintf(stderr, fmt, ##args)
++    #define SERR(fmt, args...) fprintf(stderr, fmt"\n", ##args)
+     #define SLOW(fmt, args...) do{}while(0)
+     #define SHIGH(fmt, args...) do{}while(0)
+   #endif
+ #endif
+ 
++#ifndef _ANDROID_
++#define ALOGE(fmt, args...) fprintf(stderr, fmt"\n", ##args)
++#endif
++
+ #if (SENSOR_DEBUG_MUTEX == 1)
+   #define PTHREAD_MUTEX_LOCK(m) do { \
+     SHIGH("[sensor_mutex_log] before pthread_mutex_lock(%p)\n", m); \
+diff --git a/mm-camera2/media-controller/modules/sensors/sensor_libs/Makefile.am b/mm-camera2/media-controller/modules/sensors/sensor_libs/Makefile.am
+new file mode 100644
+index 0000000..bf4bcfb
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/sensor_libs/Makefile.am
+@@ -0,0 +1,11 @@
++ACLOCAL_AMFLAGS = -I m4
++
++dirs = imx135
++#dirs += mt9m114
++#dirs += ov2720
++#dirs += ov8825
++#dirs += ov9724
++#dirs += s5k3l1yx
++#dirs += imx134
++
++SUBDIRS = $(dirs)
+diff --git a/mm-camera2/media-controller/modules/sensors/sensor_libs/imx135/Makefile.am b/mm-camera2/media-controller/modules/sensors/sensor_libs/imx135/Makefile.am
+new file mode 100644
+index 0000000..1ec4d6f
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/sensors/sensor_libs/imx135/Makefile.am
+@@ -0,0 +1,21 @@
++#libmmcamera_imx135.so
++lib_LTLIBRARIES = libmmcamera_imx135.la
++
++libmmcamera_imx135_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera_imx135_la_CFLAGS += -fPIC
++
++if VFE40
++libmmcamera_imx135_la_CFLAGS += -DVFE_40
++endif
++
++libmmcamera_imx135_la_CFLAGS += -I ../../includes
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
++libmmcamera_imx135_la_SOURCES = imx135_lib.c
++
++#LOCAL_SHARED_LIBRARIES := libcutils
++libmmcamera_imx135_la_LDFLAGS = -shared
++#libmmcamera_imx135_la_LIBADD := -ldl
+diff --git a/mm-camera2/media-controller/modules/sensors/sensors/sensor.c b/mm-camera2/media-controller/modules/sensors/sensors/sensor.c
+old mode 100644
+new mode 100755
+index ec6763e..c6e8376
+--- a/mm-camera2/media-controller/modules/sensors/sensors/sensor.c
++++ b/mm-camera2/media-controller/modules/sensors/sensors/sensor.c
+@@ -14,6 +14,11 @@
+ #include "mct_pipeline.h"
+ //#include "sensor_thread.h"
+ 
++#ifndef _ANDROID_
++#include "glib.h"
++#define strlcpy g_strlcpy
++#endif
++
+ #define QFACTOR 100
+ #define BUFF_SIZE_255 255
+ 
+diff --git a/mm-camera2/media-controller/modules/stats/Makefile.am b/mm-camera2/media-controller/modules/stats/Makefile.am
+new file mode 100644
+index 0000000..74a0550
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/stats/Makefile.am
+@@ -0,0 +1,114 @@
++#ACLOCAL_AMFLAGS = -I m4
++
++#libmmcamera2_stats_modules.so
++lib_LTLIBRARIES = libmmcamera2_stats_modules.la
++
++libmmcamera2_stats_modules_la_CFLAGS = -DAMSS_VERSION=$(AMSS_VERSION)
++libmmcamera2_stats_modules_la_CFLAGS += -DMSM_CAMERA_GCC
++libmmcamera2_stats_modules_la_CFLAGS += -fPIC
++libmmcamera2_stats_modules_la_CFLAGS += -Dstrlcpy=g_strlcpy
++
++#TODO:
++if FEATURE_GYRO
++libmmcamera2_stats_modules_la_CFLAGS += -DFEATURE_GYRO
++endif
++
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2
++#Algorithm path.
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/q3a/aec
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/q3a/awb
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/q3a/af
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/asd
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/afd
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/q3a/aec/algorithm
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/q3a/awb/algorithm
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/q3a/af/algorithm
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/afd/algorithm
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../mm-camera-lib/stats/asd/algorithm
++
++#sensor path
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../../sensors/dsps/api
++
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/includes
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/includes
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/chromatix/$(CHROMATIX_VERSION)
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/sensors/actuators/$(CHROMATIX_VERSION)
++
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/is
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/gyro
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/gyro/dsps
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/q3a
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/q3a/aec
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/q3a/af
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/q3a/awb
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/asd
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/modules/stats/afd
++
++
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/includes
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/tools
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/bus
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/controller
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/event
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/module
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/object
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/pipeline
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/port
++libmmcamera2_stats_modules_la_CFLAGS += -I ../../../../mm-camera2/media-controller/mct/stream
++
++#TODO:
++#LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++#LOCAL_C_INCLUDES += \
++# $(LOCAL_PATH)/../../../../../../../../hardware/qcom/camera/QCamera2/stack/common
++
++libmmcamera2_stats_modules_la_SOURCES = q3a/af/af_module.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/af/af_fdprio.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/af/af_port.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/awb/awb_module.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/awb/awb_port.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/aec/aec_port.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/aec/aec_module.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/q3a_port.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/q3a_thread.c
++libmmcamera2_stats_modules_la_SOURCES += q3a/q3a_module.c
++libmmcamera2_stats_modules_la_SOURCES += afd/afd_thread.c
++libmmcamera2_stats_modules_la_SOURCES += afd/afd_port.c
++libmmcamera2_stats_modules_la_SOURCES += afd/afd_module.c
++libmmcamera2_stats_modules_la_SOURCES += asd/asd_module.c
++libmmcamera2_stats_modules_la_SOURCES += asd/asd_thread.c
++libmmcamera2_stats_modules_la_SOURCES += asd/asd_port.c
++libmmcamera2_stats_modules_la_SOURCES += is/is_module.c
++libmmcamera2_stats_modules_la_SOURCES += is/is_set.c
++libmmcamera2_stats_modules_la_SOURCES += is/is_port.c
++libmmcamera2_stats_modules_la_SOURCES += is/is_process.c
++libmmcamera2_stats_modules_la_SOURCES += is/is_thread.c
++libmmcamera2_stats_modules_la_SOURCES += is/dis_interface.c
++libmmcamera2_stats_modules_la_SOURCES += is/eis_interface.c
++libmmcamera2_stats_modules_la_SOURCES += is/eis2_interface.c
++
++if FEATURE_GYRO
++libmmcamera2_stats_modules_la_SOURCES += gyro/dsps/dsps_hw_interface.c
++libmmcamera2_stats_modules_la_SOURCES += gyro/dsps/dsps_hw.c
++libmmcamera2_stats_modules_la_SOURCES += gyro/gyro_module.c
++libmmcamera2_stats_modules_la_SOURCES += gyro/gyro_port.c
++endif
++
++
++libmmcamera2_stats_modules_la_SOURCES += stats_module.c
++libmmcamera2_stats_modules_la_SOURCES += stats_port.c
++
++#LOCAL_SHARED_LIBRARIES := libdl libcutils liboemcamera libmmcamera2_stats_algorithm
++libmmcamera2_stats_modules_la_LDFLAGS = -shared
++libmmcamera2_stats_modules_la_LIBADD = -ldl -lrt -lglib-2.0
++libmmcamera2_stats_modules_la_LIBADD += ../../../../mm-camera2/media-controller/mct/liboemcamera.la
++libmmcamera2_stats_modules_la_LIBADD += -lmmcamera2_stats_algorithm
++
++dirs =
++SUBDIRS = $(dirs)
++
++if USE_DLOG
++libmmcamera2_stats_modules_la_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++libmmcamera2_stats_modules_la_LIBADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/media-controller/modules/stats/afd/afd_module.c b/mm-camera2/media-controller/modules/stats/afd/afd_module.c
+old mode 100644
+new mode 100755
+index b0e778d..721a106
+--- a/mm-camera2/media-controller/modules/stats/afd/afd_module.c
++++ b/mm-camera2/media-controller/modules/stats/afd/afd_module.c
+@@ -6,6 +6,8 @@
+ #include "afd_module.h"
+ #include "afd_port.h"
+ 
++#include "stats_dbg.h"
++
+ typedef struct {
+   int my_private;
+ } afd_module_private_t;
+diff --git a/mm-camera2/media-controller/modules/stats/afd/afd_port.c b/mm-camera2/media-controller/modules/stats/afd/afd_port.c
+old mode 100644
+new mode 100755
+index f32829e..f763a75
+--- a/mm-camera2/media-controller/modules/stats/afd/afd_port.c
++++ b/mm-camera2/media-controller/modules/stats/afd/afd_port.c
+@@ -10,6 +10,9 @@
+ #include "modules.h"
+ 
+ 
++#include "stats_dbg.h"
++
++
+ /** afd_port_callback
+  *
+  **/
+diff --git a/mm-camera2/media-controller/modules/stats/asd/asd_module.c b/mm-camera2/media-controller/modules/stats/asd/asd_module.c
+old mode 100644
+new mode 100755
+index cd51c3e..c77a865
+--- a/mm-camera2/media-controller/modules/stats/asd/asd_module.c
++++ b/mm-camera2/media-controller/modules/stats/asd/asd_module.c
+@@ -6,6 +6,8 @@
+ #include "asd_module.h"
+ #include "asd_port.h"
+ 
++#include "stats_dbg.h"
++
+ typedef struct {
+   int my_private;
+ } asd_module_private_t;
+diff --git a/mm-camera2/media-controller/modules/stats/asd/asd_thread.c b/mm-camera2/media-controller/modules/stats/asd/asd_thread.c
+old mode 100644
+new mode 100755
+index c2e37b9..ef70226
+--- a/mm-camera2/media-controller/modules/stats/asd/asd_thread.c
++++ b/mm-camera2/media-controller/modules/stats/asd/asd_thread.c
+@@ -9,6 +9,9 @@
+ #include "modules.h"
+ #include <math.h>
+ 
++
++#include "stats_dbg.h"
++
+ /** asd_thread_init
+  *
+  **/
+diff --git a/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw.h b/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw.h
+old mode 100644
+new mode 100755
+index 31b9fca..c2f27d6
+--- a/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw.h
++++ b/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw.h
+@@ -22,6 +22,9 @@
+ #include "dsps_hw_interface.h"
+ #include <sns_sam_gyroint_v01.h>
+ 
++
++#include "stats_dbg.h"
++
+ #define SENSOR_SAMPLE_RATE  (200 << 16)
+ #define SENSOR_TIME_OUT     1000  /* Timeout for response message */
+ #define MSEC_TO_SEC         1/1000
+diff --git a/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw_interface.c b/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw_interface.c
+old mode 100644
+new mode 100755
+index e935453..e753c6c
+--- a/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw_interface.c
++++ b/mm-camera2/media-controller/modules/stats/gyro/dsps/dsps_hw_interface.c
+@@ -9,7 +9,7 @@
+ ============================================================================*/
+ #include "dsps_hw.h"
+ #include "camera_dbg.h"
+-
++#include "stats_dbg.h"
+ 
+ static int num_gyroint_instance = 0;
+ 
+diff --git a/mm-camera2/media-controller/modules/stats/gyro/gyro_module.c b/mm-camera2/media-controller/modules/stats/gyro/gyro_module.c
+old mode 100644
+new mode 100755
+index f5a6a2f..0f03dbf
+--- a/mm-camera2/media-controller/modules/stats/gyro/gyro_module.c
++++ b/mm-camera2/media-controller/modules/stats/gyro/gyro_module.c
+@@ -9,10 +9,7 @@
+ #include "camera_dbg.h"
+ 
+ 
+-#if 1
+-#undef CDBG
+-#define CDBG ALOGE
+-#endif
++#include "stats_dbg.h"
+ 
+ 
+ /** gyro_module_find_port
+diff --git a/mm-camera2/media-controller/modules/stats/gyro/gyro_port.c b/mm-camera2/media-controller/modules/stats/gyro/gyro_port.c
+old mode 100644
+new mode 100755
+index 1078ae0..620e280
+--- a/mm-camera2/media-controller/modules/stats/gyro/gyro_port.c
++++ b/mm-camera2/media-controller/modules/stats/gyro/gyro_port.c
+@@ -12,7 +12,7 @@
+ #include "dsps_hw_interface.h"
+ #include "aec.h"
+ #include "camera_dbg.h"
+-
++#include "stats_dbg.h"
+ 
+ #if 0
+ #undef CDBG
+diff --git a/mm-camera2/media-controller/modules/stats/is/dis_interface.c b/mm-camera2/media-controller/modules/stats/is/dis_interface.c
+old mode 100644
+new mode 100755
+index d5bf373..e456813
+--- a/mm-camera2/media-controller/modules/stats/is/dis_interface.c
++++ b/mm-camera2/media-controller/modules/stats/is/dis_interface.c
+@@ -14,7 +14,7 @@
+ #include "dis_interface.h"
+ #include "is_sns_lib.h"
+ #include "camera_dbg.h"
+-
++#include "stats_dbg.h"
+ #if 0
+ #undef CDBG
+ #define CDBG ALOGE
+diff --git a/mm-camera2/media-controller/modules/stats/is/eis2_interface.c b/mm-camera2/media-controller/modules/stats/is/eis2_interface.c
+old mode 100644
+new mode 100755
+index fbdfd02..2139dd2
+--- a/mm-camera2/media-controller/modules/stats/is/eis2_interface.c
++++ b/mm-camera2/media-controller/modules/stats/is/eis2_interface.c
+@@ -15,10 +15,7 @@
+ #include "camera_dbg.h"
+ #include <time.h>
+ 
+-#if 0
+-#undef CDBG
+-#define CDBG ALOGE
+-#endif
++#include "stats_dbg.h"
+ 
+ #define USEC_PER_SEC     1000000.0
+ #define Q16              (1 << 16)
+diff --git a/mm-camera2/media-controller/modules/stats/is/eis_interface.c b/mm-camera2/media-controller/modules/stats/is/eis_interface.c
+old mode 100644
+new mode 100755
+index cd28b3d..3ef028a
+--- a/mm-camera2/media-controller/modules/stats/is/eis_interface.c
++++ b/mm-camera2/media-controller/modules/stats/is/eis_interface.c
+@@ -14,10 +14,7 @@
+ #include "eis_interface.h"
+ #include "camera_dbg.h"
+ 
+-#if 0
+-#undef CDBG
+-#define CDBG ALOGE
+-#endif
++#include "stats_dbg.h"
+ 
+ #undef CDBG_HIGH
+ #if 1
+diff --git a/mm-camera2/media-controller/modules/stats/is/is_module.c b/mm-camera2/media-controller/modules/stats/is/is_module.c
+old mode 100644
+new mode 100755
+index 216773b..ae05c6e
+--- a/mm-camera2/media-controller/modules/stats/is/is_module.c
++++ b/mm-camera2/media-controller/modules/stats/is/is_module.c
+@@ -14,6 +14,9 @@
+ #endif
+ 
+ 
++#include "stats_dbg.h"
++
++
+ /** is_module_find_port
+  *    @data1: mct_port_t object
+  *    @data2: identity object to be checked
+diff --git a/mm-camera2/media-controller/modules/stats/is/is_port.c b/mm-camera2/media-controller/modules/stats/is/is_port.c
+old mode 100644
+new mode 100755
+index b191970..53bd0b6
+--- a/mm-camera2/media-controller/modules/stats/is/is_port.c
++++ b/mm-camera2/media-controller/modules/stats/is/is_port.c
+@@ -14,10 +14,14 @@
+ #include "aec.h"
+ #include "camera_dbg.h"
+ #include "c2dExt.h"
+-#include <cutils/properties.h>
+ /* This should be declared in sensor_lib.h */
+ void poke_gyro_sample(uint64_t t, int32_t gx, int32_t gy, int32_t gz);
+-
++#include "stats_dbg.h"
++#ifdef _ANDROID_
++#include <cutils/properties.h>
++#else
++#include "android_adapter.h"
++#endif
+ 
+ #if 0
+ #undef CDBG
+diff --git a/mm-camera2/media-controller/modules/stats/is/is_process.c b/mm-camera2/media-controller/modules/stats/is/is_process.c
+old mode 100644
+new mode 100755
+index 61750cf..9faeb50
+--- a/mm-camera2/media-controller/modules/stats/is/is_process.c
++++ b/mm-camera2/media-controller/modules/stats/is/is_process.c
+@@ -8,10 +8,7 @@
+ void poke_gyro_sample(uint64_t t, int32_t gx, int32_t gy, int32_t gz);
+ 
+ 
+-#if 0
+-#undef CDBG
+-#define CDBG ALOGE
+-#endif
++#include "stats_dbg.h"
+ 
+ 
+ /** is_process_is_initialize:
+diff --git a/mm-camera2/media-controller/modules/stats/is/is_set.c b/mm-camera2/media-controller/modules/stats/is/is_set.c
+old mode 100644
+new mode 100755
+index 40e308e..59e8767
+--- a/mm-camera2/media-controller/modules/stats/is/is_set.c
++++ b/mm-camera2/media-controller/modules/stats/is/is_set.c
+@@ -7,10 +7,7 @@
+ #include "is.h"
+ 
+ 
+-#if 0
+-#undef CDBG
+-#define CDBG ALOGE
+-#endif
++#include "stats_dbg.h"
+ 
+ 
+ /** is_set_parameters:
+diff --git a/mm-camera2/media-controller/modules/stats/is/is_thread.c b/mm-camera2/media-controller/modules/stats/is/is_thread.c
+old mode 100644
+new mode 100755
+index 79bb5e2..a08ad33
+--- a/mm-camera2/media-controller/modules/stats/is/is_thread.c
++++ b/mm-camera2/media-controller/modules/stats/is/is_thread.c
+@@ -8,7 +8,7 @@
+ #include "is_port.h"
+ #include "camera_dbg.h"
+ 
+-
++#include "stats_dbg.h"
+ #if 0
+ #undef CDBG
+ #define CDBG ALOGE
+diff --git a/mm-camera2/media-controller/modules/stats/q3a/aec/aec_port.c b/mm-camera2/media-controller/modules/stats/q3a/aec/aec_port.c
+old mode 100644
+new mode 100755
+index ed0023b..ba4a6e4
+--- a/mm-camera2/media-controller/modules/stats/q3a/aec/aec_port.c
++++ b/mm-camera2/media-controller/modules/stats/q3a/aec/aec_port.c
+@@ -9,7 +9,7 @@
+ #include <pthread.h>
+ #include "modules.h"
+ #include "stats_event.h"
+-
++#include "stats_dbg.h"
+ #ifdef  DBG_AEC_PORT
+ #undef  CDBG
+ #define CDBG CDBG_ERROR
+diff --git a/mm-camera2/media-controller/modules/stats/q3a/af/af.h b/mm-camera2/media-controller/modules/stats/q3a/af/af.h
+old mode 100644
+new mode 100755
+index e77dfa6..b6b4fba
+--- a/mm-camera2/media-controller/modules/stats/q3a/af/af.h
++++ b/mm-camera2/media-controller/modules/stats/q3a/af/af.h
+@@ -10,7 +10,7 @@
+ #include "q3a_stats.h"
+ #include "chromatix_common.h"
+ #include "af_tuning.h"
+-
++#include "stats_dbg.h"
+ /* TBD: Need to include proper header for this */
+ #undef  CDBG_ERROR
+ #define CDBG_ERROR ALOGE
+diff --git a/mm-camera2/media-controller/modules/stats/q3a/af/af_module.c b/mm-camera2/media-controller/modules/stats/q3a/af/af_module.c
+old mode 100644
+new mode 100755
+index 45a42da..d274b51
+--- a/mm-camera2/media-controller/modules/stats/q3a/af/af_module.c
++++ b/mm-camera2/media-controller/modules/stats/q3a/af/af_module.c
+@@ -7,7 +7,7 @@
+ #include "mct_pipeline.h"
+ #include "af_module.h"
+ #include "af_port.h"
+-
++#include "stats_dbg.h"
+ /* Every AF sink port ONLY corresponds to ONE session */
+ 
+ /** af_module_remove_port
+diff --git a/mm-camera2/media-controller/modules/stats/q3a/af/af_port.c b/mm-camera2/media-controller/modules/stats/q3a/af/af_port.c
+old mode 100644
+new mode 100755
+index 4c736e0..27a8fcc
+--- a/mm-camera2/media-controller/modules/stats/q3a/af/af_port.c
++++ b/mm-camera2/media-controller/modules/stats/q3a/af/af_port.c
+@@ -14,7 +14,7 @@
+ #include "mct_stream.h"
+ #include "mct_module.h"
+ #include "stats_event.h"
+-
++#include "stats_dbg.h"
+ #define USE_HAL_3    0
+ 
+ #ifdef DBG_AF_PORT
+@@ -2074,7 +2074,6 @@ static boolean af_port_handle_set_focus_manual_pos_evt(
+ {
+   boolean rc = TRUE;
+ 
+-  CDBG("%s: Set manual focus position: %ld", __func__, pos);
+   /* Update parameter message to be sent */
+   set_parm->type = AF_SET_PARAM_FOCUS_MANUAL_POSITION;
+   set_parm->u.af_manual_focus_info = *manual_pos_info;
+diff --git a/mm-camera2/media-controller/modules/stats/q3a/awb/awb_port.c b/mm-camera2/media-controller/modules/stats/q3a/awb/awb_port.c
+old mode 100644
+new mode 100755
+index dd2a080..67312c2
+--- a/mm-camera2/media-controller/modules/stats/q3a/awb/awb_port.c
++++ b/mm-camera2/media-controller/modules/stats/q3a/awb/awb_port.c
+@@ -12,7 +12,7 @@
+ #include "mct_stream.h"
+ #include "mct_module.h"
+ #include "modules.h"
+-
++#include "stats_dbg.h"
+ #if 0
+ #undef CDBG
+ #define CDBG CDBG_ERROR
+diff --git a/mm-camera2/media-controller/modules/stats/stats_dbg.h b/mm-camera2/media-controller/modules/stats/stats_dbg.h
+new file mode 100755
+index 0000000..3f67b41
+--- /dev/null
++++ b/mm-camera2/media-controller/modules/stats/stats_dbg.h
+@@ -0,0 +1,12 @@
++#ifndef STATS_DBG_H
++#define STATS_DBG_H
++
++
++#ifndef _ANDROID_
++#include <stdio.h>
++  #define ALOGE(fmt, args...) do { \
++          fprintf(stderr, fmt"\n", ##args); \
++        } while (0)
++#endif
++
++#endif
+diff --git a/mm-camera2/server-imaging/Makefile.am b/mm-camera2/server-imaging/Makefile.am
+new file mode 100644
+index 0000000..0b8b65a
+--- /dev/null
++++ b/mm-camera2/server-imaging/Makefile.am
+@@ -0,0 +1,43 @@
++# mm-qcamera-daemon
++bin_PROGRAMS = mm-qcamera-daemon
++
++mm_qcamera_daemon_CFLAGS = $(DEBUG_CFLAGS)
++mm_qcamera_daemon_CFLAGS += -DAMSS_VERSION=$(AMSS_VERSION)
++mm_qcamera_daemon_CFLAGS += -DMSM_CAMERA_GCC
++mm_qcamera_daemon_CFLAGS += -DLOGE=ALOGE
++
++mm_qcamera_daemon_CFLAGS += -I ../includes
++mm_qcamera_daemon_CFLAGS += -I ../../../camera-hal/QCamera2/stack/common/
++mm_qcamera_daemon_CFLAGS += -I ../../../kernel/include/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/bus/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/controller/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/object/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/includes/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/tools/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/event/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/pipeline/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/stream/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/module/
++mm_qcamera_daemon_CFLAGS += -I ../media-controller/mct/port/
++
++#LOCAL_C_INCLUDES+= \
++# $(LOCAL_PATH)/../../../../../../hardware/qcom/camera/QCamera2/stack/common
++#include $(LOCAL_PATH)/../../local_additional_dependency.mk
++
++#sources
++mm_qcamera_daemon_SOURCES = server.c
++mm_qcamera_daemon_SOURCES += server_process.c
++
++#LOCAL_SHARED_LIBRARIES:= libcutils liboemcamera libmmcamera2_stats_modules libmmcamera2_iface_modules libmmcamera2_isp_modules libmmcamera2_sensor_modules libmmcamera2_pproc_modules libmmcamera2_imglib_modules
++mm_qcamera_daemon_LDADD =  ../media-controller/mct/liboemcamera.la
++mm_qcamera_daemon_LDADD +=  ../media-controller/modules/stats/libmmcamera2_stats_modules.la
++mm_qcamera_daemon_LDADD +=  ../media-controller/modules/iface/libmmcamera2_iface_modules.la
++mm_qcamera_daemon_LDADD +=  ../media-controller/modules/isp/libmmcamera2_isp_modules.la
++mm_qcamera_daemon_LDADD +=  ../media-controller/modules/sensors/libmmcamera2_sensor_modules.la
++mm_qcamera_daemon_LDADD += ../media-controller/modules/pproc-new/libmmcamera2_pproc_modules.la
++mm_qcamera_daemon_LDADD += ../media-controller/modules/imglib/libmmcamera2_imglib_modules.la
++
++if USE_DLOG
++mm_qcamera_daemon_CFLAGS += -DUSE_DLOG @DLOG_CFLAGS@
++mm_qcamera_daemon_LDADD += @DLOG_LIBS@
++endif
+diff --git a/mm-camera2/server-imaging/server.c b/mm-camera2/server-imaging/server.c
+old mode 100644
+new mode 100755
+diff --git a/mm-camera2/server-imaging/server_process.c b/mm-camera2/server-imaging/server_process.c
+old mode 100644
+new mode 100755
+index f46c2f3..698e5bb
+--- a/mm-camera2/server-imaging/server_process.c
++++ b/mm-camera2/server-imaging/server_process.c
+@@ -8,8 +8,10 @@
+  * Qualcomm Technologies Proprietary and Confidential.
+  */
+ 
+-#include <sys/un.h>
+-
++#include <linux/un.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <unistd.h>
+ #include "server_process.h"
+ #include "mct_controller.h"
+ #include "mct_module.h"
+@@ -21,13 +23,18 @@
+ #define CDBG ALOGE
+ #endif
+ 
++#define LOG_MSG(fmt, args...) do { fprintf(stderr, fmt, ##args); } while(0)
++#define ALOGV LOG_MSG
++#define ALOGE LOG_MSG
++
++
+ static mct_module_init_name_t modules_list[] = {
+   {"sensor", module_sensor_init,   module_sensor_deinit},
+   {"iface",  module_iface_init,   module_iface_deinit},
+   {"isp",    module_isp_init,      module_isp_deinit},
+   {"stats",  stats_module_init,    stats_module_deinit},
+   {"pproc",  pproc_module_init,    pproc_module_deinit},
+-  {"imglib", module_imglib_init, module_imglib_deinit},
++//  {"imglib", module_imglib_init, module_imglib_deinit},
+ };
+ 
+ static mct_list_t *modules = NULL;
+@@ -94,7 +101,20 @@ static boolean server_process_bind_hal_ds(int session,
+   memset(&addr, 0, sizeof(struct sockaddr_un));
+   addr.sun_family = AF_UNIX;
+ 
+-  snprintf(addr.sun_path, UNIX_PATH_MAX, "/data/cam_socket%d", session);
++
++  CDBG_ERROR("socket path = %s", CAM_SOCKET_PATH);
++
++  /* create socket directory if it does not exist */
++  struct stat st = {0};
++  if (stat(CAM_SOCKET_DIR , &st) == -1) {
++    CDBG_ERROR("creating directory");
++    if (mkdir(CAM_SOCKET_DIR, 0766) < 0) {
++      CDBG_ERROR("mkdir failed for %s", CAM_SOCKET_DIR);
++      return FALSE;
++    }
++  }
++
++  snprintf(addr.sun_path, UNIX_PATH_MAX, CAM_SOCKET_PATH"%d", session);
+ 
+   /* remove the socket path if it already exists, otherwise bind might fail */
+   unlink(addr.sun_path);
+@@ -159,6 +179,7 @@ serv_proc_ret_t server_process_hal_event(struct v4l2_event *event)
+       ret.new_session_info.mct_msg_rd_fd = pipe_fd[0];
+       ret.new_session_info.mct_msg_wt_fd = pipe_fd[1];
+     } else {
++      CDBG_ERROR("%s:%d, failed", __func__, __LINE__);
+       goto error_return;
+     }
+ 
+@@ -166,6 +187,7 @@ serv_proc_ret_t server_process_hal_event(struct v4l2_event *event)
+           &(ret.new_session_info.hal_ds_fd)) == FALSE) {
+       close(pipe_fd[0]);
+       close(pipe_fd[1]);
++      CDBG_ERROR("%s:%d, failed", __func__, __LINE__);
+       goto error_return;
+     }
+ 
+@@ -176,6 +198,7 @@ serv_proc_ret_t server_process_hal_event(struct v4l2_event *event)
+     } else {
+       close(pipe_fd[0]);
+       close(pipe_fd[1]);
++      CDBG_ERROR("%s:%d, failed", __func__, __LINE__);
+       goto error_return;
+     }
+   } /* case MSM_CAMERA_NEW_SESSION */
+@@ -186,6 +209,7 @@ serv_proc_ret_t server_process_hal_event(struct v4l2_event *event)
+     ret.ret_to_hal.ret = FALSE;
+ 
+     if (mct_controller_destroy(data->session_id) == FALSE) {
++      CDBG_ERROR("%s:%d, failed", __func__, __LINE__);
+       goto error_return;
+     } else {
+       goto process_done;
+@@ -201,6 +225,7 @@ serv_proc_ret_t server_process_hal_event(struct v4l2_event *event)
+ 
+   if (mct_controller_proc_serv_msg(&serv_msg) == FALSE) {
+     ret.result = RESULT_FAILURE;
++    CDBG_ERROR("%s:%d, failed", __func__, __LINE__);
+     goto error_return;
+   }
+ 
+-- 
+1.8.2.1
+

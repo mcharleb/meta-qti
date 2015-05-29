@@ -1,0 +1,315 @@
+From 8134e9b676c2d2cae57a2cd6bc9ed71125f90b89 Mon Sep 17 00:00:00 2001
+From: Suraj Swami <sswami@qti.qualcomm.com>
+Date: Wed, 22 Apr 2015 18:18:25 -0700
+Subject: [PATCH] ATL-2643 db874: Merge (INCREASE_NUMBER_BUFFER instead of
+ just ping pong) feature from CONST to DB8074
+
+---
+ src/diag_lsm.c |  158 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 153 insertions(+), 5 deletions(-)
+
+diff --git a/src/diag_lsm.c b/src/diag_lsm.c
+index 1c2a670..86729fb 100644
+--- a/src/diag_lsm.c
++++ b/src/diag_lsm.c
+@@ -172,6 +172,8 @@ static char *wl_name;
+ #define SYNC_EVENT_DIAG_LSM_MASK_IDX 1
+ #define READ_BUF_SIZE 100000
+ #define DISK_BUF_SIZE 1024*140
++#define INCREASE_NUM_BUFFER
++#define NUMBER_OF_BUFFERS 20
+ #define DISK_FLUSH_THRESHOLD  1024*128
+ 
+ #define FILE_LIST_NAME_SIZE 30
+@@ -215,7 +217,12 @@ int rename_file_names = 0;	/* Rename file name on close to current time */
+ int rename_dir_name = 0;	/* Rename directory name to current time when ODL is halted */
+ 
+ /* Static array for workaround */
+-static unsigned char static_buffer[6][DISK_BUF_SIZE];
++#ifdef INCREASE_NUM_BUFFER
++ /* To my guess, the above number six below was obtained by 2 * number of proc (NUM_PROC : hardcoded to 3) they would like to create static buffer*/
++   static unsigned char static_buffer[NUMBER_OF_BUFFERS * 3 ][DISK_BUF_SIZE]; 
++#else
++    static unsigned char static_buffer[6][DISK_BUF_SIZE];
++#endif /* INCREASE_NUM_BUFFER */
+ 
+ /* Externalized functions */
+ /*===========================================================================
+@@ -458,6 +465,29 @@ unsigned char *pool0_buffers[NUM_PROC];
+ unsigned char *pool1_buffers[NUM_PROC];
+ enum status buffer_init[NUM_PROC];
+ int token_list[NUM_PROC] = {0, -1, -2, -3, -4, -5, -6, -7, -8, -9};
++#ifdef INCREASE_NUM_BUFFER
++	struct buffer_pool pools[NUMBER_OF_BUFFERS];
++
++/*=========================================================================
++ * FUNCTION initialize_buffer_pool
++ * DESCRIPTION
++ *    Initializes buffer pool to store data read from /dev/diag     
++ * RETURN VALUE
++ *    NONE
++ * SIDE EFFECTS
++ *    NONE
++ *========================================================================*/
++
++	void initialize_buffer_pool()
++	{
++		int i = 0;
++		for ( i = 0 ; i < NUMBER_OF_BUFFERS ; i++ )
++		{
++			pools[i].free		=	1;
++			pools[i].data_ready	=	0;
++		}
++	}
++#else
+ 
+ struct buffer_pool pools[] = {
+ 	[0] = {
+@@ -470,6 +500,7 @@ struct buffer_pool pools[] = {
+ 	},
+ 
+ };
++#endif /* INCREASE_NUM_BUFFER */
+ 
+ int diag_get_max_channels(void)
+ {
+@@ -805,6 +836,9 @@ SIDE EFFECTS
+ ===========================================================================*/
+ void flush_buffer(int signal)
+ {
++#ifdef INCREASE_NUM_BUFFER
++	int i;
++#endif
+ 	int status = 0;
+ 	int logging_in_nrt_mode = 0;
+ 	DIAG_LOGE("diag: Signal received\n");
+@@ -851,9 +885,16 @@ void flush_buffer(int signal)
+ 		pthread_kill(read_thread_hdl, SIGUSR2);
+ 	}
+ 
++/* flush_log is incremented in the fuction : CreateWaitThread */
++#ifdef INCREASE_NUM_BUFFER
++	while(flush_log < (NUMBER_OF_BUFFERS + 1)) {
++		sleep(1);
++	}
++#else
+ 	while(flush_log < 3) {
+ 		sleep(1);
+ 	}
++#endif
+ 	pthread_mutex_lock(&stop_mutex);
+ 	flush_log = 0;
+ 	/* Clean up */
+@@ -861,9 +902,17 @@ void flush_buffer(int signal)
+ 	in_read = 0;
+ 	curr_write = curr_read = 0;
+ 
++#ifdef INCREASE_NUM_BUFFER
++	for ( i = 0 ; i < NUMBER_OF_BUFFERS ; i++ )
++	{
++	  pools[i].free = 1;
++	  pools[i].data_ready = 0;	
++	}
++#else
+ 	pools[0].free =  pools[1].free = 1;
+ 	pools[0].data_ready = pools[1].data_ready = 0;
+ 
++#endif	
+ 	/* Signal received destroy the mutexes and stop the application */
+ 	if (signal) {
+ 		DIAG_LOGE("diag: Sending cond to CreateWaitThread\n");
+@@ -878,6 +927,16 @@ void flush_buffer(int signal)
+ 			DIAG_LOGE("diag: Sending empty mask QSC\n");
+ 			send_empty_mask(QSC);
+ 		}
++#ifdef INCREASE_NUM_BUFFER
++	for ( i = 0 ; i < NUMBER_OF_BUFFERS ; i++)		
++	{
++		pthread_mutex_destroy(&(pools[i].write_mutex));
++		pthread_cond_destroy(&(pools[i].write_cond));
++		pthread_mutex_destroy(&(pools[i].read_mutex));
++		pthread_cond_destroy(&(pools[i].read_cond));
++    }
++		
++#else
+ 		pthread_mutex_destroy(&(pools[0].write_mutex));
+ 		pthread_cond_destroy(&(pools[0].write_cond));
+ 		pthread_mutex_destroy(&(pools[0].read_mutex));
+@@ -887,6 +946,7 @@ void flush_buffer(int signal)
+ 		pthread_mutex_destroy(&(pools[1].read_mutex));
+ 		pthread_cond_destroy(&(pools[1].read_cond));
+ 
++#endif
+ 		/* Release the wakelock if held */
+ 		if (diag_is_wakelock_init()) {
+ 			diag_wakelock_release();
+@@ -1120,17 +1180,35 @@ static void process_diag_payload(void)
+ 				pools[curr_read].data_ready = 1;
+ 				pools[curr_read].free = 0;
+ 				for (z = 0; z < NUM_PROC; z++) {
++				#ifdef INCREASE_NUM_BUFFER	
++					pools[curr_read].buffer_ptr[z]  = &(static_buffer[curr_read * 3 + z ]) ;
++				#else	
+ 					if (curr_read)
+-					pools[curr_read].buffer_ptr[z] =
+-							pool1_buffers[z];
++					pools[curr_read].buffer_ptr[z]  = pool1_buffers[z];
+ 					else
+ 					pools[curr_read].buffer_ptr[z] =
+ 							pool0_buffers[z];
++			    #endif /*INCREASE_NUM_BUFFER	*/	
++
+ 				}
+ 
+ 				pthread_cond_signal(&pools[curr_read].write_cond);
+ 				pthread_mutex_unlock(&pools[curr_read].write_mutex);
+-				curr_read = !curr_read;
++				#ifdef INCREASE_NUM_BUFFER
++					/* Implement a circular queue instead of ping pong buffer*/
++					curr_read++;
++					if( curr_read >= NUMBER_OF_BUFFERS)
++					{
++						curr_read = 0;							
++					}
++					
++				#else
++			    	curr_read = !curr_read;
++				#endif
++				
++				#ifdef EXTRA_DEBUGGING_PRINTS
++					DIAG_LOGE("DEBUG : Increment R curr_write = %d , curr_read = %d \n", curr_write , curr_read );		
++				#endif  /* EXTRA_DEBUGGING_PRINTS */	
+ 				return;
+ 			}
+ 			pthread_mutex_unlock(&pools[curr_read].write_mutex);
+@@ -1347,12 +1425,16 @@ void *WriteToDisk (void *ptr)
+ 		for (z = 0; z < NUM_PROC; z++) {
+ 			if (buffer_init[z] == READY) {
+ 				pools[curr_write].bytes_in_buff[z] = 0;
++			#ifdef INCREASE_NUM_BUFFER	
++				pools[curr_write].buffer_ptr[z] = static_buffer[curr_write *3 + z ];
++			#else
+ 				if(curr_write)
+ 					pools[curr_write].buffer_ptr[z] =
+ 							pool1_buffers[z];
+ 				else
+ 					pools[curr_write].buffer_ptr[z] =
+ 							pool0_buffers[z];
++			#endif 
+ 			}
+ 		}
+ 
+@@ -1381,7 +1463,23 @@ void *WriteToDisk (void *ptr)
+ 		pthread_mutex_unlock(&(pools[curr_write].read_mutex));
+ 		pthread_mutex_unlock(&(pools[curr_write].write_mutex));
+ 
++		#ifdef INCREASE_NUM_BUFFER
++		    /* Implement a circular queue instead of ping pong buffer */
++			curr_write++;
++			if( curr_write >= NUMBER_OF_BUFFERS )
++			{
++				curr_write = 0;
++				
++			}
++			
++			
++		#else
+ 		curr_write = !curr_write;
++		#endif
++		
++		#ifdef EXTRA_DEBUGGING_PRINTS
++		    DIAG_LOGE("DEBUG : Increment W curr_write = %d , curr_read = %d \n", curr_write , curr_read );		
++		#endif  /*  EXTRA_DEBUGGING_PRINTS	*/
+ 	}
+ 	return NULL;
+ }
+@@ -2931,6 +3029,33 @@ boolean Diag_LSM_Init (byte* pIEnv)
+ 	}
+ 
+ #ifndef FEATURE_WINMOB
++#ifdef INCREASE_NUM_BUFFER
++
++    write_in_progress = 0;
++	in_read = 0;
++	
++    curr_write = 0 ;
++    curr_read = 0; 
++	/* $SSC Init function for buffer pool over here	 */
++	initialize_buffer_pool();
++	
++	for ( i = 0 ; i < NUMBER_OF_BUFFERS ; i++)
++	{
++		pools[i].free = 1;
++		pools[i].data_ready = 0;
++	}
++
++
++	for ( i = 0; i < NUMBER_OF_BUFFERS ; i++)
++	{
++		pthread_mutex_init(&(pools[i].write_mutex), NULL);
++		pthread_cond_init(&(pools[i].write_cond), NULL);
++		pthread_mutex_init(&(pools[i].read_mutex), NULL);
++		pthread_cond_init(&(pools[i].read_cond), NULL);		
++	}
++
++
++#else
+       pthread_mutex_init(&(pools[0].write_mutex), NULL);
+       pthread_cond_init(&(pools[0].write_cond), NULL);
+       pthread_mutex_init(&(pools[0].read_mutex), NULL);
+@@ -2941,6 +3066,7 @@ boolean Diag_LSM_Init (byte* pIEnv)
+       pthread_cond_init(&(pools[1].read_cond), NULL);
+       pthread_mutex_init(&stop_mutex, NULL);
+       pthread_cond_init(&stop_cond, NULL);
++#endif
+ 
+       /* Allocate initial buffer of MSM data only */
+ #if 0
+@@ -2957,6 +3083,19 @@ boolean Diag_LSM_Init (byte* pIEnv)
+ #endif
+       /* Manually doing the initialisation as dynamic alloc is not working */
+ 
++#ifdef INCREASE_NUM_BUFFER
++     
++	  for (i =0 ; i < NUMBER_OF_BUFFERS ; i++) {
++
++          pools[i].buffer_ptr[0] = static_buffer[i*3 + 0];
++		  pools[i].buffer_ptr[1] = pool0_buffers[i*3 + 1];
++		  pools[i].buffer_ptr[2] = pool0_buffers[i*3 + 2];
++
++		  pools[i].bytes_in_buff[0] = pools[i].bytes_in_buff[1] = pools[i].bytes_in_buff[2] = 0;
++		  buffer_init[0] = READY;
++		  
++	  }
++#else
+       pool0_buffers[0] = static_buffer[0];
+       pool0_buffers[1] = static_buffer[2];
+       pool0_buffers[2] = static_buffer[4];
+@@ -2977,6 +3116,7 @@ boolean Diag_LSM_Init (byte* pIEnv)
+       pools[0].buffer_ptr[2] = pool0_buffers[2];
+       pools[1].buffer_ptr[2] = pool1_buffers[2];
+ 
++#endif /* INCREASE_NUM_BUFFER */
+       /* Block SIGUSR2 for the main application */
+       if ((sigemptyset(&set) == -1) || (sigaddset(&set, SIGUSR2) == -1))
+ 	      DIAG_LOGE("diag: Failed to initialize block set\n");
+@@ -3170,7 +3310,15 @@ static void *CreateWaitThread(void* param)
+ 					&pools[curr_read].write_cond);
+ 			pthread_mutex_unlock(
+ 					&pools[curr_read].write_mutex);
+-			curr_read = !curr_read;
++			#ifdef INCREASE_NUM_BUFFER
++				curr_read++;
++				if (curr_read >= NUMBER_OF_BUFFERS )
++				{
++					curr_read = 0;	
++				}
++			#else
++			    curr_read = !curr_read;
++            #endif 
+ 			/* As cleanup started now wait for cleanup to
+ 			 * complete.
+ 			 */
+-- 
+1.7.9.5
+

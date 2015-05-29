@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 
 PV = "1.0"
 PR = "r0"
-SRC_URI = "file://0001-camera-hal-compilation-changes-for-QR-Linux.patch"
+
 PACKAGES = "${PN}"
 
 INSANE_SKIP_${PN} += "installed-vs-shipped"
@@ -12,8 +12,7 @@ INSANE_SKIP_${PN} += "installed-vs-shipped"
 do_fetch_append() {
     import shutil
     import os
-
-    src = d.getVar('COREBASE', True)+'/../camera-hal'
+    src = d.getVar('COREBASE', True)+'/../adreno200'
     s = d.getVar('S', True)
     if os.path.exists(s):
         shutil.rmtree(s)
@@ -21,6 +20,7 @@ do_fetch_append() {
 }
 
 do_install() {
-   install -d ${D}/usr/include/camera-hal
-   cp -a ${S}/QCamera2/stack/common/*.h ${D}/usr/include/camera-hal
+   install -d ${D}/usr/include/adreno200
+   cp -a ${S}/include/private/C2D/*.h ${D}/usr/include/adreno200
+   cp -a ${S}/c2d30/include/*.h ${D}/usr/include/adreno200
 }

@@ -21,8 +21,7 @@ EXTRA_OECONF = "--with-glib \
      	        QMIF_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/qmi-framework \
 		GLIB_CFLAGS='-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/glib-2.0 -I${PKG_CONFIG_SYSROOT_DIR}/usr/lib/glib-2.0/include' \
 		"
-EXTRA_OECONF += "${@base_conditional('MACHINE', 'db8074', '--enable-target-msm8974=yes', '', d)}"
-
+EXTRA_OECONF += "--enable-target-msm8974=yes"
 
 INITSCRIPT_NAME = "thermal-engine"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 60 0 1 6 ."

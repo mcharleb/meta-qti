@@ -11,6 +11,7 @@ SRC_URI_append = " file://0001-ATL-1838-add-Makefile.am-configure.ac-for-adsprpc
 SRC_URI_append = " file://0002-ATL-1838-include-stdint.h-to-resolve-uint32_t.patch"
 SRC_URI_append = " file://0003-ATL-1838-conditionally-include-android-header-note-L.patch"
 SRC_URI_append = " file://0004-fix-compilation-error-with-undefined-UINT32_MAX.patch"
+SRC_URI_append = " file://0005-use-default-ADSP_LIBRARY_PATH-if-envn-varaible-is-not-set.patch"
 SRC_URI_append = " file://adsprpcd.conf"
 
 inherit autotools qti-proprietary-binary
@@ -18,10 +19,11 @@ inherit autotools qti-proprietary-binary
 # Express dependency on kernel headers and pass header path to configure
 DEPENDS += "virtual/kernel"
 EXTRA_OECONF_append = " --with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include"
-RDEPENDS_${PN} += "kernel-module-adsprpc"
 PACKAGES = "${PN}"
-INSANE_SKIP_${PN} = "installed-vs-shipped"
+INSANE_SKIP_${PN} += "installed-vs-shipped"
+INSANE_SKIP_${PN} += "dev-so"
 FILES_${PN} += "/etc/init/adsprpcd.conf"
+FILES_${PN} += "/usr/lib/*.so"
 
 # packages created automatically by bitbake based on what 'make install' installs
 # just had to modify makefile to install the necessary headers into ${includedir}

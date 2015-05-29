@@ -5,11 +5,15 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
+SRC_URI = "file://qrl-mac-fw-inc.sh"
+
 PACKAGES = "${PN}"
 
 FILES_${PN} += " \
-    ${base_libdir}/firmware/ath6k/AR6004/hw3.0/*.bin \
+    /usr/local/qr-linux/*sh \
     "
+
+INSANE_SKIP_${PN} = "installed-vs-shipped"
 
 do_fetch_append() {
     import shutil
@@ -27,4 +31,7 @@ do_install_append() {
    install -m 0644 ${S}/fw.ram.bin ${D}/lib/firmware/ath6k/AR6004/hw3.0/fw.ram.bin
    install -m 0644 ${S}/otp.bin ${D}/lib/firmware/ath6k/AR6004/hw3.0/otp.bin
    install -m 0644 ${S}/utf.bin ${D}/lib/firmware/ath6k/AR6004/hw3.0/utf.bin
+   dest=/usr/local/qr-linux
+   install -d ${D}${dest}
+   install -m 644 ${WORKDIR}/qrl-mac-fw-inc.sh ${D}${dest}
 }

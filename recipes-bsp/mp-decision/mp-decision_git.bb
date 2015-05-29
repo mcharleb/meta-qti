@@ -17,7 +17,7 @@ inherit autotools
 inherit qti-proprietary-binary 
 
 
-EXTRA_OECONF_append = "${@base_conditional('MACHINE', 'db8074', ' --enable-target-msm8974=yes', '', d)}"
+EXTRA_OECONF_append = " --enable-target-msm8974=yes"
 #EXTRA_OECONF_append = " --with-dlog"
 
 FILES_${PN} += "\
