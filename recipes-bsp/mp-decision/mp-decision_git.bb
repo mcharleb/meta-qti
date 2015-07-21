@@ -7,7 +7,6 @@ PV = "1.0"
 PR = "r0"
 
 SRC_URI += "file://mpdecision.conf"
-SRC_URI += "file://0001-add-makefile-and-configure-file-compilation-fix.patch"
 
 PACKAGES = "${PN}"
 

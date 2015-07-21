@@ -6,18 +6,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
-SRC_URI_append_som8064 = " file://0001-som8064-makefiles-for-linux.patch"
-SRC_URI_append_som8064 = " file://0002-som8064-baseline-for-linux.patch"
-SRC_URI_append_som8064 = " file://0003-som8064-include-stdint-h.patch"
-SRC_URI_append_som8064-revB = " file://0001-som8064-makefiles-for-linux.patch"
-SRC_URI_append_som8064-revB = " file://0002-som8064-baseline-for-linux.patch"
-SRC_URI_append_som8064-revB = " file://0003-som8064-include-stdint-h.patch"
-SRC_URI_append_som8064-const = " file://0001-som8064-makefiles-for-linux.patch"
-SRC_URI_append_som8064-const = " file://0002-som8064-baseline-for-linux.patch"
-SRC_URI_append_som8064-const = " file://0003-som8064-include-stdint-h.patch"
-
-SRC_URI_append_ifc6410 = " file://0001-ifc6410-makefiles-for-linux.patch"
-SRC_URI_append_ifc6410 = " file://0002-ifc6410-baseline-for-linux.patch"
 
 PACKAGES = "${PN}"
 

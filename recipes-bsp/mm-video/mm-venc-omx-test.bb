@@ -2,8 +2,6 @@ DESCRIPTION = "Video encoder command line application"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
-SRC_URI = "file://mm-venc-omx-test_compilation.patch"
-
 PACKAGES = "${PN}"
 
 PV = "1.0"

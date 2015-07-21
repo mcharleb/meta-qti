@@ -9,8 +9,6 @@ PV = "1.0"
 PR = "r0"
 
 SRC_URI += "file://thermal-engine.conf"
-SRC_URI += "file://0001-fix-compilation-on-db8074-baseline.patch"
-
 
 PACKAGES = "${PN}"
 

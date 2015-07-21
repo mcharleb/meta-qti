@@ -8,8 +8,6 @@ DEPENDS += "common glib-2.0 android-tools"
 PV = "1.0"
 PR = "r0"
 
-SRC_URI += "file://0001-diag_mdlog-text-rotate-logging-feature-ported.patch"
-SRC_URI += "file://0002-ATL-2643-db874-Merge-INCREASE_NUMBER_BUFFER-feature-from-const.patch"
 SRC_URI += "file://diag.conf"
 SRC_URI += "file://diag_mdlog.conf"
 SRC_URI += "file://diag.override"

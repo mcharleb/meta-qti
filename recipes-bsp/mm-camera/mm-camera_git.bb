@@ -5,8 +5,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 
 PV = "1.0"
 PR = "r0"
-SRC_URI = "file://0001-mm-camera-compilation-for-linux-on-db8074.patch"
-SRC_URI += "file://0002-mm-camera-remove-excessive-logging.patch"
 
 SRC_URI += "file://mm-qcamera.conf"
 
@@ -19,7 +17,7 @@ DEPENDS += "glib-2.0"
 DEPENDS += "camera-hal-headers"
 DEPENDS += "sensors-headers"
 DEPENDS += "qmi-framework"
-DEPENDS += "adreno200-headers"
+DEPENDS += "adreno200-prebuilt"
 DEPENDS += "mm-camera-core-prebuilt"
 DEPENDS += "mm-camera-lib-prebuilt"
 DEPENDS += "android-tools"

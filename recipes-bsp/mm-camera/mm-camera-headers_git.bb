@@ -5,7 +5,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 
 PV = "1.0"
 PR = "r0"
-SRC_URI = "file://0001-mm-camera-compilation-for-linux-on-db8074.patch"
 
 PACKAGES = "${PN}"
 

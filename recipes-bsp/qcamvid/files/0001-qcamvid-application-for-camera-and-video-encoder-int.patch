@@ -1,0 +1,900 @@
+From 8f9136c046e53ff9dac1cb1ee320f29bd9694c45 Mon Sep 17 00:00:00 2001
+From: Punit Soni <punits@qti.qualcomm.com>
+Date: Tue, 16 Jun 2015 17:07:48 -0700
+Subject: [PATCH] qcamvid: application for camera and video encoder integration
+
+Change-Id: I2e98ba6f1d82e8d1f60055c1fb5c12953c6d5a74
+---
+ Makefile.am          |   3 +
+ configure.ac         |  31 +++++++
+ src/Makefile.am      |  12 +++
+ src/camerasource.cpp | 252 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/camerasource.h   |  71 +++++++++++++++
+ src/main.cpp         | 116 ++++++++++++++++++++++++
+ src/qcamvid.cpp      | 237 ++++++++++++++++++++++++++++++++++++++++++++++++
+ src/qcamvid.h        |  55 +++++++++++
+ src/qcamvid_log.h    |  39 ++++++++
+ 9 files changed, 816 insertions(+)
+ create mode 100644 Makefile.am
+ create mode 100644 configure.ac
+ create mode 100644 src/Makefile.am
+ create mode 100644 src/camerasource.cpp
+ create mode 100644 src/camerasource.h
+ create mode 100644 src/main.cpp
+ create mode 100644 src/qcamvid.cpp
+ create mode 100644 src/qcamvid.h
+ create mode 100644 src/qcamvid_log.h
+
+diff --git a/Makefile.am b/Makefile.am
+new file mode 100644
+index 0000000..f8238b2
+--- /dev/null
++++ b/Makefile.am
+@@ -0,0 +1,3 @@
++ACLOCAL_AMFLAGS = -I m4
++
++SUBDIRS = src
+diff --git a/configure.ac b/configure.ac
+new file mode 100644
+index 0000000..dcdeb82
+--- /dev/null
++++ b/configure.ac
+@@ -0,0 +1,31 @@
++AC_PREREQ(2.61)
++AC_INIT([qcamvid],1.0.0)
++
++AM_INIT_AUTOMAKE([-Wall -Werror gnu foreign subdir-objects])
++AM_MAINTAINER_MODE
++
++AC_CONFIG_HEADER([config.h])
++AC_CONFIG_MACRO_DIR([m4])
++
++AC_ARG_WITH([sanitized-headers],
++    [AS_HELP_STRING([--with-sanitized-headers=DIR],
++    [location of the sanitized Linux headers])],
++    [CPPFLAGS="$CPPFLAGS -I$withval"; CFLAGS="$CFLAGS -I$withval"])
++
++# Checks for programs.
++AC_PROG_CC
++AC_PROG_CPP
++AC_PROG_CXX
++AM_PROG_CC_C_O
++AM_PROG_AR
++AC_PROG_LIBTOOL
++AC_PROG_AWK
++AC_PROG_INSTALL
++AC_PROG_LN_S
++AC_PROG_MAKE_SET
++
++AC_CONFIG_FILES([
++  Makefile \
++  src/Makefile
++])
++AC_OUTPUT
+diff --git a/src/Makefile.am b/src/Makefile.am
+new file mode 100644
+index 0000000..2e62440
+--- /dev/null
++++ b/src/Makefile.am
+@@ -0,0 +1,12 @@
++# g++ flags
++AM_CXXFLAGS  = -std=c++11
++AM_CXXFLAGS += -Wall -Werror
++AM_CXXFLAGS += -Wno-format-extra-args
++
++c_sources  = main.cpp
++c_sources += qcamvid.cpp
++c_sources += camerasource.cpp
++
++bin_PROGRAMS    = qcamvid
++qcamvid_SOURCES = $(c_sources)
++qcamvid_LDADD   = -lqcam -lvenc_test
+diff --git a/src/camerasource.cpp b/src/camerasource.cpp
+new file mode 100644
+index 0000000..9cdbc9b
+--- /dev/null
++++ b/src/camerasource.cpp
+@@ -0,0 +1,252 @@
++#include <media/msm_media_info.h>
++#include <unistd.h>
++#include <cstring>
++#include <cstdlib>
++
++#include "camerasource.h"
++#include "qcamvid_log.h"
++
++using namespace qcamvid;
++
++/* frame interval for printing FPS values */
++const int DEBUG_FPS_INTERVAL = 30;
++
++/* microseconds per second */
++const float USEC_PER_SEC = 1000000.0f;
++
++/* Size in bytes for YUV420 image. Y Plane : width x height,
++   UV plane : width x height/2 */
++static inline uint32_t YUV420_BUF_SIZE(uint32_t w, uint32_t h)
++{
++    return w * h * 3/2;
++}
++
++CameraSource::~CameraSource()
++{
++    if (mCamHandle != NULL) {
++        qcamlib_destroy(mCamHandle);
++    }
++}
++
++/**
++ * @brief callback funtion registered with qcamlib for receiving
++ *        video frames
++ *
++ * @param frame
++ */
++void cameraFrameCb(qcamlib_cb_data_t frame)
++{
++    CameraSource* src = (CameraSource*)frame.userdata;
++    if (src == NULL) {
++        QCAM_ERR("failed, src=NULL");
++        return;
++    }
++    src->frameCb(frame);
++}
++
++/**
++ * @brief Initialize CameraSource object
++ *
++ * @return int
++ */
++int CameraSource::init()
++{
++    int rc;
++    mCamHandle = qcamlib_create();
++    if (mCamHandle == NULL) {
++        QCAM_ERR("failed");
++        return -1;
++    }
++    qcamlib_set_cb_userdata(mCamHandle, this);
++    rc = qcamlib_register_video_cb(mCamHandle, cameraFrameCb);
++    if (rc != 0) {
++        QCAM_ERR("failed");
++        qcamlib_destroy(mCamHandle);
++        mCamHandle = NULL;
++        return -1;
++    }
++    mFrameInfo = qcamlib_get_frame_info(mCamHandle, QCAMLIB_STREAM_VIDEO);
++    mConfig.width = mFrameInfo.width;
++    mConfig.height = mFrameInfo.height;
++    QCAM_INFO("default dim = %dx%d", mConfig.width, mConfig.height);
++    return 0;
++}
++
++/**
++ * @brief retrieve buffer from the queue, wait until it becomes
++ *  available.
++ * @return OMX_BUFFERHEADERTYPE*
++ *  pointer to the OMX buffer data structure
++ */
++OMX_BUFFERHEADERTYPE* CameraSource::getBuf()
++{
++    OMX_BUFFERHEADERTYPE *buffer;
++    unique_lock<mutex> lk(mBufQueueMutex);
++    /* Wait on the condition variable, while the buffer queue is empty.
++       wait() will return when the client enques an empty buffer into
++       the queue or a spurious wake-up happens. while() loop is needed to
++       take care of spurious wake-up case */
++    while (mBufQueue.empty() == true) {
++        QCAM_DBG("waiting for buffer");
++        mIsWaiting = true;
++        mBufQueueCv.wait(lk);
++        mIsWaiting = false;
++    }
++    buffer = mBufQueue.front();
++    mBufQueue.pop();
++    return buffer;
++}
++
++/**
++ * @brief receive new frame from camera library, copy the image
++ *        data to OMX buffer and deliver buffer to the listener
++ *
++ * @param frame qcamlib frame data strcture
++ */
++void CameraSource::frameCb(const qcamlib_cb_data_t &frame)
++{
++    OMX_BUFFERHEADERTYPE* buffer;
++    microseconds timeCurrent;
++
++    if (mLastFrameDelivered == true) {
++        return;
++    }
++
++    mFrameCount++;
++
++    /* current frame timestamp in microseconds */
++    timeCurrent = duration_cast<microseconds>(seconds(frame.ts.tv_sec) +
++                                              nanoseconds(frame.ts.tv_nsec));
++    /* maintain a running average for time difference between two frames
++       to keep track of the FPS */
++    mTimeDiff = microseconds((mTimeDiff.count() +
++                           (timeCurrent.count() - mTimePrevious.count())) / 2);
++    mTimePrevious = timeCurrent;
++
++    mCurFps = USEC_PER_SEC / mTimeDiff.count();
++    if (mFrameCount % DEBUG_FPS_INTERVAL == 0) {
++        QCAM_DBG("video FPS = %.2f", mCurFps);
++    }
++
++    /* get a buffer from the queue */
++    buffer = getBuf();
++    if (buffer == NULL) {
++        QCAM_DBG("could not get buffer, dropping frame");
++        return;
++    }
++    memcpy(buffer->pBuffer, frame.buffer, mFrameInfo.buf_size);
++
++    buffer->nFilledLen = YUV420_BUF_SIZE(mConfig.width, mConfig.height);
++    /* buffer timestamp in microseconds */
++    buffer->nTimeStamp = (OMX_TICKS) timeCurrent.count();
++    buffer->nOffset = 0;
++    buffer->nFlags = 0;
++
++    /* if stop is requested, add EOS flag in the frame */
++    if (mStopRequested) {
++        buffer->nFlags = OMX_BUFFERFLAG_EOS;
++        mLastFrameDelivered = true;
++    }
++
++    /* deliver the buffer */
++    if (mListener) {
++        mListener->cameraDataCb(buffer);
++    }
++
++    /* notify the stop thread, when last frame is delivered */
++    if (mLastFrameDelivered == true) {
++        unique_lock<mutex> lk(mLastFrameMutex);
++        mLastFrameCv.notify_one();
++    }
++}
++
++/**
++ * @brief configure CameraSource
++ *
++ *
++ * @param config
++ *
++ * @return int
++ */
++int CameraSource::configure(const CameraConfig &config)
++{
++    int rc;
++    // TODO: add validation code
++    mConfig = config;
++    if (!mCamHandle) {
++        QCAM_ERR("failed mCamHandle=NULL");
++        return -1;
++    }
++    QCAM_DBG("dim %dx%d", mConfig.width, mConfig.height);
++    qcamlib_config_t qcam_cfg = {};
++    qcam_cfg.video_dim.width = mConfig.width;
++    qcam_cfg.video_dim.height = mConfig.height;
++    rc = qcamlib_configure(mCamHandle, qcam_cfg);
++    if (rc != 0) {
++        QCAM_ERR("failed");
++        return -1;
++    }
++    mFrameInfo = qcamlib_get_frame_info(mCamHandle, QCAMLIB_STREAM_VIDEO);
++    return 0;
++}
++
++void CameraSource::setListener(ICameraListener* listener)
++{
++    mListener = listener;
++}
++
++/**
++ * @brief start streaming video from camera
++ *
++ */
++void CameraSource::start()
++{
++    int rc;
++    QCAM_DBG("w=%u, h=%u", mConfig.width, mConfig.height);
++    rc = qcamlib_start_video(mCamHandle);
++    if (rc != 0) {
++        QCAM_ERR("failed");
++        return;
++    }
++    mLastFrameDelivered = false;
++    mStopRequested = false;
++    QCAM_INFO("camera started.");
++}
++
++/**
++ * @brief stop streaming video from camera
++ *
++ */
++void CameraSource::stop()
++{
++    unique_lock<mutex> lk(mLastFrameMutex);
++    /* Wait on the condition variable, while the last frame is being
++       delivered. wait() will return when last frame with EOS will be delivered
++       to the Listener */
++    mStopRequested = true;
++    while (mLastFrameDelivered == false) {
++        QCAM_DBG("waiting for last frame to be delivered");
++        mLastFrameCv.wait(lk);
++    }
++    qcamlib_stop_video(mCamHandle);
++    QCAM_INFO("camera stopped.");
++}
++
++/**
++ * @brief enqueue empty buffer into camera queue
++ * @param buffer pointer to the buffer structure
++ */
++void CameraSource::enqueBuf(OMX_BUFFERHEADERTYPE* buffer)
++{
++    if (buffer == NULL) {
++        QCAM_ERR("buffer=NULL", buffer);
++        return;
++    }
++    unique_lock<mutex> lk(mBufQueueMutex);
++    mBufQueue.push(buffer);
++    if (mIsWaiting == true) {
++        /* notify waiting thread about new available buffer */
++        QCAM_DBG("notifying for available buffer...");
++        mBufQueueCv.notify_one();
++    }
++}
+diff --git a/src/camerasource.h b/src/camerasource.h
+new file mode 100644
+index 0000000..bf4745d
+--- /dev/null
++++ b/src/camerasource.h
+@@ -0,0 +1,71 @@
++#ifndef __CAMERASOURCE_H__
++#define __CAMERASOURCE_H__
++
++#include <thread>
++#include <queue>
++#include <mutex>
++#include <OMX_Core.h>
++#include <condition_variable>
++#include <chrono>
++
++extern "C" {
++#include <qcamlib.h>
++}
++
++using namespace std;
++using namespace std::chrono;
++
++namespace qcamvid
++{
++
++struct CameraConfig
++{
++    uint32_t width = 0;
++    uint32_t height = 0;
++};
++
++class ICameraListener
++{
++ public:
++    virtual ~ICameraListener() { }
++    virtual void cameraDataCb(OMX_BUFFERHEADERTYPE* buffer) = 0;
++};
++
++class CameraSource
++{
++ public:
++    ~CameraSource();
++    int  configure(const CameraConfig &config);
++    CameraConfig getConfig() { return mConfig; }
++    int init();
++    void start();
++    void stop();
++    void enqueBuf(OMX_BUFFERHEADERTYPE *buffer);
++    void setListener(ICameraListener *listener);
++    void frameCb(const qcamlib_cb_data_t &frame);
++ private:
++    queue<OMX_BUFFERHEADERTYPE*> mBufQueue;
++    mutex mBufQueueMutex;
++    condition_variable mBufQueueCv;
++    bool mIsWaiting = false;
++    CameraConfig mConfig;
++    ICameraListener  *mListener = NULL;
++    uint32_t mFrameCount = 0;
++    qcamlib_t mCamHandle = NULL;
++    qcamlib_frame_info_t mFrameInfo;
++    microseconds mTimePrevious;
++    microseconds mTimeDiff;
++    float mCurFps = 0.0f;
++    bool mLastFrameDelivered = false;
++    bool mStopRequested = false;
++    mutex mLastFrameMutex;
++    condition_variable mLastFrameCv;
++
++    OMX_BUFFERHEADERTYPE *getBuf();
++};
++
++}
++
++#endif
++
++
+diff --git a/src/main.cpp b/src/main.cpp
+new file mode 100644
+index 0000000..c0dd1dc
+--- /dev/null
++++ b/src/main.cpp
+@@ -0,0 +1,116 @@
++#include <cstdio>
++#include <cstdlib>
++#include <unistd.h>
++#include <syslog.h>
++#include <cstring>
++#include <csignal>
++#include "qcamvid.h"
++#include "qcamvid_log.h"
++
++using namespace qcamvid;
++
++bool STDERR_LOGGING = false;
++
++static App *app;
++
++const char usageStr[] =
++    "qcamvid\n"
++    "    Capture H264 video from Camera\n\n"
++    "usage: qcamvid [options]\n"
++    "    -o  <output-file-name>\n"
++    "        file where the output video is written [video.h264]\n"
++    "    -s\n"
++    "        write video output to stdout, disables file output\n"
++    "    -t  <duration>\n"
++    "        video capture duration in seconds [10]\n"
++    "    -l\n"
++    "        enable logging on stderr\n"
++    "    -h\n"
++    "        print this message\n"
++;
++
++static inline void printUsageExit()
++{
++    QCAM_MSG("%s", usageStr);
++    exit(0);
++}
++
++/* Validates the app configuration. If invalid, it
++   shows error and exits the program. */
++static void validateConfigExit(const AppConfig &cfg)
++{
++    if (cfg.fileOutput == true && cfg.stdOutput == true) {
++        QCAM_MSG("ERROR: only one output mode (file or stdout) is supported\n");
++        printUsageExit();
++    }
++}
++
++/* parses commandline options and populates the config
++   data structure */
++static AppConfig parseCommandline(int argc, char* argv[])
++{
++    AppConfig cfg;
++    int c;
++
++    while ((c = getopt(argc, argv, "shlo:t:")) != -1) {
++        switch (c) {
++          case 'l':
++              STDERR_LOGGING = true;
++              break;
++          case 's':
++              cfg.stdOutput = true;
++              cfg.fileOutput = false;
++              break;
++          case 'o':
++              cfg.outFileName = optarg;
++              break;
++          case 'r':
++              cfg.resName = optarg;
++              break;
++          case 't':
++              cfg.runTime = atoi(optarg);
++              break;
++          case 'h':
++          case '?':
++              printUsageExit();
++          default:
++              abort();
++        }
++    }
++    return cfg;
++}
++
++/* prints application config on stderr */
++void printConfig(const AppConfig &cfg)
++{
++    QCAM_MSG("== Application Configuration ==\n");
++    QCAM_MSG("file output = %s\n", cfg.fileOutput ? "true" : "false");
++    if (cfg.fileOutput == true) {
++        QCAM_MSG("output filename = %s\n", cfg.outFileName.c_str());
++    }
++    QCAM_MSG("std output = %s\n", cfg.stdOutput ? "true" : "false");
++    QCAM_MSG("capture duration = %d seconds\n", cfg.runTime);
++    QCAM_MSG("===============================\n");
++}
++
++int main(int argc, char* argv[])
++{
++    int rc;
++
++    AppConfig cfg = parseCommandline(argc, argv);
++    validateConfigExit(cfg);
++    printConfig(cfg);
++
++    QCAM_INFO("Starting application");
++
++    app = new App(cfg);
++
++    QCAM_MSG("Capturing Video, please wait...\n");
++
++    rc = app->run();
++
++    QCAM_MSG("DONE.\n");
++
++    delete app;
++    return rc;
++}
+diff --git a/src/qcamvid.cpp b/src/qcamvid.cpp
+new file mode 100644
+index 0000000..1f07164
+--- /dev/null
++++ b/src/qcamvid.cpp
+@@ -0,0 +1,237 @@
++#include <cstdio>
++#include <cstdlib>
++#include <unistd.h>
++#include <syslog.h>
++#include <iostream>
++#include "qcamvid.h"
++#include "qcamvid_log.h"
++
++using namespace qcamvid;
++using namespace std;
++
++static const int ENCODER_INPUT_BUF_COUNT = 12;
++static const int ENCODER_OUTPUT_BUF_COUNT = 10;
++
++static const int ENCODER_DEFAULT_BITRATE = 5000000; // 5 Mbps
++
++App::App(const AppConfig &config) :
++    mConfig(config),
++    mEncoder(NULL)
++{
++}
++
++App::~App()
++{
++}
++
++/* Encoder has consumed an input buffer */
++OMX_ERRORTYPE App::emptyBufDoneCb(OMX_IN OMX_HANDLETYPE hComponent,
++                             OMX_IN OMX_PTR pAppData,
++                             OMX_IN OMX_BUFFERHEADERTYPE* pBuffer)
++{
++    App* app = (App*)pAppData;
++    /* send buffer to camera */
++    app->mCamera.enqueBuf(pBuffer);
++    return OMX_ErrorNone;
++}
++
++/* Encoder has produced new output buffer */
++OMX_ERRORTYPE App::fillBufDoneCb(OMX_IN OMX_HANDLETYPE hComponent,
++                            OMX_IN OMX_PTR pAppData,
++                            OMX_IN OMX_BUFFERHEADERTYPE* pBuffer)
++{
++    App *app = (App *)pAppData;
++    OMX_ERRORTYPE omxRc;
++
++    if (pBuffer->nFilledLen > 0) {
++        if (app->mConfig.fileOutput == true) {
++            app->mOutFile.write((const char*)pBuffer->pBuffer,
++                                 pBuffer->nFilledLen);
++        }
++        if (app->mConfig.stdOutput == true) {
++            cout.write((const char*)pBuffer->pBuffer, pBuffer->nFilledLen);
++        }
++    }
++    omxRc = app->mEncoder->DeliverOutput(pBuffer);
++    if (omxRc != OMX_ErrorNone) {
++       QCAM_ERR("failed, omxRc = %d", omxRc);
++       return omxRc;
++    }
++
++    return OMX_ErrorNone;
++}
++
++/* A new frame is generated by camera */
++void App::cameraDataCb(OMX_BUFFERHEADERTYPE* buffer)
++{
++    if (buffer == NULL) {
++        QCAM_ERR("buffer NULL");
++        return;
++    }
++
++    OMX_ERRORTYPE omxRc;
++    omxRc = mEncoder->DeliverInput(buffer);
++    if (omxRc != OMX_ErrorNone) {
++        QCAM_ERR("failed, omxRc=0x%x", omxRc);
++    }
++}
++
++/**
++ * @brief generate default configuration for Encoder
++ * @param eCfg pointer to encoder config data structure
++ * @return int 0 on Sucess, negative on failure
++ */
++int App::getDefaultEncoderConfig(EncoderConfigType *eCfg)
++{
++    OMX_ERRORTYPE omxRc;
++    omxRc = mEncoderConfig.GetEncoderConfig(eCfg);
++    if (omxRc != OMX_ErrorNone) {
++        QCAM_ERR("omxRc = %d", omxRc);
++        return -1;
++    }
++    // encoder default config modifications for H264
++    eCfg->eControlRate = OMX_Video_ControlRateVariable;
++    eCfg->eCodec = OMX_VIDEO_CodingAVC;
++    eCfg->eCodecProfile = AVCProfileHigh;
++    eCfg->nBitrate = ENCODER_DEFAULT_BITRATE;
++    eCfg->bCABAC = OMX_TRUE;
++    eCfg->nDeblocker = 1;
++    eCfg->nInBufferCount = ENCODER_INPUT_BUF_COUNT;
++    eCfg->nOutBufferCount = ENCODER_OUTPUT_BUF_COUNT;
++    return 0;
++}
++
++/**
++ * @brief main entry point for the application. Manages the app
++ *        run time
++ *
++ *
++ * @return int 0 for success, non-zero for failure
++ */
++int App::run()
++{
++    QCAM_DBG("E");
++    OMX_ERRORTYPE omxRc;
++    CameraConfig camConfig;
++    EncoderConfigType encoderConfig;
++    OMX_BUFFERHEADERTYPE **inputBuffers;
++    OMX_BUFFERHEADERTYPE **outputBuffers;
++    int rc = 0;
++
++    if (mConfig.fileOutput == true) {
++        mOutFile.open(mConfig.outFileName, ios::out | ios::binary);
++        if(mOutFile.is_open() == false) {
++            QCAM_ERR("file open failed for %s", mConfig.outFileName.c_str());
++            rc = -1;
++            goto exit;
++        }
++    }
++
++    // Configure camera
++    rc = mCamera.init();
++    if (rc != 0) {
++        QCAM_ERR("camera init failed");
++        goto cleanup_file;
++    }
++    mCamera.setListener(this);
++    camConfig = mCamera.getConfig();
++
++    camConfig.width = mConfig.width;
++    camConfig.height = mConfig.height;
++    rc = mCamera.configure(camConfig);
++    if (rc != 0) {
++        QCAM_ERR("camera config failed");
++        goto cleanup_file;
++    }
++
++    rc = getDefaultEncoderConfig(&encoderConfig);
++    if (rc != 0) {
++        QCAM_ERR("failed rc=%d", rc);
++        goto cleanup_file;
++    }
++
++    encoderConfig.nFrameWidth = camConfig.width;
++    encoderConfig.nFrameHeight = camConfig.height;
++    encoderConfig.nOutputFrameWidth = camConfig.width;
++    encoderConfig.nOutputFrameHeight = camConfig.height;
++
++    // Create and configure the encoder
++    mEncoder = new Encoder(emptyBufDoneCb, fillBufDoneCb,
++                           this, encoderConfig.eCodec);
++    QCAM_INFO("Encoder created.");
++    omxRc = mEncoder->Configure(&encoderConfig);
++    if (omxRc != OMX_ErrorNone) {
++        QCAM_ERR("omxRc = %d", omxRc);
++        rc = -1;
++        goto cleanup_enc;
++    }
++    QCAM_INFO("Encoder configured.");
++
++    // Set Encoder to executing state
++    omxRc = mEncoder->GoToExecutingState();
++    if (omxRc != OMX_ErrorNone) {
++        QCAM_ERR("omxRc = %d", omxRc);
++        rc = -1;
++        goto cleanup_enc;
++    }
++    QCAM_INFO("Encoder set to executing state.");
++
++    // Get the allocated input buffers and enque them in camera
++    inputBuffers = mEncoder->GetBuffers(OMX_TRUE);
++    if (inputBuffers == NULL) {
++        QCAM_ERR("failed");
++        rc = -1;
++        goto cleanup_enc;
++    }
++    for (int i = 0; i < encoderConfig.nInBufferCount; i++) {
++        // set the app as the buffer private data
++        inputBuffers[i]->pAppPrivate = this;
++        // give buffers to camera
++        mCamera.enqueBuf(inputBuffers[i]);
++    }
++
++    outputBuffers = mEncoder->GetBuffers(OMX_FALSE);
++    if (outputBuffers == NULL) {
++        QCAM_ERR("failed");
++        rc = -1;
++        goto cleanup_enc;
++    }
++    for (int i = 0; i < encoderConfig.nOutBufferCount; i++) {
++       // set the encoder as the private app data
++       outputBuffers[i]->pAppPrivate = mEncoder;
++       // give ownership to encoder
++       omxRc = mEncoder->DeliverOutput(outputBuffers[i]);
++       if (omxRc != OMX_ErrorNone) {
++          QCAM_ERR("failed, i=%d, omxRc = %d", i, omxRc);
++          break;
++       }
++    }
++
++    /* start streaming from camera */
++    mCamera.start();
++    /* wait for specified duration */
++    sleep(mConfig.runTime);
++    mCamera.stop();
++
++    QCAM_MSG("Capture Finished.\n");
++
++    // Tear down the encoder
++    QCAM_INFO("stopping encoder");
++    omxRc = mEncoder->GoToLoadedState();
++    if (omxRc != OMX_ErrorNone) {
++        QCAM_ERR("omxRc = %d", omxRc);
++        rc = -1;
++        goto cleanup_enc;
++    }
++    QCAM_INFO("Encoder set to loaded state.");
++
++cleanup_enc:
++    delete mEncoder;
++cleanup_file:
++    if (mConfig.fileOutput == true) {
++        mOutFile.close();
++    }
++exit:
++    return rc;
++}
++
+diff --git a/src/qcamvid.h b/src/qcamvid.h
+new file mode 100644
+index 0000000..75d887e
+--- /dev/null
++++ b/src/qcamvid.h
+@@ -0,0 +1,55 @@
++#ifndef __QCAMVID_H__
++#define __QCAMVID_H__
++
++#include <string>
++#include <fstream>
++#include "venc-test/venctest_Encoder.h"
++#include "venc-test/venctest_ComDef.h"
++#include "venc-test/venctest_Config.h"
++#include "camerasource.h"
++
++using namespace std;
++using namespace venctest;
++
++namespace qcamvid
++{
++
++/* Application config, default values are used for initialization. */
++struct AppConfig
++{
++    int width = 1920;
++    int height = 1080;
++    string resName = "1080p";
++    string outFileName = "video.h264";
++    bool stdOutput = false;
++    bool fileOutput = true;
++    int runTime = 10;
++};
++
++class App : public ICameraListener
++{
++ public:
++    App(const AppConfig &config);
++    ~App();
++    int run();
++    virtual void cameraDataCb(OMX_BUFFERHEADERTYPE* buffer);
++ private:
++    AppConfig mConfig;
++    Config mEncoderConfig;
++    Encoder *mEncoder;
++    CameraSource mCamera;
++    ofstream mOutFile;
++
++    int getDefaultEncoderConfig(EncoderConfigType *eCfg);
++    static OMX_ERRORTYPE emptyBufDoneCb(OMX_IN OMX_HANDLETYPE hComponent,
++                                        OMX_IN OMX_PTR pAppData,
++                                        OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
++
++    static OMX_ERRORTYPE fillBufDoneCb(OMX_IN OMX_HANDLETYPE hComponent,
++                                       OMX_IN OMX_PTR pAppData,
++                                       OMX_IN OMX_BUFFERHEADERTYPE* pBuffer);
++};
++
++}
++#endif
++
+diff --git a/src/qcamvid_log.h b/src/qcamvid_log.h
+new file mode 100644
+index 0000000..16dc280
+--- /dev/null
++++ b/src/qcamvid_log.h
+@@ -0,0 +1,39 @@
++#ifndef __QCAMVID_LOG_H__
++#define __QCAMVID_LOG_H__
++
++#include <syslog.h>
++#include <cstdio>
++
++extern bool STDERR_LOGGING;
++
++#define QCAM_ERR(fmt, args...) do { \
++  syslog(LOG_ERR, "%s:%d ERROR: " fmt, __func__, __LINE__, ##args); \
++  if (STDERR_LOGGING) { \
++    fprintf(stderr, "%s:%d ERROR: " fmt "\n", __func__, __LINE__, ##args); \
++  } \
++} while (0)
++
++#define QCAM_DBG(fmt, args...) do { \
++  syslog(LOG_DEBUG, "%s:%d DEBUG: " fmt, __func__, __LINE__, ##args); \
++  if (STDERR_LOGGING) { \
++    fprintf(stderr, "%s:%d DEBUG: " fmt "\n", __func__, __LINE__, ##args); \
++  } \
++} while (0)
++
++#define QCAM_INFO(fmt, args...) do { \
++  syslog(LOG_INFO, "%s:%d INFO: " fmt, __func__, __LINE__, ##args); \
++  if (STDERR_LOGGING) { \
++    fprintf(stderr, "%s:%d INFO: " fmt "\n", __func__, __LINE__, ##args); \
++  } \
++} while (0)
++
++#define QCAM_DBG_LOW(fmt, args...) do { \
++  syslog(LOG_DBG, "%s:%d DBG: " fmt, __func__, __LINE__, ##args); \
++} while (0)
++
++#define QCAM_MSG(fmt, args...) do { \
++    fprintf(stderr, fmt, ##args); \
++} while (0)
++
++#endif
++
+-- 
+1.9.1
+

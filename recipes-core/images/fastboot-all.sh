@@ -1,3 +1,7 @@
+# Copyright (c) 2015 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+
 adb reboot bootloader
 if [ -e emmc_appsboot.mbn ]; then
 	fastboot flash aboot emmc_appsboot.mbn

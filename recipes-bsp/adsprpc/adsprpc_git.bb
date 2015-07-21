@@ -5,13 +5,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 
 PR = "r0"
 PV = "1.0"
-
-# Patches to port from android- create automake makefiles and fix compilation issues under linux 
-SRC_URI_append = " file://0001-ATL-1838-add-Makefile.am-configure.ac-for-adsprpc.patch"
-SRC_URI_append = " file://0002-ATL-1838-include-stdint.h-to-resolve-uint32_t.patch"
-SRC_URI_append = " file://0003-ATL-1838-conditionally-include-android-header-note-L.patch"
-SRC_URI_append = " file://0004-fix-compilation-error-with-undefined-UINT32_MAX.patch"
-SRC_URI_append = " file://0005-use-default-ADSP_LIBRARY_PATH-if-envn-varaible-is-not-set.patch"
 SRC_URI_append = " file://adsprpcd.conf"
 
 inherit autotools qti-proprietary-binary

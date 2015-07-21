@@ -1,0 +1,97 @@
+From 9d6dd2e050a97d8e495c73d105255eaca53afbd7 Mon Sep 17 00:00:00 2001
+From: Punit Soni <punits@qti.qualcomm.com>
+Date: Thu, 18 Jun 2015 16:43:00 -0700
+Subject: [PATCH] qcamvid: add error notification for camera failures
+
+Change-Id: I8dbe6961cba3da0e883878776a86aeb5885413be
+---
+ src/camerasource.cpp |  8 +++++---
+ src/camerasource.h   |  4 ++--
+ src/qcamvid.cpp      | 12 ++++++++++--
+ 3 files changed, 17 insertions(+), 7 deletions(-)
+
+diff --git a/src/camerasource.cpp b/src/camerasource.cpp
+index 9cdbc9b..f9fdcf4 100644
+--- a/src/camerasource.cpp
++++ b/src/camerasource.cpp
+@@ -199,25 +199,26 @@ void CameraSource::setListener(ICameraListener* listener)
+  * @brief start streaming video from camera
+  *
+  */
+-void CameraSource::start()
++int CameraSource::start()
+ {
+     int rc;
+     QCAM_DBG("w=%u, h=%u", mConfig.width, mConfig.height);
+     rc = qcamlib_start_video(mCamHandle);
+     if (rc != 0) {
+         QCAM_ERR("failed");
+-        return;
++        return -1;
+     }
+     mLastFrameDelivered = false;
+     mStopRequested = false;
+     QCAM_INFO("camera started.");
++    return 0;
+ }
+ 
+ /**
+  * @brief stop streaming video from camera
+  *
+  */
+-void CameraSource::stop()
++int CameraSource::stop()
+ {
+     unique_lock<mutex> lk(mLastFrameMutex);
+     /* Wait on the condition variable, while the last frame is being
+@@ -230,6 +231,7 @@ void CameraSource::stop()
+     }
+     qcamlib_stop_video(mCamHandle);
+     QCAM_INFO("camera stopped.");
++    return 0;
+ }
+ 
+ /**
+diff --git a/src/camerasource.h b/src/camerasource.h
+index bf4745d..554cd36 100644
+--- a/src/camerasource.h
++++ b/src/camerasource.h
+@@ -38,8 +38,8 @@ class CameraSource
+     int  configure(const CameraConfig &config);
+     CameraConfig getConfig() { return mConfig; }
+     int init();
+-    void start();
+-    void stop();
++    int start();
++    int stop();
+     void enqueBuf(OMX_BUFFERHEADERTYPE *buffer);
+     void setListener(ICameraListener *listener);
+     void frameCb(const qcamlib_cb_data_t &frame);
+diff --git a/src/qcamvid.cpp b/src/qcamvid.cpp
+index 1f07164..c05e88c 100644
+--- a/src/qcamvid.cpp
++++ b/src/qcamvid.cpp
+@@ -208,10 +208,18 @@ int App::run()
+     }
+ 
+     /* start streaming from camera */
+-    mCamera.start();
++    rc = mCamera.start();
++    if (rc != 0) {
++        QCAM_MSG("Could not start camera.\n");
++        goto cleanup_enc;
++    }
+     /* wait for specified duration */
+     sleep(mConfig.runTime);
+-    mCamera.stop();
++    rc = mCamera.stop();
++    if (rc != 0) {
++        QCAM_MSG("Could not stop camera.\n");
++        goto cleanup_enc;
++    }
+ 
+     QCAM_MSG("Capture Finished.\n");
+ 
+-- 
+1.9.1
+
