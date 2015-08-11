@@ -8,8 +8,7 @@ DEPENDS += "glib-2.0 android-tools"
 PV = "1.0"
 PR = "r0"
 
-SRC_URI += "file://ssr.conf \
-	file://ssr.override"
+SRC_URI += "file://ssr.conf"
 
 PACKAGES = "${PN}"
 
@@ -34,5 +33,4 @@ do_fetch_append() {
 
 do_install_append() {
        install -m 0755 ${WORKDIR}/ssr.conf -D ${D}${sysconfdir}/init/ssr.conf
-       install -m 0755 ${WORKDIR}/ssr.override -D ${D}${sysconfdir}/init/ssr.override
 }

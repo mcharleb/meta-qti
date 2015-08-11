@@ -1,4 +1,4 @@
-DESCRIPTION = "Video encoder command line application"
+DESCRIPTION = "Video encoder applications"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
@@ -7,7 +7,7 @@ PACKAGES = "${PN}"
 PV = "1.0"
 PR = "r0"
 
-DEPENDS += "virtual/kernel mm-video-oss"
+DEPENDS += "virtual/kernel mm-video-oss camera-hal"
 
 inherit autotools
 

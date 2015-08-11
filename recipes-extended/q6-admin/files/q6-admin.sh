@@ -15,6 +15,31 @@ Q6_INIT_STRING=1
 Q6_WAIT_FOR_RESET_TIME=5
 Q6_RESET_MSG="ADSP image is loaded"
 
+do_start () {
+        echo "Will load adsp firmware"
+        mkdir -p /firmware
+        mount -t vfat /dev/mmcblk0p1 /firmware
+        cd /firmware/image/
+        fwfiles=$(ls adsp*)
+        cd /lib/firmware
+        for fwfile in $fwfiles
+        do
+                fw_file=$(ls $fwfile)
+                if ("$fw_file"=="$fwfile")then
+                        echo "links already exist"
+                        continue
+                else
+                        cd /firmware/image
+                        for imgfile in adsp*
+                        do
+              ln -s /firmware/image/$imgfile /lib/firmware/$imgfile 2>/dev/null
+                #cp -rf /firmware/image/$imgfile /lib/firmware/$imgfile
+            done
+                fi
+        done
+        cat /dev/subsys_adsp
+}
+
 resetQ6 () {
     if [  ! -f "${Q6_DEST}/${Q6_MDT}" ]
     then
@@ -43,6 +68,6 @@ resetQ6 () {
 }
 
 resetQ6
-
+do_start
 
 

@@ -12,9 +12,9 @@ DEPENDS += " \
     ss-restart \
     mm-camera \
     mm-video-firmware-prebuilt \
-    mm-venc-omx-test \
+    mm-video \
     ftmdaemon \
-    qcamvid \
+    gps \
 "
 
 PKGLIST_PROP = " \
@@ -34,9 +34,9 @@ PKGLIST_PROP = " \
     mm-camera \
     mm-camera-core-prebuilt \
     mm-camera-lib-prebuilt \
-    mm-venc-omx-test \
+    mm-video \
     ftmdaemon \
-    qcamvid \
+    gps \
 "
 
 QRL_BINARIES_FW_LOCATION = "${STAGING_DIR}/${MACHINE}/lib/firmware"
