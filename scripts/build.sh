@@ -19,11 +19,16 @@ DPKG_CMD="dpkg-query"
 
 optMachine=${DEFAULT_MACHINE}
 optImage=
+optVersion=			# The build version
+optOverrideVersionWarning=
 
 imagesToBuild=
 
 # Exit on error
 set -e
+
+# Source the release version includes. This sets the variables needed by configureBuildVersion
+. meta-qti/recipes-extended/qrl-version/files/qrl-version.inc
 
 ################################################################################
 ## usage
@@ -38,6 +43,8 @@ OPTIONS:
    -b      Skip building the bootloader
    -m      The machine to build (default: ${DEFAULT_MACHINE})
    -i      The image to build (default: ${DEFAULT_IMAGE})
+   -v      The build version (default: current time)
+   -d      Ignore release version and date mismatch warning
 EOF
 
     echo
@@ -59,18 +66,24 @@ EOF
 ## handleCommandLine
 ################################################################################
 handleCommandLine () {
-    while getopts "hm:i:" o
+    while getopts "hdm:i:v:" o
     do
         case $o in
         h)
             usage
             exit 1
             ;;
+        d)
+            optOverrideVersionWarning=1
+            ;;
         m)
             optMachine=$OPTARG
             ;;
         i)
             optImage=$OPTARG
+            ;;
+        v)
+            optVersion=$OPTARG
             ;;
         ?)
             echo "Unknown arg $o"
@@ -193,8 +206,47 @@ configureLayers () {
         done
         return 0
     }
+    return 0
+}
 
-	return 0
+################################################################################
+## configureBuildVersion
+##    Configure a build version
+################################################################################
+configureBuildVersion () {
+   # Check if the QRL_RELEASE_YEAR and QRL_RELEASE_MONTH match today's date
+   yr=`date +%y`
+   if [ ${QRL_RELEASE_YEAR} != ${yr} ]
+   then
+      echo "[INFO] Mismatch between today's date and release version (year): ${QRL_RELEASE_YEAR}"
+      if [ -z ${optOverrideVersionWarning} ]
+      then
+         echo "[ERROR] Use -d to override"
+	 exit 1
+      fi
+   fi
+   mo=`date +%m`
+   if [ ${QRL_RELEASE_MONTH} != ${mo} ]
+   then
+      echo "[INFO] Mismatch between today's date and release version (month): ${QRL_RELEASE_MONTH}"
+      if [ -z ${optOverrideVersionWarning} ]
+      then
+         echo "[ERROR] Use -d to override"
+	 exit 1
+      fi
+   fi
+
+   buildId=${QRL_RELEASE}
+   if [ -z ${optVersion} ]
+   then
+      buildId="${buildId}_`date +%F-%H%M%S`"
+   else
+      buildId=${buildId}_${optVersion}
+   fi
+   echo -n > ${BUILD_VERSION_FILE} # Truncate the file
+   echo ${buildId} >> ${BUILD_VERSION_FILE}
+   echo `date +"%Y-%m-%d %H:%M:%S"` >> ${BUILD_VERSION_FILE}
+   return 0
 }
 
 ################################################################################
@@ -214,8 +266,11 @@ echo "[INFO] Fetching toolchain"
 meta-qr-linux/scripts/linaro-fetch.sh
 
 configureLayers
+configureBuildVersion
+
 source ./oe-init-build-env build
 
+MACHINE=${optMachine} bitbake -f -C compile qrl-version
 for img in "${imagesToBuild[@]}"
 do
     echo "[INFO] Building image: ${img}"

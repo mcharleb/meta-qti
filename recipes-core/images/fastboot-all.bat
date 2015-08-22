@@ -8,6 +8,8 @@ if exist boot.img fastboot flash boot boot.img
 if exist cache.img fastboot flash cache cache.img
 if exist persist.img fastboot flash persist persist.img
 if exist system.img fastboot flash system system.img
+if exist recovery.img fastboot flash recovery recovery.img
+if exist update.img fastboot flash update update.img
 if exist userdata.img fastboot flash userdata userdata.img
 fastboot reboot
 echo Flashing done, rebooting...

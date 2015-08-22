@@ -8,10 +8,12 @@ PV = "1.0"
 PR = "r0"
 
 DEPENDS += "virtual/kernel mm-video-oss camera-hal"
+DEPENDS += "fpv-streamer-lib"
 
 inherit autotools
 
-EXTRA_OECONF = "--with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include"
+EXTRA_OECONF = "--with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include \
+                CPPFLAGS='-I${STAGING_INCDIR}/camera-hal'"
 
 INSANE_SKIP_${PN} += "installed-vs-shipped"
 

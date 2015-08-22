@@ -15,6 +15,7 @@ DEPENDS += " \
     mm-video \
     ftmdaemon \
     gps \
+    fpv-streamer-app \
 "
 
 PKGLIST_PROP = " \
@@ -37,6 +38,9 @@ PKGLIST_PROP = " \
     mm-video \
     ftmdaemon \
     gps \
+    qrl-version \
+    libqc-fpv-streamer0 \
+    fpv-streamer-app \
 "
 
 QRL_BINARIES_FW_LOCATION = "${STAGING_DIR}/${MACHINE}/lib/firmware"
@@ -49,6 +53,21 @@ create_cache_image() {
     ${QRL_BINARIES_TOOLS_LOCATION}/make_ext4fs -s -l ${PARTITION_CACHE_SIZE} \
         -L qcom-firmware ${DEPLOY_DIR_IMAGE}/out/cache.img \
         ${QRL_BINARIES_FW_LOCATION}
+}
+
+# target_folder and file_config are provided by base function
+target_files_extension_append() {
+    firmware_folder="$target_folder/QCOM-FIRMWARE"
+    # Firmware folder ${target_folder}
+    if [ -d ${STAGING_DIR}/${MACHINE}/lib/firmware ]; then
+        install -d ${firmware_folder}
+        cp -r ${STAGING_DIR}/${MACHINE}/lib/firmware/* ${firmware_folder}
+    fi
+    # Append to the filesystem config
+    echo "qcom-firmware 0 0 755" >> $file_config
+    for f in `find $firmware_folder/*`; do
+        echo qcom-firmware/${f/$firmware_folder\//} 0 0 `stat --format=%a $f` >> $file_config
+    done
 }
 
 create_release_structure() {

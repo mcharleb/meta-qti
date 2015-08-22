@@ -15,6 +15,12 @@ fi
 if [ -e system.img ]; then
 	fastboot flash system system.img
 fi
+if [ -e recovery.img ]; then
+	fastboot flash recovery recovery.img
+fi
+if [ -e update.img ]; then
+	fastboot flash update update.img
+fi
 if [ -e userdata.img ]; then
 	fastboot flash userdata userdata.img
 fi
