@@ -4,9 +4,6 @@
 
 . ${QRL_COMMON_INCS_DIR}/qrl-common-inc.sh
 
-# We check this file to bypass configuring MAC addr
-QRL_CHECK_FILE=/usr/local/qr-linux/.qrl_mac_done
-
 QRL_DEFAULT_SOFTMAC_LOC=/lib/firmware/ath6k/AR6004/hw3.0
 QRL_RAND_MAC_ROOT="00:03:7f:20" # Fixed first 4 bytes of MAC address
 				# The last two (random) byte gets appended to this
@@ -56,13 +53,15 @@ createSoftmacBin() {
 ##    or the specified : separated hex value
 ##
 configMACAddr() {
+	# Configure the MAC only if the file in persist and rootfs do
+	# not match
 	if [  ${optRunOnce} -eq 0 ]; then
-		if [ -e ${QRL_CHECK_FILE} ]; then
-			# Without the force option, we don't do anything if
-			# a specific file is present
-			echo "[INFO] MAC for WLAN already set, do nothing"
+		# Without the force option, we don't do anything if
+		# the MAC is already set
+		cmp --silent ${QRL_PERSIST_PATH}/${QRL_WIFI_MAC_FILE} \
+			${QRL_DEFAULT_SOFTMAC_LOC}/${QRL_WIFI_MAC_FILE} && \
+			echo "[INFO] MAC for WLAN already set, do nothing" && \
 			return 0
-		fi
 	fi
 	doConfigMACAddr $1 $2
 }
@@ -151,7 +150,6 @@ doConfigMACAddr() {
 			;;
 		esac
 		# Save file to persist partition and restart Wi-Fi
-		touch ${QRL_CHECK_FILE}
 		doRestartWifi
 		;;
 	*)
