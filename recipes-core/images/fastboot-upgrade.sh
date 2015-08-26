@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # Confidential and Proprietary - Qualcomm Technologies, Inc.
 
-adb reboot bootloader
+adb reboot bootloader || true
 if [ -e emmc_appsboot.mbn ]; then
 	fastboot flash aboot emmc_appsboot.mbn
 fi
