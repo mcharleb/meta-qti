@@ -32,14 +32,39 @@
 
 using namespace camera;
 
+enum CamFunction {
+    CAM_FUNC_HIRES = 0,
+    CAM_FUNC_OPTIC_FLOW = 1,
+};
+
 /**
  * @brief main entry point for the application. 
  *
 **/
 int main( int argc, char ** argv)
 {
-    int camId = 0;
     ICameraDevice* mCamera;
+    int camId = -1;
+
+    /* Find and select the camera to use */
+    int numCameras = getNumberOfCameras();
+    printf("Number of cameras = %d\n", getNumberOfCameras());
+
+    struct CameraInfo info;
+    for (int i = 0 ; i < numCameras ; i++) {
+        getCameraInfo(i, info);
+
+        if ( CAM_FUNC_HIRES == info.func ) {
+            camId = i;
+            break;
+        }
+    }
+
+    if (camId == -1 ) {
+        printf("Failed to open camera\n");
+        return 1;
+    }
+
     int rc = ICameraDevice::createInstance(camId, &mCamera);
     if (rc != 0) {
         printf("Could not open camera %d\n", camId);
