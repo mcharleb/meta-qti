@@ -9,6 +9,9 @@
 ##   - /bin/mount
 ##   - /bin/cp
 ##   - /bin/umount
+##   - /bin/chown
+##   - /usr/bin/find
+##   - /usr/bin/stat
 ##   - /tmp/make_ext4fs
 ##
 ## The last one, /tmp/make_ext4fs is the make_ext4fs copied by this script, from where it was compiled
@@ -42,6 +45,9 @@ Please enter your password (for sudo) when prompted. The following commands are 
 - /bin/mount
 - /bin/cp
 - /bin/umount
+- /bin/chown
+- /usr/bin/find
+- /usr/bin/stat
 - /tmp/make_ext4fs
 
 EOF
@@ -51,6 +57,7 @@ BOARD_NAME="$1"
 LINARO_IMG_NAME="linaro-trusty-developer-ifc6410-20140922-27"
 MOUNT_PATH="/tmp/linaro-rootfs"
 STAGING_BINDIR_NATIVE="tmp-eglibc/sysroots/x86_64-linux/usr/bin"
+STAGING_DIR="tmp-eglibc/sysroots/${BOARD_NAME}"
 DEPLOY_DIR_IMAGE="tmp-eglibc/deploy/images/${BOARD_NAME}"
 MAKE_EXT4FS_DIR="/tmp"
 
@@ -111,6 +118,27 @@ sudo ${mk_ext} -s -l 8G ${DEPLOY_DIR_IMAGE}/out/userdata.img ${MOUNT_PATH}/rootf
    echo "[ERROR] Could not create file system image: $?"
    exit 1
 }
+
+# Create the list of files (required by update scripts)
+echo "[INFO] Creating the list of files in the rootfs"
+set +x
+file_config=${PWD}/${STAGING_DIR}/filesystem_config.txt
+rm -f $file_config
+cd ${MOUNT_PATH}/rootfs
+sudo /usr/bin/find * -exec /usr/bin/stat --format="linaro-rootfs/%n 0 0 %a" "{}" \; >> $file_config
+cd -
+set -x
+
+# Copy the rootfs to the staging dir (needed for factory reset)
+echo "[INFO] Copying the rootfs to the staging dir"
+rootfs_copy=${STAGING_DIR}/linaro-rootfs
+if [ -d $rootfs_copy ]; then
+    rm -rf $rootfs_copy
+fi
+sudo /bin/cp -R ${MOUNT_PATH}/rootfs $rootfs_copy
+
+# Change owner for using this in the build process
+sudo /bin/chown -R ${USER} $rootfs_copy
 
 # Clean up
 sudo umount ${MOUNT_PATH}/rootfs || {
