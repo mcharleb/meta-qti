@@ -483,8 +483,10 @@ void __setupCameraParams() {
 
     params.init(__fpv_fc.icd_);
 
+/*  This will be set in qcamvid
     params.setPreviewSize(camera::ImageSize(__cam_params.width,
                                             __cam_params.height));
+*/
     // TODO: Causing failure in commit(). Need to fix support for FPS range.
     //params.setPreviewFpsRange(camera::Range(camera::VIDEO_FPS_30, 
     //                                        camera::VIDEO_FPS_30, 0));
