@@ -117,7 +117,7 @@ handleCommandLine () {
     if [[ -z ${optImage} ]]
     then
         imagesToBuild=(${IMAGE_QRL_BINARIES} ${IMAGE_PERSIST})
-        x="${IMAGE_QRL_BINARIES} -c image"
+        x="${IMAGE_QRL_BINARIES} -c update_package"
         IFS=""
         imagesToBuild=("$x")
         if [[ ${optMachine} = ${MACHINE_EAGLE8074} ]]

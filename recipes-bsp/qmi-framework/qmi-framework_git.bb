@@ -20,11 +20,6 @@ inherit autotools
 #re-use non-perf settings
 BASEMACHINE = "${@d.getVar('MACHINE', True).replace('-perf', '')}"
 
-INITSCRIPT_NAME = "init_irsc_util"
-INITSCRIPT_PARAMS = "start 29 2 3 4 5 . stop 71 0 1 6 ."
-
-inherit qr-update-rc.d
-
 do_fetch_append() {
     import shutil
     import os
@@ -33,13 +28,4 @@ do_fetch_append() {
     if os.path.exists(s):
         shutil.rmtree(s)
     shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
-}
-
-do_install_append() {
-       install -m 0755 ${WORKDIR}/start_irsc_util -D ${D}${sysconfdir}/init.d/${INITSCRIPT_NAME}
-}
-
-pkg_postinst_qmi-framework () {
-          update-rc.d -f ${INITSCRIPT_NAME} remove
-          update-rc.d ${INITSCRIPT_NAME} ${INITSCRIPT_PARAMS}
 }

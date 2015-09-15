@@ -20,11 +20,6 @@ EXTRA_OECONF = "--with-qxdm \
 
 EXTRA_OECONF_append_msm8960 = " --enable-auto-answer=yes"
 
-
-INITSCRIPT_NAME = "qmuxd"
-INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."
-
-inherit qr-update-rc.d
 inherit qti-proprietary-binary
 
 do_fetch_append() {
@@ -35,8 +30,4 @@ do_fetch_append() {
     if os.path.exists(s):
         shutil.rmtree(s)
     shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
-}
-
-do_install_append() {
-       install -m 0755 ${S}/qmuxd/start_qmuxd_le -D ${D}${sysconfdir}/init.d/qmuxd
 }

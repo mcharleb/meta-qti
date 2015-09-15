@@ -57,17 +57,16 @@ create_cache_image() {
 
 # target_folder and file_config are provided by base function
 target_files_extension_append() {
-    firmware_folder="$target_folder/QCOM-FIRMWARE"
     # Firmware folder ${target_folder}
     if [ -d ${STAGING_DIR}/${MACHINE}/lib/firmware ]; then
-        install -d ${firmware_folder}
         cp -r ${STAGING_DIR}/${MACHINE}/lib/firmware/* ${firmware_folder}
     fi
     # Append to the filesystem config
-    echo "qcom-firmware 0 0 755" >> $file_config
-    for f in `find $firmware_folder/*`; do
-        echo qcom-firmware/${f/$firmware_folder\//} 0 0 `stat --format=%a $f` >> $file_config
+    cd $firmware_folder
+    for f in `find *`; do
+        echo qcom-firmware/$f 0 0 `stat --format=%a $f` >> $file_config
     done
+    cd -
 }
 
 create_release_structure() {
@@ -78,7 +77,6 @@ create_release_structure() {
     cp ${DEPLOY_DIR_IMAGE}/out/*.img ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8974/
     cp ${DEPLOY_DIR_IMAGE}/out/emmc_appsboot.mbn ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8974/
     cp ${DEPLOY_DIR_IMAGE}/out/lk ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8974/
-    #cp ${DEPLOY_DIR_IMAGE}/out/vmlinux ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8974/
 }
 
 copy_packages_append() {
@@ -88,6 +86,10 @@ copy_packages_append() {
 do_image_append() {
     create_cache_image
     create_release_structure
+}
+
+do_update_package_append() {
+    cp ${DEPLOY_DIR_IMAGE}/out/*.zip ${DEPLOY_DIR_IMAGE}/out/LINUX/android/out/target/product/msm8974/
 }
 
 FASTBOOT_PATH = "${COREBASE}/meta-qti/recipes-core/images"
