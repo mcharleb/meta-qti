@@ -2,7 +2,7 @@ DESCRIPTION = "Linaro-rootfs for QR-Linux"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
-DEPENDS += "libsparse-native make-ext4fs-native"
+DEPENDS += "libsparse-native ext4-utils-native"
 
 PR = "r0"
 PV = "1.0"
@@ -33,6 +33,6 @@ do_image() {
 }
 
 do_image[depends] = "libsparse-native:do_populate_sysroot"
-do_image[depends] += "make-ext4fs-native:do_populate_sysroot"
+do_image[depends] += "ext4-utils-native:do_populate_sysroot"
 
 addtask image after do_unpack
