@@ -57,16 +57,38 @@ create_cache_image() {
 
 # target_folder and file_config are provided by base function
 target_files_extension_append() {
-    # Firmware folder ${target_folder}
     if [ -d ${STAGING_DIR}/${MACHINE}/lib/firmware ]; then
+        # Create stub firmware folders
+        echo "qcom-firmware 0 0 755" >> $file_config
+        firmware_folder=$target_folder/QCOM-FIRMWARE
+        install -d ${firmware_folder}
+        # Firmware folder ${target_folder}
         cp -r ${STAGING_DIR}/${MACHINE}/lib/firmware/* ${firmware_folder}
+        # Append to the filesystem config
+        cd $firmware_folder
+        find * -exec stat --format="qcom-firmware/%n 0 0 %a" "{}" \; >> $file_config
+        cd -
     fi
-    # Append to the filesystem config
-    cd $firmware_folder
-    for f in `find *`; do
-        echo qcom-firmware/$f 0 0 `stat --format=%a $f` >> $file_config
-    done
-    cd -
+
+    if [ -d ${STAGING_DIR}/${MACHINE}/linaro-rootfs ]; then
+        # Create stub userdata folder
+        echo "linaro-rootfs 0 0 755" >> $file_config
+        linaro_rootfs_folder=${target_folder}/LINARO-ROOTFS
+        install -d ${linaro_rootfs_folder}
+        # Copy the Linaro userdata contents
+        cp -r ${STAGING_DIR}/${MACHINE}/linaro-rootfs/* ${linaro_rootfs_folder}
+        # Create placeholders in empty folders
+        cd ${linaro_rootfs_folder}
+        empty_folders=`find * -depth -empty -type d`
+        for f in $empty_folders; do
+            touch $f/.empty
+            echo "linaro-rootfs/$f 0 0 755" >> $file_config
+            echo "linaro-rootfs/$f/.empty 0 0 644" >> $file_config
+        done
+        cd -
+        # Append to the filesystem config
+        cat ${STAGING_DIR}/${MACHINE}/filesystem_config.txt >> $file_config
+    fi
 }
 
 create_release_structure() {

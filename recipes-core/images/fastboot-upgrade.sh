@@ -21,6 +21,9 @@ fi
 if [ -e update.img ]; then
 	fastboot flash update update.img
 fi
+if [ -e factory.img ]; then
+	fastboot flash factory factory.img
+fi
 if [ -e userdata.img ]; then
 	fastboot flash userdata userdata.img
 fi
