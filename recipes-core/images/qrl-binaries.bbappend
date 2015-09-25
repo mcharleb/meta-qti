@@ -15,7 +15,6 @@ DEPENDS += " \
     mm-video \
     ftmdaemon \
     gps \
-    fpv-streamer-app \
 "
 
 PKGLIST_PROP = " \
@@ -39,8 +38,6 @@ PKGLIST_PROP = " \
     ftmdaemon \
     gps \
     qrl-version \
-    libqc-fpv-streamer0 \
-    fpv-streamer-app \
 "
 
 QRL_BINARIES_FW_LOCATION = "${STAGING_DIR}/${MACHINE}/lib/firmware"
