@@ -15,6 +15,7 @@ DEPENDS += " \
     mm-video \
     ftmdaemon \
     gps \
+    remote-debug-agent \
 "
 
 PKGLIST_PROP = " \
@@ -38,6 +39,7 @@ PKGLIST_PROP = " \
     ftmdaemon \
     gps \
     qrl-version \
+    remote-debug-agent \
 "
 
 QRL_BINARIES_FW_LOCATION = "${STAGING_DIR}/${MACHINE}/lib/firmware"

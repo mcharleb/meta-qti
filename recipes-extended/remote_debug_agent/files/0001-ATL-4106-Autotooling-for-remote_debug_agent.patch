@@ -1,0 +1,277 @@
+From e0d9749c3b746e6df0436bd2ac88f9d651743312 Mon Sep 17 00:00:00 2001
+From: Gustavo Solaira <gustavos@qti.qualcomm.com>
+Date: Mon, 21 Sep 2015 13:36:11 -0700
+Subject: [PATCH] ATL-4106: Autotooling for remote_debug_agent
+
+Change-Id: Ie6b148de1d5b73eaf44cd1fdf59b8ee7a426adb9
+---
+ Makefile.am                           | 16 +++++++++
+ NOTICE                                | 47 ++++++++++++++++++++++++
+ configure.ac                          | 51 ++++++++++++++++++++++++++
+ src/common/strlcpy.cpp                | 68 +++++++++++++++++++++++++++++++++++
+ src/platform/android/dm_platform.cpp  |  2 ++
+ src/platform/android/main_android.cpp |  2 ++
+ src/platform/common/qconnect.cpp      |  2 ++
+ 7 files changed, 188 insertions(+)
+ create mode 100644 Makefile.am
+ create mode 100644 NOTICE
+ create mode 100644 configure.ac
+ create mode 100644 src/common/strlcpy.cpp
+ mode change 100755 => 100644 src/platform/android/dm_platform.cpp
+ mode change 100755 => 100644 src/platform/android/main_android.cpp
+ mode change 100755 => 100644 src/platform/common/qconnect.cpp
+
+diff --git a/Makefile.am b/Makefile.am
+new file mode 100644
+index 0000000..9fafafd
+--- /dev/null
++++ b/Makefile.am
+@@ -0,0 +1,16 @@
++AM_CXXFLAGS = -Wall -Werror -DPIDFILELOCATION=\"/var/run/\"
++AM_CXXFLAGS += -I./src/common -I./src/platform/android
++
++c_sources = src/common/content.cpp \
++    src/common/debug_agent.cpp \
++    src/common/debugger_std.cpp \
++    src/common/http.cpp \
++    src/common/lstrtoul.cpp \
++    src/common/strlcpy.cpp \
++    src/platform/android/main_android.cpp \
++    src/platform/android/dm_platform.cpp \
++    src/platform/common/qconnect.cpp
++
++bin_PROGRAMS = remote_debug_agent
++remote_debug_agent_SOURCES = $(c_sources)
++remote_debug_agent_LDFLAGS = -pthread
+diff --git a/NOTICE b/NOTICE
+new file mode 100644
+index 0000000..cf3bc6d
+--- /dev/null
++++ b/NOTICE
+@@ -0,0 +1,47 @@
++This NOTICE file contains certain notices of software components included with
++the software that Qualcomm Technologies, Inc. ("Qualcomm Technologies") is
++required to provide you. Notwithstanding anything in the notices in this file,
++your use of these software components together with the Qualcomm Technologies
++software (Qualcomm Technologies software hereinafter referred to as "Software")
++is subject to the terms of your license from Qualcomm Technologies. Compliance
++with all copyright laws and software license agreements included in the notice
++section of this file are the responsibility of the user. Except as may be
++granted by separate express written agreement, this file provides no license to
++any Qualcomm Technologies patents,trademarks, copyrights, or other intellectual
++property.
++
++Copyright (c) 2015 Qualcomm Technologies, Inc.
++All rights reserved.
++Qualcomm is a registered trademark and registered service mark of QUALCOMM
++Incorporated. All other trademarks and service marks are the property of
++their respective owners.
++________________________________________
++NOTICES
++________________________________________
++
++* Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. The name of the author may not be used to endorse or promote products
++ *    derived from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
++ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
++ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
++ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
++ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
++ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++_______________________________________________________________________________
+diff --git a/configure.ac b/configure.ac
+new file mode 100644
+index 0000000..dece45b
+--- /dev/null
++++ b/configure.ac
+@@ -0,0 +1,51 @@
++#                                               -*- Autoconf -*-
++
++# configure.ac -- Autoconf script for remote_debug_agent.
++#
++
++# Process this file with autoconf to produce a configure script
++
++# Requires autoconf tool later than 2.61
++AC_PREREQ(2.61)
++# Initialize the remote-debug-agent package version 1.0.0
++AC_INIT([remote-debug-agent],1.0.0)
++# Does not strictly follow GNU Coding standards
++AM_INIT_AUTOMAKE([foreign subdir-objects])
++# Disables auto rebuilding of configure, Makefile.ins
++AM_MAINTAINER_MODE
++# defines some macros variable to be included by source
++AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_MACRO_DIR([m4])
++
++# Checks for programs.
++AC_PROG_CC
++AC_PROG_CXX
++AM_PROG_CC_C_O
++AC_PROG_LIBTOOL
++AC_PROG_AWK
++AC_PROG_CPP
++AC_PROG_INSTALL
++AC_PROG_LN_S
++AC_PROG_MAKE_SET
++
++# Checks for typedefs, structures, and compiler characteristics.
++AC_HEADER_STDBOOL
++AC_HEADER_STDC
++AC_C_INLINE
++AC_TYPE_INT64_T
++AC_TYPE_PID_T
++AC_TYPE_SIZE_T
++AC_TYPE_SSIZE_T
++AC_TYPE_UINT16_T
++AC_TYPE_UINT32_T
++AC_TYPE_UINT8_T
++
++# Checks for library functions.
++AC_FUNC_ERROR_AT_LINE
++AC_FUNC_FORK
++AC_FUNC_MALLOC
++
++AC_CONFIG_FILES([ \
++        Makefile
++        ])
++AC_OUTPUT
+diff --git a/src/common/strlcpy.cpp b/src/common/strlcpy.cpp
+new file mode 100644
+index 0000000..58ce3f2
+--- /dev/null
++++ b/src/common/strlcpy.cpp
+@@ -0,0 +1,68 @@
++/*
++ * Copyright (c) 2015 Qualcomm Technologies, Inc.
++ * All Rights Reserved.
++ * Confidential and Proprietary - Qualcomm Technologies, Inc.
++ */
++
++/* $NetBSD: strlcpy.c,v 1.5 1999/09/20 04:39:47 lukem Exp $ */
++/* from OpenBSD: strlcpy.c,v 1.4 1999/05/01 18:56:41 millert Exp */
++
++/*
++ * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. The name of the author may not be used to endorse or promote products
++ *    derived from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
++ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
++ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
++ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
++ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
++ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include <string.h>
++
++/*
++ * Copy src to string dst of size siz.  At most siz-1 characters
++ * will be copied.  Always NUL terminates (unless siz == 0).
++ * Returns strlen(src); if retval >= siz, truncation occurred.
++ */
++size_t
++strlcpy(char *dst, const char *src, size_t siz)
++{
++	register char *d = dst;
++	register const char *s = src;
++	register size_t n = siz;
++
++	/* Copy as many bytes as will fit */
++	if (n != 0 && --n != 0) {
++		do {
++			if ((*d++ = *s++) == 0)
++				break;
++		} while (--n != 0);
++	}
++
++	/* Not enough room in dst, add NUL and traverse rest of src */
++	if (n == 0) {
++		if (siz != 0)
++			*d = '\0';		/* NUL-terminate dst */
++		while (*s++)
++			;
++	}
++
++	return(s - src - 1);	/* count does not include NUL */
++}
+diff --git a/src/platform/android/dm_platform.cpp b/src/platform/android/dm_platform.cpp
+old mode 100755
+new mode 100644
+index e3e2762..60d7299
+--- a/src/platform/android/dm_platform.cpp
++++ b/src/platform/android/dm_platform.cpp
+@@ -8,6 +8,8 @@
+ #include <time.h>
+ #include <debugger.h>
+ //#include <fcntl.h>
++#include <unistd.h>
++#include <sys/time.h>
+ 
+ typedef struct proc_mappings
+ {
+diff --git a/src/platform/android/main_android.cpp b/src/platform/android/main_android.cpp
+old mode 100755
+new mode 100644
+index 7e4c9c8..6909f58
+--- a/src/platform/android/main_android.cpp
++++ b/src/platform/android/main_android.cpp
+@@ -7,6 +7,8 @@
+ #include <signal.h>
+ #include <stdlib.h>
+ #include <stdio.h>
++#include <unistd.h>
++#include <sys/file.h>
+ 
+ #include "platform.h"
+ 
+diff --git a/src/platform/common/qconnect.cpp b/src/platform/common/qconnect.cpp
+old mode 100755
+new mode 100644
+index 51f37d4..c367880
+--- a/src/platform/common/qconnect.cpp
++++ b/src/platform/common/qconnect.cpp
+@@ -4,6 +4,8 @@
+ ***********************************************************************/
+ 
+ #include <errno.h>  //needed for errno and error codes
++#include <signal.h>
++#include <unistd.h>
+ #include "debugger.h"
+ 
+ #define DEBUG_AGENT_EXIT_SIG SIGUSR1
+-- 
+2.4.2
+
