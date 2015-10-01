@@ -57,6 +57,7 @@ BOARD_NAME="$1"
 LINARO_IMG_NAME="linaro-trusty-developer-ifc6410-20140922-27"
 MOUNT_PATH="/tmp/linaro-rootfs"
 STAGING_BINDIR_NATIVE="tmp-eglibc/sysroots/x86_64-linux/usr/bin"
+STAGING_LIBDIR_NATIVE="tmp-eglibc/sysroots/x86_64-linux/usr/lib"
 STAGING_DIR="tmp-eglibc/sysroots/${BOARD_NAME}"
 DEPLOY_DIR_IMAGE="tmp-eglibc/deploy/images/${BOARD_NAME}"
 MAKE_EXT4FS_DIR="/tmp"
@@ -114,7 +115,7 @@ mk_ext_executable=`readlink -f ${STAGING_BINDIR_NATIVE}/make_ext4fs`
 }
 
 mkdir -p ${DEPLOY_DIR_IMAGE}/out
-sudo ${mk_ext} -s -l 8G ${DEPLOY_DIR_IMAGE}/out/userdata.img ${MOUNT_PATH}/rootfs || {
+sudo LD_LIBRARY_PATH=${STAGING_LIBDIR_NATIVE} ${mk_ext} -s -l 8G ${DEPLOY_DIR_IMAGE}/out/userdata.img ${MOUNT_PATH}/rootfs || {
    echo "[ERROR] Could not create file system image: $?"
    exit 1
 }
