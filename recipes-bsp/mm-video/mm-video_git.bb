@@ -7,8 +7,14 @@ PACKAGES = "${PN}"
 PV = "1.0"
 PR = "r0"
 
+
+SRC_URI += "file://fpv.cfg \
+	    file://fpv.conf \
+	    file://fpv.override \
+            "
+
 DEPENDS += "virtual/kernel mm-video-oss camera-hal"
-DEPENDS += "fpv-streamer-lib"
+DEPENDS += "live555 libjpeg-turbo"
 
 inherit autotools
 
@@ -16,6 +22,10 @@ EXTRA_OECONF = "--with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/inc
                 CPPFLAGS='-I${STAGING_INCDIR}/camera-hal'"
 
 INSANE_SKIP_${PN} += "installed-vs-shipped"
+
+# FPV includes
+CXXFLAGS += "-I ${STAGING_INCDIR}/live555"
+CFLAGS += "-I ${STAGING_INCDIR}/live555"
 
 do_fetch_append() {
     import shutil
@@ -25,4 +35,17 @@ do_fetch_append() {
     if os.path.exists(s):
         shutil.rmtree(s)
     shutil.copytree(src, s, ignore=shutil.ignore_patterns('.git*'))
+}
+
+do_install_append() {
+   # install fpv upstart scripts
+   dest=/etc/init
+   install -d ${D}${dest}
+   install -m 755 ${WORKDIR}/fpv.conf ${D}${dest}
+   install -m 755 ${WORKDIR}/fpv.override ${D}${dest}
+
+   # install FPV config file
+   dest=/etc
+   install -d ${D}${dest}
+   install -m 755 ${WORKDIR}/fpv.cfg ${D}${dest}
 }
