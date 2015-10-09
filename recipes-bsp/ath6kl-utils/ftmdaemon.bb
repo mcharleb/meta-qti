@@ -19,9 +19,12 @@ FILES_${PN} += "/usr/bin/*"
 
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
-EXTRA_OECONF += "--with-glib --enable-wlan --enable-debug"
+EXTRA_OECONF += "--with-glib --enable-wlan --enable-bt --enable-debug"
 
 CFLAGS_append = " -I${STAGING_INCDIR}/diag -I${STAGING_INCDIR}/ath6kl-utils \
+    `pkg-config --cflags glib-2.0`"
+
+CXXFLAGS_append = " -I${STAGING_LIBDIR}/glib-2.0/include -I${STAGING_INCDIR}/diag \
     `pkg-config --cflags glib-2.0`"
 
 do_fetch_append() {
