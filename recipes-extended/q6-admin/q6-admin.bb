@@ -23,3 +23,8 @@ do_install() {
     install -d ${D}${dest}
     install -m 0644 ${WORKDIR}/q6.conf -D ${D}${dest}
 }
+
+pkg_postinst_${PN}() {
+    # Create the folder for ADSP dynamic libs
+    mkdir -p /usr/share/data/adsp
+}
