@@ -120,6 +120,8 @@ sudo LD_LIBRARY_PATH=${STAGING_LIBDIR_NATIVE} ${mk_ext} -s -l 8G ${DEPLOY_DIR_IM
    exit 1
 }
 
+mkdir -p ${STAGING_DIR}
+
 # Create the list of files (required by update scripts)
 echo "[INFO] Creating the list of files in the rootfs"
 set +x
