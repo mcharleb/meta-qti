@@ -15,6 +15,7 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 inherit autotools
 inherit qti-proprietary-binary 
 
+DEPENDS += "perf-tools-prebuilt"
 
 EXTRA_OECONF_append = " --enable-target-msm8974=yes"
 #EXTRA_OECONF_append = " --with-dlog"

@@ -16,6 +16,7 @@ DEPENDS += " \
     ftmdaemon \
     gps \
     remote-debug-agent \
+    perf-tools-prebuilt \
 "
 
 PKGLIST_PROP = " \
@@ -40,6 +41,7 @@ PKGLIST_PROP = " \
     gps \
     qrl-version \
     remote-debug-agent \
+    perf-tools-prebuilt \
 "
 
 QRL_BINARIES_FW_LOCATION = "${STAGING_DIR}/${MACHINE}/lib/firmware"
