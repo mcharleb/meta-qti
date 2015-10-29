@@ -2,7 +2,7 @@ DESCRIPTION = "Video encoder applications"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
-PACKAGES = "${PN}"
+PACKAGES = "${PN} ${PN}-dbg"
 
 PV = "1.0"
 PR = "r0"
@@ -26,6 +26,10 @@ INSANE_SKIP_${PN} += "installed-vs-shipped"
 # FPV includes
 CXXFLAGS += "-I ${STAGING_INCDIR}/live555"
 CFLAGS += "-I ${STAGING_INCDIR}/live555"
+
+CXXFLAGS  += "-I${WORKSPACE}/hardware/qcom/display/libcopybit"
+CXXFLAGS  += "-I${WORKSPACE}/hardware/qcom/display/libgralloc"
+CXXFLAGS  += "-I${WORKSPACE}/hardware/qcom/media/libc2dcolorconvert"
 
 do_fetch_append() {
     import shutil
