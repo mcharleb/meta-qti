@@ -14,7 +14,7 @@ SRC_URI += "file://fpv.cfg \
             "
 
 DEPENDS += "virtual/kernel mm-video-oss camera-hal"
-DEPENDS += "live555 libjpeg-turbo"
+DEPENDS += "live555 libjpeg-turbo libopenh264"
 
 inherit autotools
 
