@@ -6,8 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
-
-PACKAGES = "${PN}"
+PACKAGES = "${PN} ${PN}-dbg"
 
 inherit autotools qti-proprietary-binary
 
@@ -17,10 +16,17 @@ DEPENDS += "glib-2.0"
 #DEPENDS += "system-core"
 #DEPENDS += "mm-image-codec"
 DEPENDS += "mm-video-oss"
+DEPENDS += "camera-hal"
 DEPENDS += "camera-hal-headers"
 #DEPENDS += "linux-libc-headers"
 
-CAMERA_TARGET= "msm8960"
+CAMERA_TARGET= "msm8974"
+
+CFLAGS += "-I ${STAGING_INCDIR}/camera-hal/"
+CXXFLAGS += "-I ${STAGING_INCDIR}/camera-hal/"
+CFLAGS += "-I ${STAGING_INCDIR}/glib-2.0"
+CFLAGS += "-I ${STAGING_LIBDIR}/glib-2.0/include"
+LDFLAGS += "-lglib-2.0"
 
 EXTRA_OECONF_append = " --with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include"
 EXTRA_OECONF_append = " --with-common-includes=${STAGING_INCDIR}"
@@ -40,15 +46,7 @@ INSANE_SKIP_${PN} += "textrel"
 do_fetch_append() {
     import shutil
     import os
-    mach = d.getVar('MACHINE', True)
-    dirToUse = ""
-    src = ""
-    if mach.find('som8064') != -1:
-        dirToUse = "som8064"
-    else:
-        dirToUse = mach
-
-    src = d.getVar('COREBASE', True)+'/../'+dirToUse+'/mm-still'
+    src = d.getVar('COREBASE', True)+'/../mm-still'
 
     s = d.getVar('S', True)
     if os.path.exists(s):

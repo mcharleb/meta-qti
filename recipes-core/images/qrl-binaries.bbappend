@@ -11,6 +11,7 @@ DEPENDS += " \
     adsprpc \
     ss-restart \
     mm-camera \
+    mm-still \
     mm-video-firmware-prebuilt \
     mm-video \
     ftmdaemon \
@@ -35,6 +36,7 @@ PKGLIST_PROP = " \
     adsprpc \
     ss-restart \
     mm-camera \
+    mm-still \
     mm-camera-core-prebuilt \
     mm-camera-lib-prebuilt \
     mm-video \
