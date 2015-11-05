@@ -1,11 +1,11 @@
 #!/bin/sh
 ###############################################################################
-# 
+#
 # This script is used for administration of the Hexagon DSP
-# 
-# Copyright (c) 2012-2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+#
+# Copyright (c) 2012-2015 Qualcomm Technologies, Inc.  All Rights Reserved.
 # Qualcomm Technologies Proprietary and Confidential.
-# 
+#
 ###############################################################################
 
 echo "[INFO] Mounting the modem partition"
