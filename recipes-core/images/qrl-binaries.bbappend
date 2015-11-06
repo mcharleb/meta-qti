@@ -14,7 +14,6 @@ DEPENDS += " \
     mm-video-firmware-prebuilt \
     mm-video \
     ftmdaemon \
-    gps \
     remote-debug-agent \
     perf-tools-prebuilt \
 "
@@ -38,7 +37,6 @@ PKGLIST_PROP = " \
     mm-camera-lib-prebuilt \
     mm-video \
     ftmdaemon \
-    gps \
     qrl-version \
     remote-debug-agent \
     perf-tools-prebuilt \
