@@ -1,6 +1,6 @@
 inherit autotools
 
-DESCRIPTION = "c2d headers for mm-camera"
+DESCRIPTION = "Adreno libraries, firmware and headers"
 SECTION = "base"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
@@ -11,9 +11,14 @@ PR = "r0"
 PACKAGES = "${PN}"
 INSANE_SKIP_${PN} = "installed-vs-shipped"
 
+FILES_${PN} = "/usr/lib/*"
+
 do_install() {
-	prebuilt_src=${COREBASE}/../prebuilt_HY11/target/${MACHINE}/adreno200
-	install -d ${D}/usr/include
-	install -d ${D}/usr/include/adreno200
-	cp -r ${prebuilt_src}/usr/include/adreno200/* ${D}/usr/include/adreno200/
+    prebuilt_src=${COREBASE}/../prebuilt_HY11/target/${MACHINE}/adreno200
+    install -d ${D}/usr/include
+    cp -r ${prebuilt_src}/usr/include/* ${D}/usr/include/
+    install -d ${D}/lib/firmware
+    cp -r ${prebuilt_src}/lib/firmware/* ${D}/lib/firmware/
+    install -d ${D}/usr/lib
+    cp -r ${prebuilt_src}/usr/lib/* ${D}/usr/lib/
 }

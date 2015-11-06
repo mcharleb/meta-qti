@@ -22,7 +22,7 @@ LDFLAGS += "-lOpenCL -lm -L${STAGING_LIBDIR}"
 
 inherit qti-proprietary-binary
 
-DEPENDS += "adreno200"
+DEPENDS += "adreno200-prebuilt"
 
 do_unpack_append() {
     import shutil

@@ -16,6 +16,8 @@ DEPENDS += " \
     ftmdaemon \
     remote-debug-agent \
     perf-tools-prebuilt \
+    adreno200-prebuilt \
+    math-cl \
 "
 
 PKGLIST_PROP = " \
@@ -40,6 +42,8 @@ PKGLIST_PROP = " \
     qrl-version \
     remote-debug-agent \
     perf-tools-prebuilt \
+    adreno200-prebuilt \
+    math-cl \
 "
 
 QRL_BINARIES_FW_LOCATION = "${STAGING_DIR}/${MACHINE}/lib/firmware"
