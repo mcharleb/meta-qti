@@ -49,7 +49,7 @@ Please enter your password (for sudo) when prompted. The following commands are 
 - /usr/bin/find
 - /usr/bin/stat
 - /tmp/make_ext4fs
-
+- rm
 EOF
 
 BOARD_NAME="$1"
@@ -147,4 +147,4 @@ sudo /bin/chown -R ${USER} $rootfs_copy
 sudo umount ${MOUNT_PATH}/rootfs || {
    echo "[WARNING] Could not unmount file system: $?"
 }
-rm -rf ${MOUNT_PATH}
+sudo rm -rf ${MOUNT_PATH}
