@@ -52,6 +52,7 @@ do_install_append() {
     install -m 0644 ${WORKDIR}/diag_mdlog-logrotate-cron -D ${D}${dest}
 
     dest=/etc
+    install -d ${D}${dest}
     install -m 0755 ${WORKDIR}/diag_mask.cfg -D ${D}${dest}
     install -m 0755 ${WORKDIR}/diag_mdlog-logrotate.conf -D ${D}${dest}
 }
