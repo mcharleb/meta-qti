@@ -11,6 +11,8 @@ PR = "r0"
 PACKAGES = "${PN}"
 INSANE_SKIP_${PN} = "installed-vs-shipped"
 
+DEPENDS += "glib-2.0"
+
 FILES_${PN} = "/usr/lib/*"
 
 do_install() {
