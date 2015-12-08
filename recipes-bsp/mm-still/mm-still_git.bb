@@ -31,7 +31,7 @@ LDFLAGS += "-lglib-2.0"
 EXTRA_OECONF_append = " --with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include"
 EXTRA_OECONF_append = " --with-common-includes=${STAGING_INCDIR}"
 EXTRA_OECONF_append = " --with-camera-hal-includes=${STAGING_INCDIR}/libcamera2"
-EXTRA_OECONF_append = " --with-omx-includes=${STAGING_INCDIR}/mm-core"
+EXTRA_OECONF_append = " --with-omx-includes=${STAGING_INCDIR}/omx"
 EXTRA_OECONF_append = " --enable-jelly-bean=no"
 EXTRA_OECONF_append = " --enable-target=${CAMERA_TARGET}"
 
