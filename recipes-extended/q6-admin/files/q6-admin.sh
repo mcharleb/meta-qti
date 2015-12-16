@@ -8,6 +8,11 @@
 #
 ###############################################################################
 
+# Wait for adsp.mdt to show up
+while [ ! -s /lib/firmware/adsp.mdt ]; do
+  sleep 0.1
+done
+
 # FIXME: See ATL-3054
 echo 1 > /sys/module/subsystem_restart/parameters/enable_debug
 # Bring adsp out of reset
@@ -15,7 +20,9 @@ echo "[INFO] Bringing ADSP out of reset"
 echo 1 > /sys/kernel/boot_adsp/boot
 
 # Don't leave until ADSP is up
-watch -n 1 --precise -g grep -m 1 "2" /sys/kernel/debug/msm_subsys/adsp && true
+while [ "`cat /sys/kernel/debug/msm_subsys/adsp`" != "2" ]; do
+  sleep 0.1
+done
 
 # Emit adsp
 initctl emit adsp
