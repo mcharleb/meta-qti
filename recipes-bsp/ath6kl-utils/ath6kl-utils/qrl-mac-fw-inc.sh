@@ -5,16 +5,16 @@
 . ${QRL_COMMON_INCS_DIR}/qrl-common-inc.sh
 
 QRL_DEFAULT_SOFTMAC_LOC=/lib/firmware/ath6k/AR6004/hw3.0
-QRL_RAND_MAC_ROOT="00:03:7f:20" # Fixed first 4 bytes of MAC address
-				# The last two (random) byte gets appended to this
+QRL_RAND_MAC_ROOT="00:03:7F" # Fixed first 3 OUI bytes of MAC address
+			# The last three (random) byte gets appended to this
 
 QRL_PERSIST_PATH=/mnt/persist
 QRL_WIFI_MAC_FILE=softmac.bin
 QRL_UDEV_RULE=/etc/udev/rules.d/70-persistent-net.rules
 
 QRL_DEFAULT_BTMAC_LOC=/lib/firmware/ar3k/1020201
-QRL_BT_RAND_MAC_ROOT="207f0300" # Fixed first 4 bytes of MAC address
-                # The last two (random) bytes gets prepended to this
+QRL_BT_RAND_MAC_ROOT="00037F" # Fixed first 3 OUI bytes of MAC address
+                # The last three (random) bytes gets appended to this
 QRL_BT_MAC_FILE=ar3kbdaddr.pst
 
 ##
@@ -81,8 +81,8 @@ configMACAddr() {
 
 ##
 ## doRandomMac:
-##    Generates a random MAC address using base 4 bytes
-##    and appending 2 random bytes to it.
+##    Generates a random MAC address using base 3 OUI bytes
+##    and appending 3 random bytes to it.
 ##
 doRandomMac() {
 	# Get a 2-digit random number for changing the MAC address
@@ -91,6 +91,11 @@ doRandomMac() {
 		mac=0$mac
 	fi
 	randMac="${QRL_RAND_MAC_ROOT}:${mac}"
+	mac=$(( $(od -An -N2 -i /dev/urandom)%(100) ))
+	if [ $mac -lt 10 ]; then
+		mac=0$mac
+	fi
+	randMac="${randMac}:${mac}"
 	mac=$(( $(od -An -N2 -i /dev/urandom)%(100) ))
 	if [ $mac -lt 10 ]; then
 		mac=0$mac
@@ -167,22 +172,28 @@ createBtMac() {
 
 ##
 ## doBtRandomMac:
-##    Generates a random BT MAC address using base 4 bytes
-##    and appending 2 random bytes to it.
+##    Generates a random BT MAC address using base 3 OUI bytes
+##    and appending 3 random bytes to it.
 ##
 doBtRandomMac() {
-	# Get a 2-digit random number for changing the MAC address
+	# Get a 3-digit random number for changing the MAC address
 	mac=$(( $(od -An -N2 -i /dev/urandom)%(100) ))
 	if [ $mac -lt 10 ]; then
 		mac=0$mac
 	fi
-	randMac="${mac}${QRL_BT_RAND_MAC_ROOT}"
+	randMac="${QRL_BT_RAND_MAC_ROOT}${mac}"
+
 	mac=$(( $(od -An -N2 -i /dev/urandom)%(100) ))
 	if [ $mac -lt 10 ]; then
 		mac=0$mac
 	fi
-	randMac="${mac}${randMac}"
-	echo "[INFO] Generated random WLAN MAC address: $randMac"
+	randMac="${randMac}${mac}"
+	mac=$(( $(od -An -N2 -i /dev/urandom)%(100) ))
+	if [ $mac -lt 10 ]; then
+		mac=0$mac
+	fi
+	randMac="${randMac}${mac}"
+	echo "[INFO] Generated random BT MAC address: $randMac"
 	createBtMac ${randMac} ${QRL_DEFAULT_BTMAC_LOC} ${QRL_BT_MAC_FILE}
 }
 
