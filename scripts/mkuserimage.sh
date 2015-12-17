@@ -62,6 +62,9 @@ STAGING_DIR="tmp-eglibc/sysroots/${BOARD_NAME}"
 DEPLOY_DIR_IMAGE="tmp-eglibc/deploy/images/${BOARD_NAME}"
 MAKE_EXT4FS_DIR="/tmp"
 
+# Need to chdir to oe-core
+cd ${WS}/oe-core
+
 if  /bin/mount  | grep ${MOUNT_PATH}/rootfs; then
    sudo /bin/umount ${MOUNT_PATH}/rootfs || {
       echo "[ERROR] Could not unmount already mounted ${MOUNT_PATH}/rootfs: $?"
