@@ -30,6 +30,7 @@ CFLAGS += "-I ${STAGING_INCDIR}/live555"
 CXXFLAGS  += "-I${WORKSPACE}/hardware/qcom/display/libcopybit"
 CXXFLAGS  += "-I${WORKSPACE}/hardware/qcom/display/libgralloc"
 CXXFLAGS  += "-I${WORKSPACE}/hardware/qcom/media/libc2dcolorconvert"
+CXXFLAGS  += "-I${STAGING_INCDIR}/omx"
 
 do_fetch_append() {
     import shutil
