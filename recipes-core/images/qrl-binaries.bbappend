@@ -15,6 +15,7 @@ DEPENDS += " \
     mm-video-firmware-prebuilt \
     mm-video \
     ftmdaemon \
+    fastmmi \
     remote-debug-agent \
     perf-tools-prebuilt \
     adreno200-prebuilt \
@@ -41,6 +42,7 @@ PKGLIST_PROP = " \
     mm-camera-lib-prebuilt \
     mm-video \
     ftmdaemon \
+    fastmmi \
     qrl-version \
     remote-debug-agent \
     perf-tools-prebuilt \
