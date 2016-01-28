@@ -44,6 +44,9 @@ do_install_append() {
     install -dm0664 ${D}/home/linaro/FTM_AP
     install -m 0644 ${S}/res/config/mmi-pcba-le.cfg -D ${D}${dest}/mmi.cfg
     install -m 0644 ${S}/res/values/path_config_le.xml -D ${D}${dest}/path_config.xml
+    install -m 0554 ${S}/res/config/init -D ${D}${dest}
+    install -m 0554 ${S}/res/config/start_mmi -D ${D}${dest}
+    install -m 0644 ${S}/res/config/qti-sysd.conf -D ${D}${sysconfdir}/init/qti-sysd.conf
     install -d ${D}${dest}/layout
     install -m 0644 ${S}/res/layout/* -D ${D}${dest}/layout
     install -m 0644 ${S}/res/drawable/* -D ${D}${dest}
