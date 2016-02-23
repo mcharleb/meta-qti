@@ -3,7 +3,7 @@ HOMEPAGE = "http://support.cdmatech.com"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
 
-DEPENDS += "glib-2.0 diag libxml2"
+DEPENDS += "glib-2.0 diag libxml2 camera-hal"
 
 PV = "1.0"
 PR = "r0"
