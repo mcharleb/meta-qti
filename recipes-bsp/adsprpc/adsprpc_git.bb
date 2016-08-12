@@ -11,7 +11,7 @@ inherit autotools qti-proprietary-binary
 
 # Express dependency on kernel headers and pass header path to configure
 DEPENDS += "virtual/kernel"
-EXTRA_OECONF_append = " --with-sanitized-headers=/usr/src/${MACHINE}/include"
+EXTRA_OECONF_append = " --with-sanitized-headers=${STAGING_DIR_TARGET}/usr/src/${MACHINE}/include"
 PACKAGES = "${PN}"
 INSANE_SKIP_${PN} += "installed-vs-shipped"
 INSANE_SKIP_${PN} += "dev-so"
