@@ -18,7 +18,7 @@ DEPENDS += "live555 libjpeg-turbo libopenh264"
 
 inherit autotools
 
-EXTRA_OECONF = "--with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include \
+EXTRA_OECONF = "--with-sanitized-headers=/usr/src/${MACHINE}/include \
                 CPPFLAGS='-I${STAGING_INCDIR}/camera-hal'"
 
 INSANE_SKIP_${PN} += "installed-vs-shipped"

@@ -28,7 +28,7 @@ CFLAGS += "-I ${STAGING_INCDIR}/glib-2.0"
 CFLAGS += "-I ${STAGING_LIBDIR}/glib-2.0/include"
 LDFLAGS += "-lglib-2.0"
 
-EXTRA_OECONF_append = " --with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include"
+EXTRA_OECONF_append = " --with-sanitized-headers=/usr/src/${MACHINE}/include"
 EXTRA_OECONF_append = " --with-common-includes=${STAGING_INCDIR}"
 EXTRA_OECONF_append = " --with-camera-hal-includes=${STAGING_INCDIR}/libcamera2"
 EXTRA_OECONF_append = " --with-omx-includes=${STAGING_INCDIR}/omx"

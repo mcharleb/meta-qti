@@ -22,7 +22,7 @@ DEPENDS += "mm-camera-core-prebuilt"
 DEPENDS += "mm-camera-lib-prebuilt"
 DEPENDS += "android-tools"
 
-EXTRA_OECONF_append = " --with-sanitized-headers=${STAGING_INCDIR}/linux-headers/usr/include"
+EXTRA_OECONF_append = " --with-sanitized-headers=/usr/src/${MACHINE}/include"
 EXTRA_OECONF_append = " --with-mm-still=${STAGING_INCDIR}"
 EXTRA_OECONF_append = " --with-camera-hal-headers=${STAGING_INCDIR}/camera-hal"
 EXTRA_OECONF_append = " --with-adreno200-headers=${STAGING_INCDIR}/adreno200"
