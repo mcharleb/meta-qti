@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "ath6kl utilities"
 HOMEPAGE = "http://support.cdmatech.com"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -14,8 +16,8 @@ SRC_URI += "file://qrl-mac-fw-inc.sh \
 
 PACKAGES = "${PN}"
 
-inherit autotools
-inherit qti-proprietary-binary
+# Must build in srd dir
+B = "${S}"
 
 FILES_${PN} += "/usr/bin/* \
     /usr/local/qr-linux/*sh \

@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "Subsystem Restart utilities"
 HOMEPAGE = "http://support.cdmatech.com"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -11,9 +13,6 @@ PR = "r0"
 SRC_URI += "file://ssr.conf"
 
 PACKAGES = "${PN}"
-
-inherit autotools
-inherit qti-proprietary-binary
 
 FILES_${PN} += "/usr/bin/*"
 

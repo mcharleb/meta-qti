@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "Qualcomm Data Configdb Module"
 HOMEPAGE = "http://support.cdmatech.com"
@@ -8,6 +8,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 DEPENDS = "common dsutils diag xmllib glib-2.0"
 PV = "1.0"
 PR = "r0"
+
+# Must be built in source dir
+B = "${S}"
 
 EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
                 --with-common-includes=${STAGING_INCDIR} \

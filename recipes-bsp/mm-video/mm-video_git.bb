@@ -1,3 +1,5 @@
+inherit autotools pkgconfig
+
 DESCRIPTION = "Video encoder applications"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
@@ -7,16 +9,16 @@ PACKAGES = "${PN} ${PN}-dbg"
 PV = "1.0"
 PR = "r0"
 
-
 SRC_URI += "file://fpv.cfg \
 	    file://fpv.conf \
 	    file://fpv.override \
             "
 
+# Must be built in stc dir
+B = "${S}"
+
 DEPENDS += "virtual/kernel mm-video-oss camera-hal"
 DEPENDS += "live555 libjpeg-turbo libopenh264"
-
-inherit autotools
 
 EXTRA_OECONF = "--with-sanitized-headers=${STAGING_DIR_TARGET}/usr/src/${MACHINE}/include \
                 CPPFLAGS='-I${STAGING_INCDIR}/camera-hal'"

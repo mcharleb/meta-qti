@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "Thermal Engine"
 SECTION = "base"
@@ -11,6 +11,9 @@ PR = "r0"
 SRC_URI += "file://thermal-engine.conf"
 
 PACKAGES = "${PN}"
+
+# Must build in src dir
+B = "${S}"
 
 DEPENDS = "qmi-framework glib-2.0"
 

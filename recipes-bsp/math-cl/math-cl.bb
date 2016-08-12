@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "math-cl tests OpenCL fast-math"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"

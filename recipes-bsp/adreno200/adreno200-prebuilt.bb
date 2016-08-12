@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "Adreno libraries, firmware and headers"
 SECTION = "base"

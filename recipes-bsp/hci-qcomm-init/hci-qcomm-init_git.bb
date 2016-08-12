@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "hci_qcomm_init proprietary binary to configure bluetooth"
 SECTION = "base"

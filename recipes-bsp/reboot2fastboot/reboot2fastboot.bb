@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "reboot2fastboot causes target system to reboot into fastboot mode."
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"

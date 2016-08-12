@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "Qualcomm XML Library"
 HOMEPAGE = "http://support.cdmatech.com"
@@ -8,6 +8,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 DEPENDS = "common diag glib-2.0"
 PV = "1.0"
 PR = "r0"
+
+# Must be built in place
+B = "${S}"
 
 EXTRA_OECONF = "--with-common-includes=${STAGING_INCDIR} \
                 --with-glib \

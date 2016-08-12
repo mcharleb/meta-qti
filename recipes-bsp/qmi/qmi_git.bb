@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "Qualcomm MSM Interface (QMI) Library"
 HOMEPAGE = "http://support.cdmatech.com"
@@ -9,6 +9,9 @@ PV = "1.0"
 PR = "r0"
 
 DEPENDS = "configdb diag"
+
+# Must be built in src dir
+B = "${S}"
 
 CFLAGS += "${CFLAGS_EXTRA}"
 CFLAGS_EXTRA_append_arm = " -fforward-propagate"

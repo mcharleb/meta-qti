@@ -1,3 +1,5 @@
+inherit autotools pkgconfig
+
 DESCRIPTION = "MM Camera headers for MSM/QSD"
 SECTION = "base"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -7,8 +9,6 @@ PV = "1.0"
 PR = "r0"
 
 PACKAGES = "${PN}"
-
-inherit autotools
 
 INSANE_SKIP_${PN} = "dev-so"
 INSANE_SKIP_${PN} += "installed-vs-shipped"

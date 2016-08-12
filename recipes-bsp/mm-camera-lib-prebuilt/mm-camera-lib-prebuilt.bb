@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "mm-camera-lib prebuilt libraries"
 SECTION = "base"

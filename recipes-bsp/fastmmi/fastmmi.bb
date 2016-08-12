@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "fastmmi"
 HOMEPAGE = "http://support.cdmatech.com"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -13,10 +15,6 @@ SRC_URI += ""
 PACKAGES = "${PN}"
 FILES_${PN} += "/usr/lib/*.so"
 FILES_${PN} += "/home/linaro/FTM_AP"
-
-inherit autotools
-inherit qti-proprietary-binary
-
 
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 

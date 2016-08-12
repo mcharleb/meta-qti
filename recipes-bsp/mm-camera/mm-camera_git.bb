@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "MM Camera libraries for MSM"
 SECTION = "base"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -9,8 +11,6 @@ PR = "r0"
 SRC_URI += "file://mm-qcamera.conf"
 
 PACKAGES = "${PN}"
-
-inherit autotools qti-proprietary-binary
 
 DEPENDS = "virtual/kernel"
 DEPENDS += "glib-2.0"

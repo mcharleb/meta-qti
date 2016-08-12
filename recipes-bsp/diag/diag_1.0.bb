@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "Library and routing applications for diagnostic traffic"
 HOMEPAGE         = "http://support.cdmatech.com"
 LICENSE          = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -15,6 +17,9 @@ SRC_URI += "file://diag_mask.cfg"
 SRC_URI += "file://diag_mdlog-logrotate.conf"
 SRC_URI += "file://diag_mdlog-logrotate-cron"
 
+# Must be built in place
+B = "${S}"
+
 PACKAGES = "${PN}"
 FILES_${PN} += "/etc/init/diag.conf"
 FILES_${PN} += "/etc/init/diag_mdlog.conf"
@@ -23,8 +28,6 @@ FILES_${PN} += "/etc/diag_mdlog-logrotate.conf"
 FILES_${PN} += "/etc/cron.d/diag_mdlog-logrotate-cron"
 
 EXTRA_OECONF += "--with-glib --with-common-includes=${STAGING_INCDIR}"
-
-inherit autotools qti-proprietary-binary
 
 do_fetch_append() {
     import shutil

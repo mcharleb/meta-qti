@@ -1,3 +1,5 @@
+inherit autotools pkgconfig
+
 DESCRIPTION = "Android performance core libraries prebuilt"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
@@ -10,8 +12,6 @@ FILES_${PN} +=  "/usr/lib/*"
 
 DEPENDS += "android-tools"
 DEPENDS += "glib-2.0"
-
-inherit autotools
 
 INSANE_SKIP_${PN} = "installed-vs-shipped"
 

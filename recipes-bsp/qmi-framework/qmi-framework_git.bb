@@ -1,3 +1,5 @@
+inherit autotools pkgconfig
+
 DESCRIPTION = "QMI Framework Library"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};md5=400dd647645553d955b1053bbbfcd2de"
@@ -7,6 +9,9 @@ PR = "r0"
 
 SRC_URI += "file://start_irsc_util"
 
+# Must build in src dir
+B = "${S}"
+
 DEPENDS = "qmi"
 DEPENDS += "glib-2.0"
 
@@ -14,8 +19,6 @@ EXTRA_OECONF = "--with-qmux-libraries=${STAGING_LIBDIR}"
 EXTRA_OECONF += "--with-glib"
 EXTRA_OECONF += "QMI_CFLAGS=-I${PKG_CONFIG_SYSROOT_DIR}/usr/include/qmi"
 
-
-inherit autotools
 
 #re-use non-perf settings
 BASEMACHINE = "${@d.getVar('MACHINE', True).replace('-perf', '')}"

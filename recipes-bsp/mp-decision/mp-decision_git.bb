@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "MP Decision library for MSM/QSD"
 HOMEPAGE         = "http://support.cdmatech.com"
 LICENSE          = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -10,10 +12,10 @@ SRC_URI += "file://mpdecision.conf"
 
 PACKAGES = "${PN}"
 
-INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+# Must build in src dir
+B = "${S}"
 
-inherit autotools
-inherit qti-proprietary-binary 
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 DEPENDS += "perf-tools-prebuilt"
 

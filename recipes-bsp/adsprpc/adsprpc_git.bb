@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "LPASS/ADSP RPC library"
 SECTION = "base"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -6,8 +8,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PR = "r0"
 PV = "1.0"
 SRC_URI_append = " file://adsprpcd.conf"
-
-inherit autotools qti-proprietary-binary
 
 # Express dependency on kernel headers and pass header path to configure
 DEPENDS += "virtual/kernel"

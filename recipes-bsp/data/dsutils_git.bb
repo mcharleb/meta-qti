@@ -1,4 +1,4 @@
-inherit autotools
+inherit autotools pkgconfig
 
 DESCRIPTION = "Qualcomm Data DSutils Module"
 HOMEPAGE = "http://support.cdmatech.com"
@@ -11,6 +11,8 @@ PR = "r0"
 
 inherit qti-proprietary-binary
 
+# Must be built in place
+B = "${S}"
 
 EXTRA_OECONF = "--with-lib-path=${STAGING_LIBDIR} \
                 --with-common-includes=${STAGING_INCDIR} \

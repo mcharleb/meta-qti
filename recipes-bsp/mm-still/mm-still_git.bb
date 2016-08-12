@@ -1,3 +1,5 @@
+inherit autotools pkgconfig qti-proprietary-binary
+
 DESCRIPTION = "MM Image processing library for MSM/QSD"
 SECTION = "base"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -8,7 +10,8 @@ PR = "r0"
 
 PACKAGES = "${PN} ${PN}-dbg"
 
-inherit autotools qti-proprietary-binary
+# Must be built in src dir
+B = "${S}"
 
 # Need the kernel headers
 DEPENDS += "virtual/kernel"
