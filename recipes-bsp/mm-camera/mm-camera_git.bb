@@ -12,6 +12,9 @@ SRC_URI += "file://mm-qcamera.conf"
 
 PACKAGES = "${PN}"
 
+# Must be built in stc dir
+B = "${S}"
+
 DEPENDS = "virtual/kernel"
 DEPENDS += "glib-2.0"
 DEPENDS += "camera-hal-headers"

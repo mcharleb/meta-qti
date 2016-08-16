@@ -1,4 +1,4 @@
-inherit autotools pkgconfig
+inherit autotools pkgconfig qti-proprietary-binary
 
 DESCRIPTION = "math-cl tests OpenCL fast-math"
 LICENSE = "QUALCOMM-TECHNOLOGY-Proprietary"
@@ -10,19 +10,30 @@ PN = "math-cl"
 
 PROVIDES = "math-cl"
 
+DEPENDS += "adreno200 \
+	    adreno200-prebuilt \
+	    "
+
 FILES_{PN} += "${prefix}/share/math-cl/NOTICE"
 
 SRC_URI += "file://configure.ac \
 	    file://Makefile.am \
 	    file://math.c \
 	    file://NOTICE \
+	    file://NEWS \
+	    file://AUTHORS \
+	    file://README \
+	    file://ChangeLog \
+	    file://math-cl-1.0/NEWS \
+	    file://math-cl-1.0/AUTHORS \
+	    file://math-cl-1.0/README \
+	    file://math-cl-1.0/ChangeLog \
 	    "
 
-LDFLAGS += "-lOpenCL -lm -L${STAGING_LIBDIR}"
+# Must be built in stc dir
+B = "${S}"
 
-inherit qti-proprietary-binary
-
-DEPENDS += "adreno200-prebuilt"
+LDFLAGS += "-Wl,--no-as-needed -lOpenCL -lm -L${STAGING_LIBDIR}"
 
 do_unpack_append() {
     import shutil

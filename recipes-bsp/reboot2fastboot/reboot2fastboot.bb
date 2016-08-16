@@ -17,6 +17,10 @@ SRC_URI += "file://configure.ac \
             file://reboot2fastboot.c \
             file://__rfastboot.S \
 	    file://NOTICE \
+	    file://NEWS \
+	    file://AUTHORS \
+	    file://README \
+	    file://ChangeLog \
 	    "
 
 
@@ -34,6 +38,10 @@ do_unpack_append() {
     shutil.copy(wd+'/Makefile.am', s)
     shutil.copy(wd+'/reboot2fastboot.c', s)
     shutil.copy(wd+'/__rfastboot.S', s)
+    shutil.copy(wd+'/NEWS', s)
+    shutil.copy(wd+'/AUTHORS', s)
+    shutil.copy(wd+'/README', s)
+    shutil.copy(wd+'/ChangeLog', s)
 }
 
 do_install_append() {
