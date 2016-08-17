@@ -5,6 +5,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
+FILES_${PN} += "/lib/firmware/ath6k/*"
+
 PACKAGES = "${PN}"
 
 INSANE_SKIP_${PN} = "installed-vs-shipped"

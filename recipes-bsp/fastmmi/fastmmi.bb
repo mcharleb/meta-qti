@@ -7,6 +7,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-internal/files/qcom-licenses/${L
 
 DEPENDS += "glib-2.0 diag libxml2 camera-hal"
 
+RDEPENDS_${PN} += "sdk-add-on"
+
 PV = "1.0"
 PR = "r0"
 
@@ -15,6 +17,9 @@ SRC_URI += ""
 PACKAGES = "${PN}"
 FILES_${PN} += "/usr/lib/*.so"
 FILES_${PN} += "/home/linaro/FTM_AP"
+
+# Must be built in src dir
+B = "${S}"
 
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 

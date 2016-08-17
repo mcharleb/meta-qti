@@ -6,6 +6,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
+FILES_${PN} += "/lib/firmware/*"
+
 PACKAGES = "${PN}"
 
 INSANE_SKIP_${PN} = "already-stripped"
