@@ -23,6 +23,8 @@ B = "${S}"
 
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
+INSANE_SKIP_${PN} = "installed-vs-shipped"
+
 EXTRA_OECONF += "--with-glib"
 
 CFLAGS_append = " -I${STAGING_INCDIR}/diag \

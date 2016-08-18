@@ -29,7 +29,7 @@ INSANE_SKIP_${PN} = "installed-vs-shipped"
 
 EXTRA_OECONF += "--with-glib"
 CFLAGS_append = " -I${STAGING_INCDIR}/libnl3"
-CFLAGS_append = " -I${STAGING_INCDIR}/bluetooth"
+CFLAGS_append = " -I${STAGING_INCDIR}/bluetooth-clean"
 
 do_fetch_append() {
     import shutil
