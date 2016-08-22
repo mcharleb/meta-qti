@@ -15,6 +15,13 @@ DEPENDS += "glib-2.0"
 
 FILES_${PN} = "/usr/lib/*"
 
+# There's nothing to do here, except install the source where we can package it
+do_fetch[noexec] = "1"
+do_unpack[noexec] = "1"
+do_patch[noexec] = "1"
+do_configure[noexec] = "1"
+do_compile[noexec] = "1"
+
 do_install() {
     prebuilt_src=${COREBASE}/../prebuilt_HY11/target/${MACHINE}/adreno200
     install -d ${D}/usr/include

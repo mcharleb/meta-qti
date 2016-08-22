@@ -17,7 +17,7 @@ SRC_URI += "file://fpv.cfg \
 # Must be built in stc dir
 B = "${S}"
 
-DEPENDS += "virtual/kernel mm-video-oss camera-hal"
+DEPENDS += "${MACHINE}-kernel-devsrc mm-video-oss camera-hal"
 DEPENDS += "live555 libjpeg-turbo libopenh264"
 
 EXTRA_OECONF = "--with-sanitized-headers=${STAGING_DIR_TARGET}/usr/src/${MACHINE}/include \
