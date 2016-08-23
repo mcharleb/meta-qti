@@ -8,12 +8,17 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
-PACKAGES = "${PN}"
+PACKAGES = "${PN} ${PN}-firmware"
+
+PROVIDES = "${PN} ${PN}-firmware"
+
 INSANE_SKIP_${PN} = "installed-vs-shipped"
 
 DEPENDS += "glib-2.0"
 
 FILES_${PN} = "/usr/lib/*"
+FILES_${PN} += "/usr/include/*"
+FILES_${PN}-firmware = "/lib/firmware/*"
 
 # There's nothing to do here, except install the source where we can package it
 do_fetch[noexec] = "1"

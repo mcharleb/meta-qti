@@ -10,8 +10,7 @@ FILES_${PN} += "/lib/firmware/*"
 
 PACKAGES = "${PN}"
 
-INSANE_SKIP_${PN} = "already-stripped"
-INSANE_SKIP_${PN} += "installed-vs-shipped"
+FILES_${PN} = "/lib/firmware/*"
 
 do_install() {
     prebuilt_src=${COREBASE}/../prebuilt_HY11/target/${MACHINE}/mm-video
