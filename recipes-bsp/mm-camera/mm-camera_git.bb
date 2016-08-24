@@ -10,7 +10,8 @@ PR = "r0"
 
 SRC_URI += "file://mm-qcamera.conf"
 
-PACKAGES = "${PN}"
+PACKAGES = "${PN} ${PN}-firmware"
+PROVIDES = "${PN} ${PN}-firmware"
 
 S = "${WORKDIR}/mm-camera"
 
@@ -45,6 +46,8 @@ LDFLAGS += "-lglib-2.0"
 FILES_${PN} += "\
     /usr/lib/* \
     /usr/bin/*"
+
+FILES_${PN}-firmware = "/lib/firmware/*"
 
 # The mm-camera package contains symlinks that trip up insane
 INSANE_SKIP_${PN} = "dev-so"
