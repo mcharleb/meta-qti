@@ -18,7 +18,7 @@ S = "${WORKDIR}/mm-camera"
 # Must be built in src dir
 B = "${S}"
 
-DEPENDS = "${MACHINE}-kernel-devsrc"
+DEPENDS = "kernel-${MACHINE}-devsrc"
 DEPENDS += "glib-2.0"
 DEPENDS += "camera-hal-headers"
 DEPENDS += "sensors-headers"

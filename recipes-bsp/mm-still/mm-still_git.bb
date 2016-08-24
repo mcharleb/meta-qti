@@ -14,7 +14,7 @@ PACKAGES = "${PN} ${PN}-dbg"
 B = "${S}"
 
 # Need the kernel headers
-DEPENDS += "${MACHINE}-kernel-devsrc"
+DEPENDS += "kernel-${MACHINE}-devsrc"
 DEPENDS += "glib-2.0"
 #DEPENDS += "system-core"
 #DEPENDS += "mm-image-codec"
