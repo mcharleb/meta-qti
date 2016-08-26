@@ -1,5 +1,0 @@
-#
-# Copyright (c) 2014, 2015 Qualcomm Technologies, Inc. All Rights Reserved.
-# Qualcomm Technologies Proprietary and Confidential.
-#
-*/10  *  *  *  *   root    /usr/sbin/logrotate /etc/diag_mdlog-logrotate.conf

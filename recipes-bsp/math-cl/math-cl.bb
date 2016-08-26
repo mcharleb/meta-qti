@@ -10,8 +10,7 @@ PN = "math-cl"
 
 PROVIDES = "math-cl"
 
-DEPENDS += "adreno200 \
-	    adreno200-prebuilt \
+DEPENDS += "adreno200-prebuilt \
 	    "
 
 FILES_{PN} += "${prefix}/share/math-cl/NOTICE"

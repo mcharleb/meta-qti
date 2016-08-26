@@ -5,21 +5,13 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti/files/qcom-licenses/${LICENSE};m
 PV = "1.0"
 PR = "r0"
 
+SRC_URI = "file://${COREBASE}/../prebuilt_HY11/target/${MACHINE}/ath6kl-utils/ath6kl_fw/AR6004/hw3.0"
+
 FILES_${PN} += "/lib/firmware/ath6k/*"
 
 PACKAGES = "${PN}"
 
 INSANE_SKIP_${PN} = "installed-vs-shipped"
-
-do_fetch_append() {
-    import shutil
-    import os
-    src = d.getVar('COREBASE', True)+'/../ath6kl-utils/ath6kl_fw/AR6004/hw3.0'
-    s = d.getVar('S', True)
-    if os.path.exists(s):
-        shutil.rmtree(s)
-    shutil.copytree(src, s)
-}
 
 # This recipe is only for populating cache image, no deb package will be shipped
 do_install_append() {
