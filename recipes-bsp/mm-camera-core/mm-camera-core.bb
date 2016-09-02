@@ -7,7 +7,9 @@ SRC_URI = "file://${QTI_PREBUILT_DIR}/mm-camera-core.tar.gz;subdir=mm-camera-cor
 
 S = "${WORKDIR}/mm-camera-core"
 
+# Prevent -dev packages
+PACKAGES = "${PN}"
+
 PV = "1.0"
 PR = "r0"
 
-DEBIAN_NOAUTONAME_${PN} = "1"

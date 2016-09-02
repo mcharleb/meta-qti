@@ -20,6 +20,11 @@ FILES_${PN}-firmware = "/lib/firmware/*"
 
 INITSCRIPT_NAME = "mm-qcamera"
 
+RDEPENDS_${PN} = "mm-camera-core"
+
+# The mm-camera package contains symlinks that trip up insane
+INSANE_SKIP_${PN} = "dev-so dev-deps"
+
 pkg_prerm_mmcamera() {
    stop mm-qcamera
    echo "Stopped mm-qcamera if necessary"
