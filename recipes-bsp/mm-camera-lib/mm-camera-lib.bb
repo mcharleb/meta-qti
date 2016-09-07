@@ -12,7 +12,7 @@ PR = "r0"
 
 DEBIAN_NOAUTONAME_${PN} = "1" 
 
-INSANE_SKIP_${PN} = "arch"
-
 # FIXME - links to build filesystem
-INSANE_SKIP_${PN} = "symlink-to-sysroot"
+INSANE_SKIP_${PN} = "symlink-to-sysroot arch"
+
+INSANE_SKIP_${PN} += " arch"

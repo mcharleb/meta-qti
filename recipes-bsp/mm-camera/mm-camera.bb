@@ -16,6 +16,10 @@ PROVIDES = "mm-camera mm-camera-firmware"
 RPROVIDES_${PN} = "mm-camera"
 RPROVIDES_${PN}-firmware = "mm-camera-firmware"
 
+FILES_${PN} = "/usr/lib/* \
+	       /usr/bin/* \
+               /etc/*"
+
 FILES_${PN}-firmware = "/lib/firmware/*"
 
 INITSCRIPT_NAME = "mm-qcamera"
