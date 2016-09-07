@@ -10,7 +10,9 @@ S = "${WORKDIR}/mp-decision"
 PV = "1.0"
 PR = "r0"
 
-RDEPENDS_${PN} = "perf-tools-dev"
+RDEPENDS_${PN} = "perf-tools"
+
+INSANE_SKIP_${PN} = "dev-deps"
 
 INITSCRIPT_NAME = "mpdecision"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 1 6 ."

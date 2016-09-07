@@ -10,5 +10,3 @@ S = "${WORKDIR}/mm-still"
 PV = "1.0"
 PR = "r0"
 
-PACKAGES += " ${PN}-dbg"
-

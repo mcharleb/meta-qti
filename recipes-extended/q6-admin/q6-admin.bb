@@ -14,6 +14,7 @@ SRC_URI += "file://q6.conf"
 PACKAGES = "${PN}"
 FILES_${PN} = "/usr/local/qr-linux/*sh"
 FILES_${PN} += "/etc/init/*conf"
+FILES_${PN} += "/usr/share/data/adsp"
 
 do_install() {
     dest=/usr/local/qr-linux
@@ -22,9 +23,8 @@ do_install() {
     dest=/etc/init
     install -d ${D}${dest}
     install -m 0644 ${WORKDIR}/q6.conf -D ${D}${dest}
+
+    # Create the folder for ADSP dynamic libs
+    install -d ${D}/usr/share/data/adsp
 }
 
-pkg_postinst_${PN}() {
-    # Create the folder for ADSP dynamic libs
-    mkdir -p /usr/share/data/adsp
-}
