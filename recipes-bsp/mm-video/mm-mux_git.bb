@@ -37,7 +37,7 @@ CXXFLAGS += "-I${STAGING_INCDIR}/omx"
 CXXFLAGS += "-I${STAGING_INCDIR}"
 CXXFLAGS += "-L${STAGING_LIBDIR}/mm-mux-noship"
 
-do_fetch_append() {
+do_unpack_append() {
     import shutil
     import os
     src = d.getVar('COREBASE', True)+'/../mm-video/mm-mux'

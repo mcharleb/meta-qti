@@ -9,7 +9,7 @@ PACKAGES = "${PN}"
 
 INSANE_SKIP_${PN} += "installed-vs-shipped"
 
-do_fetch_append() {
+do_unpack_append() {
     import shutil
     import os
 
