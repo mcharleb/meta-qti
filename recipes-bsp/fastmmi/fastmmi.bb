@@ -12,4 +12,7 @@ PR = "r0"
 
 RDEPENDS_${PN} += "frameworks-av libxml2 zlib glib-2.0 diag camera-hal sdk-add-on"
 
-INSANE_SKIP_${PN} = "dev-deps"
+do_install_append() {
+    cd ${D}/usr/lib
+    for f in `ls *.so`; do mv $f $f.0.0.0; ln -s $f.0.0.0 $f; ln -s $f.0.0.0 $f.0; done
+}
