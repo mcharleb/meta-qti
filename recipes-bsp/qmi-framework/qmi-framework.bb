@@ -8,3 +8,5 @@ S = "${WORKDIR}/qmi-framework"
 
 PV = "1.0"
 PR = "r0"
+
+RDEPENDS_${PN} +="qmi "

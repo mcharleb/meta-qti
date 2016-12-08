@@ -10,3 +10,4 @@ INHIBIT_PACKAGE_STRIP = "1"
 
 S = "${WORKDIR}/${PN}-${PV}"
 
+INSANE_SKIP_${PN} = "build-deps"
